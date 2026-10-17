@@ -1,0 +1,18 @@
+{"text": "-TWOWHITESL DEAD OCOEE (\nSENATE AND CONGRESS REPUBLICANN. YO\n\nTROUBLE AT OCOEE CLAIMS 2:WHITE VICTI",
+"words": [
+{"text": "-TWOWHITESL", "x0": 3, "y0": 138, "x1": 307, "y1": 193, "conf": 0.0},
+{"text": "DEAD", "x0": 289, "y0": 131, "x1": 401, "y1": 192, "conf": 96.0},
+{"text": "OCOEE", "x0": 413, "y0": 118, "x1": 549, "y1": 191, "conf": 81.0},
+{"text": "(", "x0": 597, "y0": 195, "x1": 599, "y1": 197, "conf": 80.0},
+{"text": "SENATE", "x0": 16, "y0": 206, "x1": 127, "y1": 229, "conf": 96.0},
+{"text": "AND", "x0": 135, "y0": 205, "x1": 197, "y1": 228, "conf": 77.0},
+{"text": "CONGRESS", "x0": 201, "y0": 202, "x1": 343, "y1": 228, "conf": 77.0},
+{"text": "REPUBLICANN.", "x0": 352, "y0": 204, "x1": 531, "y1": 231, "conf": 40.0},
+{"text": "YO", "x0": 575, "y0": 204, "x1": 605, "y1": 255, "conf": 49.0},
+{"text": "TROUBLE", "x0": 18, "y0": 263, "x1": 143, "y1": 303, "conf": 96.0},
+{"text": "AT", "x0": 152, "y0": 263, "x1": 193, "y1": 286, "conf": 96.0},
+{"text": "OCOEE", "x0": 199, "y0": 246, "x1": 290, "y1": 286, "conf": 92.0},
+{"text": "CLAIMS", "x0": 297, "y0": 262, "x1": 398, "y1": 285, "conf": 93.0},
+{"text": "2:WHITE", "x0": 408, "y0": 261, "x1": 525, "y1": 284, "conf": 73.0},
+{"text": "VICTI", "x0": 535, "y0": 251, "x1": 608, "y1": 284, "conf": 91.0}
+]}

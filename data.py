@@ -12,7 +12,13 @@ as every drawn page has gone by.
 An `rvl_index` is a line number, from 0, in the label list of the page's RVL-CDIP split. Each draw
 takes SPARE pages beyond those it needs, in seeded order, so a page that fails to decode is replaced
 by the next one rather than leaving its class short; failures are logged to stderr and listed in
-data/selection.json."""
+data/selection.json.
+
+`build_test_n`, run as `python data.py test-n`, adds a fourth split, test-n, from RVL-CDIP-N in
+TEST_N_DIR: pages from the web and DocumentCloud rather than IIT-CDIP scans. It keeps every page of
+a type in CLASSES and draws TEST_N_REJECTS pages of each REJECT_CLASSES type the set has, then
+appends to the manifest and adds "test-n" to the selection. `main` rewrites both files from the
+three RVL-CDIP splits alone, so `build_test_n` runs again after it."""
 
 import io
 import json
@@ -40,6 +46,8 @@ SPLITS = {
     "test":  ("test",  40,  40),
 }
 SPARE = 5
+TEST_N_DIR = os.path.expanduser("~/data/rvl-cdip-n/RVL-CDIP-N")
+TEST_N_REJECTS = 20
 PROGRESS_BYTES = 2 << 30
 
 
@@ -163,5 +171,85 @@ def main():
         sys.exit("short of pages after spares: " + "; ".join(short))
 
 
+def test_n_label(filename):
+    """The RVL-CDIP type named by an RVL-CDIP-N file name's suffix, `<source>_<type>.tif` with
+    underscores for the type's spaces, or None if the suffix names no type."""
+    stem = filename.rsplit(".", 1)[0]
+    found = [n for n in list(CLASSES) + REJECT_CLASSES if stem.endswith("_" + n.replace(" ", "_"))]
+    return found[0] if len(found) == 1 else None
+
+
+def build_test_n():
+    files = sorted(f for f in os.listdir(TEST_N_DIR) if f.lower().endswith((".tif", ".tiff")))
+    if not files:
+        sys.exit(f"{TEST_N_DIR}: no TIFF files")
+    by_type = {}
+    for f in files:
+        rvl_label = test_n_label(f)
+        if rvl_label is None:
+            sys.exit(f"{TEST_N_DIR}/{f}: file name names no RVL-CDIP type")
+        by_type.setdefault(rvl_label, []).append(f)
+
+    # Every page of a type in CLASSES; for each reject type present, TEST_N_REJECTS + SPARE
+    # candidates in seeded order, the first TEST_N_REJECTS that decode kept.
+    groups = [(name, name, len(by_type[name]), by_type[name]) for name in CLASSES if name in by_type]
+    for name in REJECT_CLASSES:
+        if name in by_type:
+            rng = random.Random(f"{SEED}/test-n/{name}")
+            k = min(TEST_N_REJECTS, len(by_type[name]))
+            groups.append((REJECT_LABEL, name, k,
+                           rng.sample(by_type[name], min(k + SPARE, len(by_type[name])))))
+
+    os.makedirs("data/test-n", exist_ok=True)
+    rows, indices, failures, short = [], {}, {}, []
+    for label, rvl_label, k, cand in groups:
+        kept = []
+        for f in cand:
+            if len(kept) == k:
+                break
+            try:
+                img = Image.open(os.path.join(TEST_N_DIR, f))
+                img.load()
+            except Exception as e:
+                failures[f] = f"{type(e).__name__}: {e}"
+                print(f"decode failure: {f}: {failures[f]}", file=sys.stderr)
+                continue
+            page_id = "test-n-" + f.rsplit(".", 1)[0]
+            img.save(f"data/test-n/{page_id}.png", format="PNG")
+            kept.append(f)
+            rows.append({"id": page_id, "split": "test-n", "label": label,
+                         "rvl_label": rvl_label, "rvl_index": f})
+        if label == REJECT_LABEL and len(kept) < k:
+            short.append(f"test-n {rvl_label}: {len(kept)} of {k}")
+        indices[rvl_label] = kept
+
+    # A rerun replaces the test-n rows rather than appending a second copy.
+    with open("data/manifest.jsonl") as f:
+        manifest = [line for line in f if line.strip() and json.loads(line)["split"] != "test-n"]
+    with open("data/manifest.jsonl", "w") as f:
+        f.writelines(manifest)
+        for row in rows:
+            f.write(json.dumps(row) + "\n")
+    with open("data/selection.json") as f:
+        selection = json.load(f)
+    selection["test-n"] = {"source": TEST_N_DIR.replace(os.path.expanduser("~"), "~"),
+                           "seed": SEED, "spare": SPARE, "rvl_indices": indices,
+                           "decode_failures": dict(sorted(failures.items()))}
+    with open("data/selection.json", "w") as f:
+        json.dump(selection, f, indent=1)
+        f.write("\n")
+
+    for label, rvl_label, *_ in groups:
+        print(f"test-n {rvl_label}: {len(indices[rvl_label])}", file=sys.stderr)
+    rej = sum(r["label"] == REJECT_LABEL for r in rows)
+    print(f"test-n: {len(rows)} pages, {rej} reject", file=sys.stderr)
+    print(f"decode failures: {len(failures)}", file=sys.stderr)
+    if short:
+        sys.exit("short of pages after spares: " + "; ".join(short))
+
+
 if __name__ == "__main__":
-    main()
+    if sys.argv[1:] == ["test-n"]:
+        build_test_n()
+    else:
+        main()
