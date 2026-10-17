@@ -1,0 +1,7 @@
+tesseract 5.5.3, pytesseract defaults, one page per call
+pages in manifest      1660
+pages run              1660
+pages skipped          0 (ocr/<id>.json already present)
+pages with no words    26
+total seconds          524.2 (wall 525.4)
+seconds per page       mean 0.316  median 0.258  max 1.571
