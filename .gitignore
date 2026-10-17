@@ -218,3 +218,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Page images are rebuilt by data.py from data/selection.json; the manifest and selection are tracked.
+data/*/
