@@ -14,7 +14,6 @@ import sys
 import time
 
 import pytesseract
-from PIL import Image
 
 MANIFEST = "data/manifest.jsonl"
 OUT_DIR = "ocr"
@@ -24,7 +23,7 @@ TIME_FILE = "results/ocr-time.txt"
 def ocr_page(path):
     """Tesseract's words and their boxes for the image at `path`, and the page text built from
     them."""
-    d = pytesseract.image_to_data(Image.open(path), output_type=pytesseract.Output.DICT)
+    d = pytesseract.image_to_data(path, output_type=pytesseract.Output.DICT)
     words, blocks = [], {}
     for i, text in enumerate(d["text"]):
         if not text.strip():
