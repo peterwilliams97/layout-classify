@@ -1,3 +1,4 @@
+run 2026-10-17, splits run: train, dev, test
 tesseract 5.5.3, pytesseract defaults, one page per call
 pages in manifest      1660
 pages run              1660

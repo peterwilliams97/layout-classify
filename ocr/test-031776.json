@@ -1,1 +1,18 @@
-{"text": "Some states\u2019 foolish strategy to try to pay their Medicaid bills\n\nTye Washington Times\n\n11730-1900", "words": [{"text": "Some", "x0": 149, "y0": 852, "x1": 177, "y1": 926, "conf": 96.0}, {"text": "states\u2019", "x0": 149, "y0": 765, "x1": 176, "y1": 844, "conf": 96.0}, {"text": "foolish", "x0": 148, "y0": 669, "x1": 176, "y1": 756, "conf": 94.0}, {"text": "strategy", "x0": 151, "y0": 557, "x1": 183, "y1": 662, "conf": 96.0}, {"text": "to", "x0": 151, "y0": 524, "x1": 176, "y1": 548, "conf": 95.0}, {"text": "try", "x0": 151, "y0": 479, "x1": 183, "y1": 516, "conf": 96.0}, {"text": "to", "x0": 151, "y0": 445, "x1": 176, "y1": 471, "conf": 96.0}, {"text": "pay", "x0": 157, "y0": 392, "x1": 183, "y1": 436, "conf": 96.0}, {"text": "their", "x0": 149, "y0": 323, "x1": 175, "y1": 384, "conf": 96.0}, {"text": "Medicaid", "x0": 149, "y0": 194, "x1": 175, "y1": 316, "conf": 96.0}, {"text": "bills", "x0": 149, "y0": 133, "x1": 175, "y1": 185, "conf": 95.0}, {"text": "Tye", "x0": 106, "y0": 551, "x1": 125, "y1": 576, "conf": 82.0}, {"text": "Washington", "x0": 94, "y0": 469, "x1": 129, "y1": 543, "conf": 50.0}, {"text": "Times", "x0": 106, "y0": 422, "x1": 119, "y1": 461, "conf": 71.0}, {"text": "11730-1900", "x0": 642, "y0": 965, "x1": 723, "y1": 975, "conf": 23.0}]}
+{"text": "Some states\u2019 foolish strategy to try to pay their Medicaid bills\n\nTye Washington Times\n\n11730-1900",
+"words": [
+{"text": "Some", "x0": 149, "y0": 852, "x1": 177, "y1": 926, "conf": 96.0},
+{"text": "states\u2019", "x0": 149, "y0": 765, "x1": 176, "y1": 844, "conf": 96.0},
+{"text": "foolish", "x0": 148, "y0": 669, "x1": 176, "y1": 756, "conf": 94.0},
+{"text": "strategy", "x0": 151, "y0": 557, "x1": 183, "y1": 662, "conf": 96.0},
+{"text": "to", "x0": 151, "y0": 524, "x1": 176, "y1": 548, "conf": 95.0},
+{"text": "try", "x0": 151, "y0": 479, "x1": 183, "y1": 516, "conf": 96.0},
+{"text": "to", "x0": 151, "y0": 445, "x1": 176, "y1": 471, "conf": 96.0},
+{"text": "pay", "x0": 157, "y0": 392, "x1": 183, "y1": 436, "conf": 96.0},
+{"text": "their", "x0": 149, "y0": 323, "x1": 175, "y1": 384, "conf": 96.0},
+{"text": "Medicaid", "x0": 149, "y0": 194, "x1": 175, "y1": 316, "conf": 96.0},
+{"text": "bills", "x0": 149, "y0": 133, "x1": 175, "y1": 185, "conf": 95.0},
+{"text": "Tye", "x0": 106, "y0": 551, "x1": 125, "y1": 576, "conf": 82.0},
+{"text": "Washington", "x0": 94, "y0": 469, "x1": 129, "y1": 543, "conf": 50.0},
+{"text": "Times", "x0": 106, "y0": 422, "x1": 119, "y1": 461, "conf": 71.0},
+{"text": "11730-1900", "x0": 642, "y0": 965, "x1": 723, "y1": 975, "conf": 23.0}
+]}

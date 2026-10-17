@@ -1,1 +1,14 @@
-{"text": "re)\n}\n\nSURGEON GENERAL'S WARNING: Cigarette\nSmoke Contains Carbon Monoxide\n\n2058500683", "words": [{"text": "re)", "x0": 360, "y0": 153, "x1": 378, "y1": 161, "conf": 17.0}, {"text": "}", "x0": 109, "y0": 180, "x1": 113, "y1": 192, "conf": 55.0}, {"text": "SURGEON", "x0": 170, "y0": 791, "x1": 204, "y1": 800, "conf": 70.0}, {"text": "GENERAL'S", "x0": 209, "y0": 780, "x1": 247, "y1": 808, "conf": 17.0}, {"text": "WARNING:", "x0": 252, "y0": 780, "x1": 290, "y1": 808, "conf": 60.0}, {"text": "Cigarette", "x0": 293, "y0": 790, "x1": 327, "y1": 799, "conf": 27.0}, {"text": "Smoke", "x0": 171, "y0": 804, "x1": 196, "y1": 812, "conf": 92.0}, {"text": "Contains", "x0": 203, "y0": 803, "x1": 241, "y1": 811, "conf": 91.0}, {"text": "Carbon", "x0": 247, "y0": 802, "x1": 276, "y1": 810, "conf": 94.0}, {"text": "Monoxide", "x0": 283, "y0": 802, "x1": 324, "y1": 810, "conf": 84.0}, {"text": "2058500683", "x0": 656, "y0": 981, "x1": 743, "y1": 990, "conf": 94.0}]}
+{"text": "re)\n}\n\nSURGEON GENERAL'S WARNING: Cigarette\nSmoke Contains Carbon Monoxide\n\n2058500683",
+"words": [
+{"text": "re)", "x0": 360, "y0": 153, "x1": 378, "y1": 161, "conf": 17.0},
+{"text": "}", "x0": 109, "y0": 180, "x1": 113, "y1": 192, "conf": 55.0},
+{"text": "SURGEON", "x0": 170, "y0": 791, "x1": 204, "y1": 800, "conf": 70.0},
+{"text": "GENERAL'S", "x0": 209, "y0": 780, "x1": 247, "y1": 808, "conf": 17.0},
+{"text": "WARNING:", "x0": 252, "y0": 780, "x1": 290, "y1": 808, "conf": 60.0},
+{"text": "Cigarette", "x0": 293, "y0": 790, "x1": 327, "y1": 799, "conf": 27.0},
+{"text": "Smoke", "x0": 171, "y0": 804, "x1": 196, "y1": 812, "conf": 92.0},
+{"text": "Contains", "x0": 203, "y0": 803, "x1": 241, "y1": 811, "conf": 91.0},
+{"text": "Carbon", "x0": 247, "y0": 802, "x1": 276, "y1": 810, "conf": 94.0},
+{"text": "Monoxide", "x0": 283, "y0": 802, "x1": 324, "y1": 810, "conf": 84.0},
+{"text": "2058500683", "x0": 656, "y0": 981, "x1": 743, "y1": 990, "conf": 94.0}
+]}

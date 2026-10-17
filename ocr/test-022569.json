@@ -1,1 +1,7 @@
-{"text": "varices copects\n\ncare to", "words": [{"text": "varices", "x0": 551, "y0": 565, "x1": 611, "y1": 573, "conf": 29.0}, {"text": "copects", "x0": 621, "y0": 565, "x1": 681, "y1": 577, "conf": 30.0}, {"text": "care", "x0": 604, "y0": 582, "x1": 637, "y1": 590, "conf": 29.0}, {"text": "to", "x0": 648, "y0": 581, "x1": 663, "y1": 590, "conf": 57.0}]}
+{"text": "varices copects\n\ncare to",
+"words": [
+{"text": "varices", "x0": 551, "y0": 565, "x1": 611, "y1": 573, "conf": 29.0},
+{"text": "copects", "x0": 621, "y0": 565, "x1": 681, "y1": 577, "conf": 30.0},
+{"text": "care", "x0": 604, "y0": 582, "x1": 637, "y1": 590, "conf": 29.0},
+{"text": "to", "x0": 648, "y0": 581, "x1": 663, "y1": 590, "conf": 57.0}
+]}

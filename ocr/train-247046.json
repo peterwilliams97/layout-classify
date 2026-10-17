@@ -1,1 +1,7 @@
-{"text": "FOLYNMOLLSIO LST1INVE\n\nssnorignensat\n\n620617154", "words": [{"text": "FOLYNMOLLSIO", "x0": 88, "y0": 338, "x1": 101, "y1": 454, "conf": 0.0}, {"text": "LST1INVE", "x0": 88, "y0": 468, "x1": 100, "y1": 537, "conf": 3.0}, {"text": "ssnorignensat", "x0": 128, "y0": 634, "x1": 135, "y1": 692, "conf": 0.0}, {"text": "620617154", "x0": 465, "y0": 715, "x1": 558, "y1": 729, "conf": 71.0}]}
+{"text": "FOLYNMOLLSIO LST1INVE\n\nssnorignensat\n\n620617154",
+"words": [
+{"text": "FOLYNMOLLSIO", "x0": 88, "y0": 338, "x1": 101, "y1": 454, "conf": 0.0},
+{"text": "LST1INVE", "x0": 88, "y0": 468, "x1": 100, "y1": 537, "conf": 3.0},
+{"text": "ssnorignensat", "x0": 128, "y0": 634, "x1": 135, "y1": 692, "conf": 0.0},
+{"text": "620617154", "x0": 465, "y0": 715, "x1": 558, "y1": 729, "conf": 71.0}
+]}

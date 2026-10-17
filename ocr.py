@@ -4,9 +4,12 @@ Word boxes are in pixels of data/<split>/<id>.png, origin top left; `conf` is Te
 confidence, 0 to 100. `text` is the same words, one line of the page per line, blocks separated by a
 blank line. It is the only OCR in this repo: every classifier that reads text reads this cache.
 
-A page whose ocr/<id>.json exists is skipped, so an interrupted run resumes. The seconds of the
-pages run this time, total and per page, go to results/ocr-time.txt."""
+A page whose ocr/<id>.json exists is skipped, so an interrupted run resumes. Each run that OCRs a
+page appends one block to results/ocr-time.txt: a header line with the date and the splits that had
+pages run, then the seconds of the pages run this time, total and per page. Blocks are separated by
+a blank line and earlier blocks are never rewritten."""
 
+import datetime
 import json
 import os
 import statistics
@@ -38,6 +41,15 @@ def ocr_page(path):
     return {"text": page, "words": words}
 
 
+def write_page(path, text, words):
+    """Writes ocr/<id>.json with "text" on the first line and one word object per line, so a diff
+    of the cache shows which words changed."""
+    with open(path, "w") as f:
+        f.write('{"text": ' + json.dumps(text) + ',\n"words": [')
+        f.write(",".join("\n" + json.dumps(w) for w in words))
+        f.write("\n]}\n" if words else "]}\n")
+
+
 def main():
     with open(MANIFEST) as f:
         rows = [json.loads(line) for line in f if line.strip()]
@@ -46,7 +58,7 @@ def main():
         sys.exit(f"{MANIFEST}: no pages")
     os.makedirs(OUT_DIR, exist_ok=True)
 
-    seconds, skipped, empty = [], 0, []
+    seconds, skipped, empty, run_splits = [], 0, [], []
     start = time.time()
     for n, (page_id, split) in enumerate(ids, 1):
         out = os.path.join(OUT_DIR, page_id + ".json")
@@ -56,15 +68,17 @@ def main():
         t = time.perf_counter()
         result = ocr_page(f"data/{split}/{page_id}.png")
         seconds.append(time.perf_counter() - t)
+        if split not in run_splits:
+            run_splits.append(split)
         if not result["words"]:
             empty.append(page_id)
-        with open(out, "w") as f:
-            json.dump(result, f)
+        write_page(out, result["text"], result["words"])
         if n % 100 == 0:
             print(f"{n} of {len(ids)} pages, {time.time() - start:.0f} s", file=sys.stderr)
     wall = time.time() - start
 
     lines = [
+        f"run {datetime.date.today().isoformat()}, splits run: {', '.join(run_splits) or 'none'}",
         f"tesseract {pytesseract.get_tesseract_version()}, pytesseract defaults, one page per call",
         f"pages in manifest      {len(ids)}",
         f"pages run              {len(seconds)}",
@@ -81,8 +95,9 @@ def main():
     sys.stdout.write(text)
     if seconds:
         os.makedirs(os.path.dirname(TIME_FILE), exist_ok=True)
-        with open(TIME_FILE, "w") as f:
-            f.write(text)
+        prior = os.path.exists(TIME_FILE) and os.path.getsize(TIME_FILE) > 0
+        with open(TIME_FILE, "a") as f:
+            f.write(("\n" if prior else "") + text)
     else:
         print(f"no pages run; {TIME_FILE} left as it was", file=sys.stderr)
 

@@ -1,1 +1,20 @@
-{"text": "R. J. REYNOLDS TOBACCO COMPANY\n\nEMPLOYEE PERFORMANCE EVALUATION\nNON-EXEMPT SALARIED PERSONNEL\n\n\u00a311 betts\n\n:aWYN\n\nROOTS il TORY", "words": [{"text": "R.", "x0": 195, "y0": 207, "x1": 211, "y1": 221, "conf": 88.0}, {"text": "J.", "x0": 219, "y0": 207, "x1": 232, "y1": 222, "conf": 91.0}, {"text": "REYNOLDS", "x0": 241, "y0": 207, "x1": 341, "y1": 222, "conf": 96.0}, {"text": "TOBACCO", "x0": 349, "y0": 207, "x1": 440, "y1": 222, "conf": 96.0}, {"text": "COMPANY", "x0": 449, "y0": 207, "x1": 541, "y1": 222, "conf": 96.0}, {"text": "EMPLOYEE", "x0": 228, "y0": 256, "x1": 296, "y1": 267, "conf": 96.0}, {"text": "PERFORMANCE", "x0": 304, "y0": 256, "x1": 401, "y1": 267, "conf": 96.0}, {"text": "EVALUATION", "x0": 409, "y0": 256, "x1": 494, "y1": 267, "conf": 96.0}, {"text": "NON-EXEMPT", "x0": 239, "y0": 279, "x1": 328, "y1": 289, "conf": 92.0}, {"text": "SALARIED", "x0": 335, "y0": 279, "x1": 401, "y1": 289, "conf": 96.0}, {"text": "PERSONNEL", "x0": 407, "y0": 278, "x1": 484, "y1": 289, "conf": 95.0}, {"text": "\u00a311", "x0": 678, "y0": 892, "x1": 689, "y1": 927, "conf": 3.0}, {"text": "betts", "x0": 680, "y0": 839, "x1": 691, "y1": 881, "conf": 16.0}, {"text": ":aWYN", "x0": 701, "y0": 221, "x1": 709, "y1": 257, "conf": 0.0}, {"text": "ROOTS", "x0": 701, "y0": 431, "x1": 720, "y1": 511, "conf": 0.0}, {"text": "il", "x0": 703, "y0": 395, "x1": 720, "y1": 422, "conf": 22.0}, {"text": "TORY", "x0": 702, "y0": 296, "x1": 717, "y1": 373, "conf": 14.0}]}
+{"text": "R. J. REYNOLDS TOBACCO COMPANY\n\nEMPLOYEE PERFORMANCE EVALUATION\nNON-EXEMPT SALARIED PERSONNEL\n\n\u00a311 betts\n\n:aWYN\n\nROOTS il TORY",
+"words": [
+{"text": "R.", "x0": 195, "y0": 207, "x1": 211, "y1": 221, "conf": 88.0},
+{"text": "J.", "x0": 219, "y0": 207, "x1": 232, "y1": 222, "conf": 91.0},
+{"text": "REYNOLDS", "x0": 241, "y0": 207, "x1": 341, "y1": 222, "conf": 96.0},
+{"text": "TOBACCO", "x0": 349, "y0": 207, "x1": 440, "y1": 222, "conf": 96.0},
+{"text": "COMPANY", "x0": 449, "y0": 207, "x1": 541, "y1": 222, "conf": 96.0},
+{"text": "EMPLOYEE", "x0": 228, "y0": 256, "x1": 296, "y1": 267, "conf": 96.0},
+{"text": "PERFORMANCE", "x0": 304, "y0": 256, "x1": 401, "y1": 267, "conf": 96.0},
+{"text": "EVALUATION", "x0": 409, "y0": 256, "x1": 494, "y1": 267, "conf": 96.0},
+{"text": "NON-EXEMPT", "x0": 239, "y0": 279, "x1": 328, "y1": 289, "conf": 92.0},
+{"text": "SALARIED", "x0": 335, "y0": 279, "x1": 401, "y1": 289, "conf": 96.0},
+{"text": "PERSONNEL", "x0": 407, "y0": 278, "x1": 484, "y1": 289, "conf": 95.0},
+{"text": "\u00a311", "x0": 678, "y0": 892, "x1": 689, "y1": 927, "conf": 3.0},
+{"text": "betts", "x0": 680, "y0": 839, "x1": 691, "y1": 881, "conf": 16.0},
+{"text": ":aWYN", "x0": 701, "y0": 221, "x1": 709, "y1": 257, "conf": 0.0},
+{"text": "ROOTS", "x0": 701, "y0": 431, "x1": 720, "y1": 511, "conf": 0.0},
+{"text": "il", "x0": 703, "y0": 395, "x1": 720, "y1": 422, "conf": 22.0},
+{"text": "TORY", "x0": 702, "y0": 296, "x1": 717, "y1": 373, "conf": 14.0}
+]}

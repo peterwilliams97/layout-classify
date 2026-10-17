@@ -1,1 +1,7 @@
-{"text": "COMPUTER TITLE:\n\n11APR83\n\nFPLESZOTSOS", "words": [{"text": "COMPUTER", "x0": 62, "y0": 71, "x1": 130, "y1": 80, "conf": 95.0}, {"text": "TITLE:", "x0": 139, "y0": 71, "x1": 187, "y1": 80, "conf": 96.0}, {"text": "11APR83", "x0": 208, "y0": 71, "x1": 266, "y1": 80, "conf": 43.0}, {"text": "FPLESZOTSOS", "x0": 735, "y0": 833, "x1": 754, "y1": 969, "conf": 1.0}]}
+{"text": "COMPUTER TITLE:\n\n11APR83\n\nFPLESZOTSOS",
+"words": [
+{"text": "COMPUTER", "x0": 62, "y0": 71, "x1": 130, "y1": 80, "conf": 95.0},
+{"text": "TITLE:", "x0": 139, "y0": 71, "x1": 187, "y1": 80, "conf": 96.0},
+{"text": "11APR83", "x0": 208, "y0": 71, "x1": 266, "y1": 80, "conf": 43.0},
+{"text": "FPLESZOTSOS", "x0": 735, "y0": 833, "x1": 754, "y1": 969, "conf": 1.0}
+]}

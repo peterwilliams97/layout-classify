@@ -1,1 +1,16 @@
-{"text": "UniversityHospitals = | 2021525090\n\nofCleveland case wesTeRNRESERVE UNIVERSITY\n\nAlzheimer Center\n\nLife Ehstory Questionnaire", "words": [{"text": "UniversityHospitals", "x0": 683, "y0": 149, "x1": 719, "y1": 301, "conf": 80.0}, {"text": "=", "x0": 695, "y0": 391, "x1": 723, "y1": 420, "conf": 58.0}, {"text": "|", "x0": 683, "y0": 434, "x1": 727, "y1": 446, "conf": 48.0}, {"text": "2021525090", "x0": 691, "y0": 753, "x1": 707, "y1": 886, "conf": 95.0}, {"text": "ofCleveland", "x0": 685, "y0": 225, "x1": 698, "y1": 311, "conf": 73.0}, {"text": "case", "x0": 676, "y0": 327, "x1": 702, "y1": 360, "conf": 11.0}, {"text": "wesTeRNRESERVE", "x0": 676, "y0": 363, "x1": 702, "y1": 445, "conf": 18.0}, {"text": "UNIVERSITY", "x0": 676, "y0": 450, "x1": 702, "y1": 501, "conf": 58.0}, {"text": "Alzheimer", "x0": 535, "y0": 336, "x1": 546, "y1": 400, "conf": 95.0}, {"text": "Center", "x0": 535, "y0": 404, "x1": 546, "y1": 445, "conf": 83.0}, {"text": "Life", "x0": 428, "y0": 338, "x1": 497, "y1": 429, "conf": 94.0}, {"text": "Ehstory", "x0": 432, "y0": 441, "x1": 492, "y1": 608, "conf": 22.0}, {"text": "Questionnaire", "x0": 432, "y0": 624, "x1": 492, "y1": 943, "conf": 83.0}]}
+{"text": "UniversityHospitals = | 2021525090\n\nofCleveland case wesTeRNRESERVE UNIVERSITY\n\nAlzheimer Center\n\nLife Ehstory Questionnaire",
+"words": [
+{"text": "UniversityHospitals", "x0": 683, "y0": 149, "x1": 719, "y1": 301, "conf": 80.0},
+{"text": "=", "x0": 695, "y0": 391, "x1": 723, "y1": 420, "conf": 58.0},
+{"text": "|", "x0": 683, "y0": 434, "x1": 727, "y1": 446, "conf": 48.0},
+{"text": "2021525090", "x0": 691, "y0": 753, "x1": 707, "y1": 886, "conf": 95.0},
+{"text": "ofCleveland", "x0": 685, "y0": 225, "x1": 698, "y1": 311, "conf": 73.0},
+{"text": "case", "x0": 676, "y0": 327, "x1": 702, "y1": 360, "conf": 11.0},
+{"text": "wesTeRNRESERVE", "x0": 676, "y0": 363, "x1": 702, "y1": 445, "conf": 18.0},
+{"text": "UNIVERSITY", "x0": 676, "y0": 450, "x1": 702, "y1": 501, "conf": 58.0},
+{"text": "Alzheimer", "x0": 535, "y0": 336, "x1": 546, "y1": 400, "conf": 95.0},
+{"text": "Center", "x0": 535, "y0": 404, "x1": 546, "y1": 445, "conf": 83.0},
+{"text": "Life", "x0": 428, "y0": 338, "x1": 497, "y1": 429, "conf": 94.0},
+{"text": "Ehstory", "x0": 432, "y0": 441, "x1": 492, "y1": 608, "conf": 22.0},
+{"text": "Questionnaire", "x0": 432, "y0": 624, "x1": 492, "y1": 943, "conf": 83.0}
+]}
