@@ -3,7 +3,8 @@
 [synth-classify](../synth-classify/README.md) measured local text classifiers on short messages.
 This repo asks the same questions of document pages, using 9 types from
 RVL-CDIP-N, modern pages labelled with RVL-CDIP's types, plus pages that fit none of them.
-So far it holds the data, the OCR cache, two classifiers on the OCR text and one on the page image.
+So far it holds the data, the OCR cache, two classifiers on the OCR text, one on the page image
+and one fine-tuned on both.
 
 ## Aim
 
@@ -84,17 +85,28 @@ same seeded order. None failed.
   the 196 patches of the page resized to 224 × 224, standardised by a `StandardScaler` fitted on
   the train embeddings. Names are `tfidf-real`, `tfidf-small`,
   `ultrabert-embed-real`, `ultrabert-embed-small`, `dit-real` and `dit-small`.
-- `score.py` — scores a model on every page of dev or test, reject pages included. A model
-  predicts one of `CLASSES`, so a reject page is always wrong. A `dit-` model reads
-  `data/<split>/<id>.png`; its seconds leave out the image read. `--dump` writes each page's
-  prediction and top probability for `confidence.py`.
+- `finetune.py` — fine-tunes every weight of `microsoft/layoutlmv3-base`, at a pinned revision, with
+  a new head over `CLASSES`, and saves it to `models/<name>/`. A page's input is its OCR words and
+  boxes from `ocr/<id>.json`, the boxes scaled to 0–1000 of the page, and `data/<split>/<id>.png`;
+  the first 512 tokens are kept. `--layoutlmv3 --train real` or `--train small` takes `train.py`'s
+  training sets. The settings were fixed before any dev page was read: 10 epochs, learning rate
+  2e-5, batch 8, seed 0, AdamW with weight decay 0.01, a linear schedule with 10% warm-up, and
+  cross-entropy weighted as `class_weight="balanced"`. After each epoch every dev page is scored, a
+  reject page as wrong, and the epoch with the highest dev accuracy is kept, a tie keeping the
+  earlier; `results/train/<name>.txt` gives each epoch's accuracy and the minutes. Names are
+  `layoutlmv3-real` and `layoutlmv3-small`.
+- `score.py` — scores a model on every page of dev or test, reject pages included. A model predicts
+  one of `CLASSES`, so a reject page is always wrong. A `dit-` model reads `data/<split>/<id>.png`;
+  its seconds leave out the image read. A `layoutlmv3-` model reads the OCR words and boxes and the
+  image; its seconds are the forward pass, the page read and the processor excluded. `--dump` writes
+  each page's prediction and top probability for `confidence.py`.
 - `confidence.py` — adapted from synth-classify's. It picks the cut-offs on every dev page, then
   reports on test, at each cut-off, coverage and error on in-class pages, the reject leak, and
   coverage and error for a stream with 10% reject pages and for all test pages.
 - `data/` — the manifest and the selection are tracked. The page images are ignored by git and
   rebuilt by `data.py`.
 - `ocr/` — the OCR cache, one JSON file per page.
-- `models/` — trained classifiers, ignored by git and rebuilt by `train.py`.
+- `models/` — trained classifiers, ignored by git and rebuilt by `train.py` and `finetune.py`.
 - `results/` — every reported number, in synth-classify's layout without its class-set level:
   `results/<split>/<name>.txt` for score reports, `results/train/<name>.txt` for training time,
   `results/confidence/<name>.txt` for routing, with its inputs in `results/confidence/dumps/`, and
@@ -115,13 +127,15 @@ uv run python data.py   # about 12 s
 uv run python ocr.py    # about 5 min
 
 uv run python train.py --tfidf --train real          # also --train small; --embed for UltraBERT, --dit for DiT
+uv run python finetune.py --layoutlmv3 --train real  # also --train small; about 11 min for real
 for split in dev test; do
   uv run python score.py --model tfidf-real --split $split --dump
 done
 uv run python confidence.py --model tfidf-real
 ```
 
-`--embed` and `--dit` training and scoring fetch the model from Hugging Face on first use.
+`--embed`, `--dit` and `finetune.py` training and scoring fetch the model from Hugging Face on
+first use.
 
 ## Results
 
@@ -145,6 +159,8 @@ accepted reject pages plus the accepted in-class errors, over that coverage.
 | `ultrabert-embed-real`  | 288         | 0.3149              | 0.0000           | 0.0200      | 0.2854                 | 0.0070              |
 | `dit-small`             | 90          | 0.0000              | -                | 0.0000      | 0.0000                 | -                   |
 | `dit-real`              | 288         | 0.0000              | -                | 0.0000      | 0.0000                 | -                   |
+| `layoutlmv3-small`      | 90          | 0.0055              | 0.0000           | 0.0000      | 0.0050                 | 0.0000              |
+| `layoutlmv3-real`       | 288         | 0.1105              | 0.0000           | 0.0500      | 0.1044                 | 0.0479              |
 
 From `results/confidence/<model>.txt`, cut-off `tau` under `alpha 0.05` in the test section. That
 file also gives coverage and error over all 281 test pages, whose mix is 100 reject to 181
@@ -163,6 +179,8 @@ accept no page.
 | `ultrabert-embed-real`  | 288         | 0.5623 | 0.8729               | 0.0371           |
 | `dit-small`             | 90          | 0.3986 | 0.6188               | 0.0129           |
 | `dit-real`              | 288         | 0.4306 | 0.6685               | 0.0132           |
+| `layoutlmv3-small`      | 90          | 0.2954 | 0.4586               | 0.0435           |
+| `layoutlmv3-real`       | 288         | 0.5552 | 0.8619               | 0.0528           |
 
 Test is over all 281 pages, reject pages included. The in-class column is over the 181 pages whose
 label is in `CLASSES` (line `accuracy … without reject pages`). All from `results/test/<model>.txt`.
@@ -173,11 +191,14 @@ label is in `CLASSES` (line `accuracy … without reject pages`). All from `resu
 |-------------|------------------------|--------------|------------------------|---------------------|
 | 90          | `tfidf-small`          | 0.2965       | 0.3998                 | 0.0174              |
 | 90          | `dit-small`            | 0.0000       | 0.0000                 | -                   |
+| 90          | `layoutlmv3-small`     | 0.0174       | 0.0050                 | 0.0000              |
 | 288         | `ultrabert-embed-real` | 0.3023       | 0.2854                 | 0.0070              |
 | 288         | `dit-real`             | 0.0000       | 0.0000                 | -                   |
+| 288         | `layoutlmv3-real`      | 0.0756       | 0.1044                 | 0.0479              |
 
 At each count, the text row is the text model with the higher dev coverage at α 0.05, over all 172
-dev pages, and the `dit-` row is the image model; test was not used to choose either.
+dev pages, the `dit-` row is the image model and the `layoutlmv3-` row the model on text and image
+together; test was not used to choose any.
 
 ### Discussion
 
@@ -195,12 +216,20 @@ dev pages, and the `dit-` row is the image model; test was not used to choose ei
 - UltraBERT-Embed has the higher in-class accuracy at both sizes, 0.8729 for
   `ultrabert-embed-real`. At the 5% cut-off `ultrabert-embed-real` covers 0.2854 of the 10% reject
   stream, against 0.3182 for `tfidf-real`; `ultrabert-embed-small` covers 0.0199.
-- Question 2: the OCR text beats the page image. At 10% reject, `tfidf-real` covers 0.3182 and
-  `dit-real` 0.0000. With the scaler, `dit-real` still gives a wrong dev page a score of 1.0, so no
-  cut-off reaches 5% dev error.
-- AUROC on all dev pages for the image model: `dit-small` 0.7285, `dit-real` 0.7298.
-- At the 5% cut-off no model lets through more than 2 of the 100 test reject pages.
-- Seconds per page on test: TF-IDF about 0.0003, UltraBERT-Embed about 0.04, DiT about 0.013.
+- Question 2, coverage at 10% reject at the 5% cut-off: `tfidf-real` 0.3182, `ultrabert-embed-real`
+  0.2854, `dit-real` 0.0000, `layoutlmv3-real` 0.1044. With the scaler, `dit-real` still gives a
+  wrong dev page a score of 1.0, so no cut-off reaches 5% dev error.
+- Every test page `layoutlmv3-real` accepts at the 5% cut-off is predicted news article: 20 news
+  articles and 5 reject pages (`results/confidence/dumps/layoutlmv3-real-test.jsonl`).
+- AUROC on all dev pages for the image model: `dit-small` 0.7285, `dit-real` 0.7298; for
+  LayoutLMv3, `layoutlmv3-small` 0.6774, `layoutlmv3-real` 0.7374. The `layoutlmv3-` values are
+  from the dev pages that chose the epoch, so they are not held out.
+- Fine-tuning took 11.2 minutes for `layoutlmv3-real` and 4.2 for `layoutlmv3-small`, dev scoring
+  included (`results/train/<model>.txt`).
+- At the 5% cut-off `layoutlmv3-real` lets through 5 of the 100 test reject pages; no other model
+  more than 2.
+- Seconds per page on test: TF-IDF about 0.0003, UltraBERT-Embed about 0.04, DiT about 0.013,
+  LayoutLMv3 about 0.05.
 
 ### Limits
 
@@ -315,4 +344,6 @@ layout-classify is MIT; see `LICENSE`. RVL-CDIP is a subset of IIT-CDIP, from th
 Document Library, and is for research use. Its terms are at
 <https://www.industrydocuments.ucsf.edu/help/copyright/>. RVL-CDIP-N is under Creative Commons
 Attribution 3.0 Unported, per the `LICENSE.txt` it ships with. `microsoft/dit-base` is MIT, per
-its model card.
+its model card. `microsoft/layoutlmv3-base` is under Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 (CC BY-NC-SA 4.0), per its model card, so the
+`layoutlmv3-` models are for non-commercial use only.

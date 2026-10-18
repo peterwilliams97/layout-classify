@@ -1,0 +1,16 @@
+model     models/layoutlmv3-real
+train     real (288 pages)
+pages     288
+epochs    10
+minutes   11.2 (base model load to last save; encoding and dev scoring included)
+best      epoch 9 (highest dev accuracy, all 172 dev pages, reject pages wrong; a tie keeps the earlier epoch)
+epoch 1   dev accuracy 0.1047
+epoch 2   dev accuracy 0.3605
+epoch 3   dev accuracy 0.3663
+epoch 4   dev accuracy 0.4070
+epoch 5   dev accuracy 0.4593
+epoch 6   dev accuracy 0.4651
+epoch 7   dev accuracy 0.5581
+epoch 8   dev accuracy 0.5407
+epoch 9   dev accuracy 0.5988
+epoch 10  dev accuracy 0.5872

@@ -1,0 +1,16 @@
+model     models/layoutlmv3-small
+train     small (90 pages)
+pages     90
+epochs    10
+minutes   4.2 (base model load to last save; encoding and dev scoring included)
+best      epoch 9 (highest dev accuracy, all 172 dev pages, reject pages wrong; a tie keeps the earlier epoch)
+epoch 1   dev accuracy 0.0814
+epoch 2   dev accuracy 0.1105
+epoch 3   dev accuracy 0.1919
+epoch 4   dev accuracy 0.2442
+epoch 5   dev accuracy 0.2500
+epoch 6   dev accuracy 0.2674
+epoch 7   dev accuracy 0.2733
+epoch 8   dev accuracy 0.2907
+epoch 9   dev accuracy 0.3023
+epoch 10  dev accuracy 0.2965

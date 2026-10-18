@@ -27,14 +27,15 @@ uv run pytest test_classes.py::test_classes_cover_rvl_cdip_labels
 uv run python data.py                           # ~12 s; reads ~/data/rvl-cdip-n/RVL-CDIP-N/
 uv run python ocr.py                            # Tesseract on every manifest page; ~5 min; resumable
 uv run python train.py --tfidf --train real     # or --embed, --dit; or --train small
+uv run python finetune.py --layoutlmv3 --train real   # or --train small; ~11 min real, ~4 small
 uv run python score.py --model tfidf-real --split dev --dump   # also test
 uv run python confidence.py --model tfidf-real  # needs the dev and test dumps
 ```
 
 Model names are `tfidf-real`, `tfidf-small`, `ultrabert-embed-real`, `ultrabert-embed-small`,
-`dit-real`, `dit-small`. An `--embed` training run is about 13 s for 288 pages on MPS; scoring is
-about 0.035 s per page. A `--dit` run is about 10 s; scoring about 0.014 s per page. `dit-` models
-read `data/<split>/<id>.png`, not `ocr/`.
+`dit-real`, `dit-small`, `layoutlmv3-real`, `layoutlmv3-small`. An `--embed` training run is about
+13 s for 288 pages on MPS; scoring is about 0.035 s per page. A `--dit` run is about 10 s; scoring
+about 0.014 s per page. `dit-` models read `data/<split>/<id>.png`, not `ocr/`.
 
 Tesseract comes from Homebrew (`brew install tesseract`). Anything that reaches Hugging Face fails
 inside the Claude Code sandbox with `OSStatus -26276`. That is macOS TLS trust lookup through

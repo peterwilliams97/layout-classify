@@ -7,7 +7,9 @@ results/confidence/dumps/<name>-<split>.jsonl, for confidence.py.
 A text model's input is the OCR text in ocr/<id>.json; nothing here runs OCR, so the seconds are
 the classifier's alone. ocr.py's time is in results/ocr-time.txt. A `dit-` model's input is the page
 image, data/<split>/<id>.png, and its seconds are embedding and logistic regression, the image read
-excluded. Adapted from synth-classify's score.py."""
+excluded. A `layoutlmv3-` model, from finetune.py, reads both the OCR words and boxes and the image;
+its seconds are the forward pass alone, the page read and the processor excluded, and its score is
+the softmax's top probability. Adapted from synth-classify's score.py."""
 
 import argparse
 import json
@@ -27,7 +29,8 @@ SPLITS = ["dev", "test"]
 def predict(model_dir, ids):
     """predict returns, for each page of `ids`, a label index in CLASSES, its probability, and the
     seconds taken. Each page is classified in a call of its own, so the seconds are what one page
-    costs. The page's text or image is read before the clock starts."""
+    costs. The page's text or image is read, and for a `layoutlmv3-` model encoded, before the clock
+    starts."""
     import joblib
 
     preds, scores, seconds = [], [], []
@@ -35,7 +38,23 @@ def predict(model_dir, ids):
     frozen = os.path.join(model_dir, "embed.joblib")
     dit = os.path.join(model_dir, "dit.joblib")
     read = page_text
-    if os.path.exists(tfidf):
+    proba = lambda page: clf.predict_proba(features(page))[0]
+    if os.path.exists(os.path.join(model_dir, "config.json")):
+        import torch
+
+        from finetune import encode, load_model, load_processor
+
+        model, device = load_model(model_dir)
+        model.eval()
+        processor = load_processor(model_dir, None)
+        read = lambda page_id: encode([page_id], processor, False).to(device)
+
+        def proba(batch):
+            with torch.no_grad():
+                return model(**batch).logits.softmax(dim=1)[0].cpu().numpy()
+
+        clf = None
+    elif os.path.exists(tfidf):
         clf = joblib.load(tfidf)
         features = lambda text: [text]
     elif os.path.exists(frozen):
@@ -52,17 +71,18 @@ def predict(model_dir, ids):
         read = page_image
         features = lambda image: embed_images([image], processor, model, device)
     else:
-        sys.exit(f"{model_dir}: no tfidf.joblib, embed.joblib or dit.joblib")
+        sys.exit(f"{model_dir}: no config.json, tfidf.joblib, embed.joblib or dit.joblib")
+    # A joblib model's columns are its `classes_`, the training label indices; a `layoutlmv3-`
+    # model's are CLASSES in order.
+    classes = range(len(CLASSES)) if clf is None else clf.classes_
 
     for page_id in ids:
         page = read(page_id)
         start = time.perf_counter()
-        row = clf.predict_proba(features(page))[0]
+        row = proba(page)
         seconds.append(time.perf_counter() - start)
-        # `classes_` holds the training label indices, so a column is mapped through it rather
-        # than taken as a position in CLASSES.
         best = row.argmax()
-        preds.append(int(clf.classes_[best]))
+        preds.append(int(classes[best]))
         scores.append(float(row[best]))
     return preds, scores, seconds
 
@@ -73,7 +93,9 @@ def report(model, split, gold, preds, seconds, names):
     ids = range(len(names))
     width = max(len(name) for name in names)
     reject = names.index(REJECT_LABEL)
-    excluded = "image read" if os.path.basename(model).startswith("dit-") else "OCR"
+    excluded = {"dit": "image read", "layoutlmv3": "page read and processor"}.get(
+        os.path.basename(model).split("-")[0], "OCR"
+    )
     wrong = sum(g != p for g, p in zip(gold, preds))
     kept = [(g, p) for g, p in zip(gold, preds) if g != reject]
     lines = [
