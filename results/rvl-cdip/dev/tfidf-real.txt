@@ -1,0 +1,19 @@
+model     models/tfidf-real
+dev pages 220 (20 reject pages, always wrong)
+accuracy  0.6091
+wrong     86
+accuracy  0.6700 without reject pages
+seconds   0.000246 median, 0.000284 mean per page, one page per call, OCR excluded
+confusion (row: true class, column: predicted class, numbered as the rows are)
+                              0   1   2   3   4   5   6   7   8   9  10
+   0 letter                  14   1   1   0   0   1   1   0   0   2   0
+   1 memo                     3  14   0   0   0   1   0   1   1   0   0
+   2 form                     1   1  13   0   1   0   3   0   0   1   0
+   3 questionnaire            0   0   1  14   1   4   0   0   0   0   0
+   4 budget                   1   1   0   0   8   9   1   0   0   0   0
+   5 invoice                  2   0   1   0   1  15   1   0   0   0   0
+   6 scientific report        0   4   2   0   0   0  10   3   0   1   0
+   7 scientific publication   0   0   0   0   0   1   0  16   0   3   0
+   8 email                    1   1   0   0   1   0   0   0  15   2   0
+   9 news article             0   0   0   0   1   2   1   1   0  15   0
+  10 none of these            1   1   3   1   2   6   0   3   0   3   0

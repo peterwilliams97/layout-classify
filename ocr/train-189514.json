@@ -1,8 +1,0 @@
-{"text": "PHILIP MORRIS U.S.A.\nYOUTH SMOKING",
-"words": [
-{"text": "PHILIP", "x0": 239, "y0": 370, "x1": 333, "y1": 391, "conf": 96.0},
-{"text": "MORRIS", "x0": 346, "y0": 368, "x1": 461, "y1": 389, "conf": 95.0},
-{"text": "U.S.A.", "x0": 474, "y0": 367, "x1": 559, "y1": 387, "conf": 82.0},
-{"text": "YOUTH", "x0": 238, "y0": 415, "x1": 362, "y1": 434, "conf": 96.0},
-{"text": "SMOKING", "x0": 386, "y0": 413, "x1": 561, "y1": 433, "conf": 95.0}
-]}

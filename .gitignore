@@ -221,3 +221,6 @@ __marimo__/
 
 # Page images are rebuilt by data.py from data/selection.json; the manifest and selection are tracked.
 data/*/
+
+# Trained classifiers; train.py rebuilds them.
+models/

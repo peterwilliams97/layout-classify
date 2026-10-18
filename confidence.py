@@ -1,30 +1,36 @@
 """Selective-routing report for one classifier.
 
-Input: two `score.py --dump` jsonl files for the same classifier, one
-scored on dev and one on test. Each row has `text`, `label`, `pred`, and
-`prob`, the probability over the class set in CLASS_SETS order.
-
-Score of a message: max(prob).
+Input: the two `score.py --dump` files of one model, dev and test, at
+results/confidence/dumps/<model>-<split>.jsonl. Each row has `id`, `label`, `predicted` and
+`score`, the top probability over CLASSES. A row labelled REJECT_LABEL is always wrong: no model
+predicts it, so a reject page that scores above a cut-off is an accepted error.
 
 Computed:
-  AUROC of score against correctness, on test.
-  Isotonic regression of correctness on score, fitted on dev; test ECE
-  over ECE_BINS equal-count bins, before and after.
-  For each alpha in ALPHAS, two thresholds from dev:
-    tau     the lowest dev score at which the dev error among messages
+  AUROC of score against correctness on every dev page.
+  For each alpha in ALPHAS, two cut-offs from dev, every dev page included:
+    tau     the lowest dev score at which the dev error among pages
             scoring >= tau is <= alpha;
     tau_cp  the same, with the dev error replaced by its one-sided
             CP_LEVEL Clopper-Pearson upper bound.
-  For each threshold: coverage (share of messages scoring >= threshold)
-  and error among them, on dev and on test. At tau, test recall per true
-  class among accepted messages.
+  Then on test, the same cut-offs applied:
+    on in-class pages (label in CLASSES): AUROC of score against
+    correctness; isotonic regression of correctness on score, fitted on
+    dev, and ECE over ECE_BINS equal-count bins, before and after;
+    coverage (share of pages scoring >= cut-off) and error among them;
+    at tau, recall per true class among accepted pages;
+    reject_leak, the share of REJECT_LABEL pages scoring >= cut-off, also
+    given on dev;
+    coverage and error of a stream that is REJECT_SHARE reject pages and
+    the rest in-class, from the in-class numbers and reject_leak:
+      coverage_10 = (1 - r) * coverage_inclass + r * reject_leak
+      error_10    = (r * reject_leak
+                     + (1 - r) * coverage_inclass * error_inclass) / coverage_10
+    with r = REJECT_SHARE; and coverage and error over all test pages, at
+    test's own mix of reject pages.
 
-Output: the report, printed and written to
-results/<set>/confidence/<model-name>.txt.
+Output: the report, printed and written to results/confidence/<model>.txt.
 
-Nothing is fitted on test. The dev rows are drawn from the Banking77
-train split, so a model trained on data/<set>/banking77_train.jsonl must
-not be run here.
+Nothing is fitted or chosen on test. Adapted from synth-classify's confidence.py.
 """
 
 import argparse
@@ -37,25 +43,29 @@ from scipy.stats import beta
 from sklearn.isotonic import IsotonicRegression
 from sklearn.metrics import roc_auc_score
 
-from classes import CLASS_SETS
+from classes import CLASSES, REJECT_LABEL
 
 ALPHAS = [0.02, 0.05, 0.10]
 ECE_BINS = 10
 # One-sided confidence level of the Clopper-Pearson upper bound on dev error behind `tau_cp`.
 CP_LEVEL = 0.90
+# Share of reject pages in the stream the deployed numbers are reported for. Test's own share,
+# 100 of 281, is set by RVL-CDIP-N's counts, not by any expected input.
+REJECT_SHARE = 0.10
+DUMPS = "results/confidence/dumps"
 
 
 def read_dump(path, names):
-    """Reads a --dump file. Returns three arrays over its rows: score (max of prob), correct
-    (pred == label, as 0/1), label index in `names`. Exits if a prob vector is not over `names` or a
-    label is not in it."""
+    """Reads a --dump file. Returns three arrays over its rows: score, correct (predicted == label,
+    as 0/1) and label index in `names`. Exits if a label is not in `names` or a prediction is not
+    in CLASSES."""
     with open(path) as f: rows = [json.loads(line) for line in f if line.strip()]
     if not rows: sys.exit(f"{path}: no rows")
     for r in rows:
-        if len(r["prob"]) != len(names) or r["label"] not in names:
-            sys.exit(f"{path}: row not over the {len(names)} classes of this set: {r['text']!r}")
-    score = np.array([max(r["prob"]) for r in rows])
-    correct = np.array([r["pred"] == r["label"] for r in rows], dtype=float)
+        if r["label"] not in names or r["predicted"] not in CLASSES:
+            sys.exit(f"{path}: row not over CLASSES and REJECT_LABEL: {r['id']}")
+    score = np.array([r["score"] for r in rows])
+    correct = np.array([r["predicted"] == r["label"] for r in rows], dtype=float)
     label = np.array([names.index(r["label"]) for r in rows])
     return score, correct, label
 
@@ -101,65 +111,99 @@ def fmt(x, spec=".4f"):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--set", choices=list(CLASS_SETS), default="distinct")
-    ap.add_argument("--model-name", required=True, help="report name, results/<set>/confidence/")
-    ap.add_argument("--dev", required=True, help="score.py --split dev --dump file")
-    ap.add_argument("--test", required=True, help="score.py --split test --dump file")
+    ap.add_argument("--model", required=True, help="model name, as given to score.py")
     args = ap.parse_args()
-    names = list(CLASS_SETS[args.set])
+    names = list(CLASSES) + [REJECT_LABEL]
+    reject = names.index(REJECT_LABEL)
     width = max(len(name) for name in names)
+    path = lambda split: os.path.join(DUMPS, f"{args.model}-{split}.jsonl")
 
-    dev_s, dev_c, _ = read_dump(args.dev, names)
-    test_s, test_c, test_y = read_dump(args.test, names)
-    if test_c.all() or not test_c.any():
-        sys.exit(f"{args.test}: every prediction is {'right' if test_c.all() else 'wrong'}")
-
+    dev_s, dev_c, dev_y = read_dump(path("dev"), names)
     iso = IsotonicRegression(increasing=True, y_min=0, y_max=1, out_of_bounds="clip")
     iso.fit(dev_s, dev_c)
-    calibrated = iso.predict(test_s)
+    cuts = {
+        alpha: {
+            "tau   ": threshold(dev_s, dev_c, alpha, bound=False),
+            "tau_cp": threshold(dev_s, dev_c, alpha, bound=True),
+        }
+        for alpha in ALPHAS
+    }
+    dev_reject = dev_y == reject
 
     lines = [
-        f"model     {args.model_name}",
-        f"dev       {args.dev} ({len(dev_s)} rows, accuracy {dev_c.mean():.4f})",
-        f"test      {args.test} ({len(test_s)} rows, accuracy {test_c.mean():.4f})",
-        "score     top probability of each message",
-        "discrimination on test, nothing fitted",
-        f"  AUROC of score against correctness  {roc_auc_score(test_c, test_s):.4f}",
-        f"  mean score, right predictions       {test_s[test_c == 1].mean():.4f}"
-        f" ({int(test_c.sum())})",
-        f"  mean score, wrong predictions       {test_s[test_c == 0].mean():.4f}"
-        f" ({int(len(test_c) - test_c.sum())})",
-        f"calibration: isotonic regression of correctness on score, fitted on dev",
-        f"  test ECE, {ECE_BINS} equal-count bins  before {ece(test_s, test_c, test_s):.4f}"
-        f"  after {ece(calibrated, test_c, test_s):.4f}",
-        "routing: accept a message when its score is at least tau, chosen on dev",
-        f"  tau     lowest dev score whose accepted dev error is at most alpha",
+        f"model     {args.model}",
+        f"dev       {path('dev')} ({len(dev_s)} pages, {int(dev_reject.sum())} reject;"
+        f" accuracy {dev_c.mean():.4f})",
+        "score     top probability over CLASSES; a REJECT_LABEL page is always wrong",
+        f"dev AUROC of score against correctness, all pages  {roc_auc_score(dev_c, dev_s):.4f}",
+        "routing: accept a page when its score is at least the cut-off, chosen on every dev page",
+        "  tau     lowest dev score whose accepted dev error is at most alpha",
         f"  tau_cp  the same with the dev error's one-sided {CP_LEVEL:.0%} Clopper-Pearson upper"
         " bound",
+        "  reject_leak  share of reject pages scoring at least the cut-off",
     ]
-    for alpha in ALPHAS:
-        tau    = threshold(dev_s, dev_c, alpha, bound=False)
-        tau_cp = threshold(dev_s, dev_c, alpha, bound=True)
+    for alpha, taus in cuts.items():
         lines.append(f"  alpha {alpha:.2f}")
-        for label, t in [("tau   ", tau), ("tau_cp", tau_cp)]:
-            dev_cov, dev_err = routed(dev_s, dev_c, t)
-            cov, err = routed(test_s, test_c, t)
+        for label, t in taus.items():
+            cov, err = routed(dev_s, dev_c, t)
+            leak = (dev_s[dev_reject] >= t).mean()
             lines.append(
                 f"    {label} {fmt(None if np.isinf(t) else t, '.6f'):<8}  "
-                f"dev coverage {dev_cov:.4f} error {fmt(dev_err)}  "
-                f"test coverage {cov:.4f} error {fmt(err)}"
+                f"dev coverage {cov:.4f} error {fmt(err)} reject_leak {leak:.4f}"
             )
-        lines.append("    test recall among accepted at tau, per true class (accepted of total)")
-        kept = test_s >= tau
-        for i, name in enumerate(names):
-            mine = test_y == i
+
+    all_s, all_c, all_y = read_dump(path("test"), names)
+    test_reject = all_y == reject
+    if not test_reject.any():
+        sys.exit(f"{path('test')}: no reject pages, so reject_leak is undefined")
+    s, c, y = all_s[~test_reject], all_c[~test_reject], all_y[~test_reject]
+    if c.all() or not c.any():
+        sys.exit(f"{path('test')}, in-class: every prediction is {'right' if c.all() else 'wrong'}")
+    n_rej = int(test_reject.sum())
+    lines += [
+        "",
+        f"test: {path('test')} ({len(all_s)} pages, {n_rej} reject)",
+        f"  in-class pages {len(s)}, accuracy {c.mean():.4f}",
+        f"  AUROC of score against correctness, in-class  {roc_auc_score(c, s):.4f}",
+        f"  mean score, right predictions       {s[c == 1].mean():.4f} ({int(c.sum())})",
+        f"  mean score, wrong predictions       {s[c == 0].mean():.4f} ({int(len(c) - c.sum())})",
+        f"  ECE, {ECE_BINS} equal-count bins, isotonic fitted on dev"
+        f"  before {ece(s, c, s):.4f}  after {ece(iso.predict(s), c, s):.4f}",
+        f"  stream_10: {REJECT_SHARE:.0%} reject pages, {1 - REJECT_SHARE:.0%} in-class",
+    ]
+    for alpha, taus in cuts.items():
+        lines.append(f"  alpha {alpha:.2f}")
+        for label, t in taus.items():
+            cov, err = routed(s, c, t)
+            leak = (all_s[test_reject] >= t).mean()
+            cov_10 = (1 - REJECT_SHARE) * cov + REJECT_SHARE * leak
+            err_10 = None
+            if cov_10 > 0:
+                err_10 = ((1 - REJECT_SHARE) * cov * (err or 0) + REJECT_SHARE * leak) / cov_10
+            all_cov, all_err = routed(all_s, all_c, t)
+            lines += [
+                f"    {label} {fmt(None if np.isinf(t) else t, '.6f')}",
+                f"      in-class             coverage {cov:.4f} error {fmt(err)}",
+                f"      reject_leak          {leak:.4f} ({int((all_s[test_reject] >= t).sum())}"
+                f" of {n_rej})",
+                f"      stream_10            coverage {cov_10:.4f} error {fmt(err_10)}",
+                f"      all pages, {n_rej} of {len(all_s)} reject"
+                f"  coverage {all_cov:.4f} error {fmt(all_err)}",
+            ]
+        lines.append("    recall among accepted at tau, in-class, per true class"
+                     " (accepted of total)")
+        kept = s >= taus["tau   "]
+        for i, name in enumerate(CLASSES):
+            mine = y == i
+            if not mine.any():
+                continue
             n = int((kept & mine).sum())
-            recall = test_c[kept & mine].mean() if n else None
+            recall = c[kept & mine].mean() if n else None
             lines.append(f"      {name:<{width}} {fmt(recall)} ({n} of {int(mine.sum())})")
 
     text = "\n".join(lines) + "\n"
     sys.stdout.write(text)
-    out = os.path.join("results", args.set, "confidence", args.model_name + ".txt")
+    out = os.path.join("results", "confidence", args.model + ".txt")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w") as f:
         f.write(text)

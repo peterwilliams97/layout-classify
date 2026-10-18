@@ -4,11 +4,14 @@ version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
     "huggingface-hub>=2.2.0",
+    "joblib>=1.6.0",
     "numpy>=2.5.4",
     "pillow>=13.0.0",
     "pytesseract>=0.3.13",
     "scikit-learn>=1.9.1",
     "scipy>=1.18.1",
+    "torch>=2.14.1",
+    "transformers>=5.20.1",
 ]
 
 [dependency-groups]

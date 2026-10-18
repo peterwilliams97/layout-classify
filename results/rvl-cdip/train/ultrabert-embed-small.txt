@@ -1,0 +1,4 @@
+model     models/ultrabert-embed-small
+train     small (200 pages)
+pages     200
+seconds   10.22 (base model load to save; OCR excluded)

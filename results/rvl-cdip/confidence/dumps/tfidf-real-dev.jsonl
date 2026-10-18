@@ -1,0 +1,220 @@
+{"id": "dev-008587", "label": "letter", "predicted": "scientific report", "score": 0.2919572313987632}
+{"id": "dev-037430", "label": "letter", "predicted": "news article", "score": 0.25163419733178977}
+{"id": "dev-009872", "label": "letter", "predicted": "letter", "score": 0.33116989938963315}
+{"id": "dev-034144", "label": "letter", "predicted": "letter", "score": 0.27308286438243173}
+{"id": "dev-007273", "label": "letter", "predicted": "letter", "score": 0.7193656606663086}
+{"id": "dev-000690", "label": "letter", "predicted": "letter", "score": 0.5721299487842496}
+{"id": "dev-012214", "label": "letter", "predicted": "form", "score": 0.6390470533360697}
+{"id": "dev-031812", "label": "letter", "predicted": "letter", "score": 0.6271824878237651}
+{"id": "dev-023368", "label": "letter", "predicted": "letter", "score": 0.7271635643683613}
+{"id": "dev-011962", "label": "letter", "predicted": "letter", "score": 0.4378529736452353}
+{"id": "dev-030611", "label": "letter", "predicted": "letter", "score": 0.8289908435829071}
+{"id": "dev-019837", "label": "letter", "predicted": "letter", "score": 0.3316597996617198}
+{"id": "dev-027961", "label": "letter", "predicted": "letter", "score": 0.35056643232211643}
+{"id": "dev-017385", "label": "letter", "predicted": "news article", "score": 0.3388477050839634}
+{"id": "dev-015147", "label": "letter", "predicted": "letter", "score": 0.4774954978289995}
+{"id": "dev-022410", "label": "letter", "predicted": "letter", "score": 0.4293535607747893}
+{"id": "dev-005051", "label": "letter", "predicted": "memo", "score": 0.2647153651524957}
+{"id": "dev-034314", "label": "letter", "predicted": "invoice", "score": 0.18270219018419426}
+{"id": "dev-039430", "label": "letter", "predicted": "letter", "score": 0.2932674157425006}
+{"id": "dev-014913", "label": "letter", "predicted": "letter", "score": 0.42620182305730436}
+{"id": "dev-029398", "label": "memo", "predicted": "memo", "score": 0.31275389341528637}
+{"id": "dev-008865", "label": "memo", "predicted": "memo", "score": 0.4413096358619947}
+{"id": "dev-026765", "label": "memo", "predicted": "memo", "score": 0.5766624686074586}
+{"id": "dev-011445", "label": "memo", "predicted": "memo", "score": 0.4627532743752098}
+{"id": "dev-003875", "label": "memo", "predicted": "memo", "score": 0.5655572068893493}
+{"id": "dev-033143", "label": "memo", "predicted": "memo", "score": 0.37568831168312167}
+{"id": "dev-021534", "label": "memo", "predicted": "invoice", "score": 0.2608706297382189}
+{"id": "dev-001513", "label": "memo", "predicted": "memo", "score": 0.5999017946927216}
+{"id": "dev-027528", "label": "memo", "predicted": "memo", "score": 0.4016120184458733}
+{"id": "dev-037809", "label": "memo", "predicted": "memo", "score": 0.37354161671420094}
+{"id": "dev-008722", "label": "memo", "predicted": "memo", "score": 0.3408556708109195}
+{"id": "dev-033179", "label": "memo", "predicted": "letter", "score": 0.4730613552986006}
+{"id": "dev-008719", "label": "memo", "predicted": "memo", "score": 0.2573208298192292}
+{"id": "dev-031687", "label": "memo", "predicted": "memo", "score": 0.1999099726857507}
+{"id": "dev-012994", "label": "memo", "predicted": "memo", "score": 0.2097711996991778}
+{"id": "dev-026585", "label": "memo", "predicted": "memo", "score": 0.25617203556654594}
+{"id": "dev-013695", "label": "memo", "predicted": "scientific publication", "score": 0.336726919986467}
+{"id": "dev-008490", "label": "memo", "predicted": "email", "score": 0.2823840383585524}
+{"id": "dev-003768", "label": "memo", "predicted": "letter", "score": 0.176652653340294}
+{"id": "dev-000846", "label": "memo", "predicted": "letter", "score": 0.3200192982809553}
+{"id": "dev-029751", "label": "form", "predicted": "form", "score": 0.6910639655810888}
+{"id": "dev-000744", "label": "form", "predicted": "form", "score": 0.29724487229230556}
+{"id": "dev-013200", "label": "form", "predicted": "form", "score": 0.16699670362635374}
+{"id": "dev-004619", "label": "form", "predicted": "form", "score": 0.7241914264145977}
+{"id": "dev-026434", "label": "form", "predicted": "form", "score": 0.40834985176600186}
+{"id": "dev-034001", "label": "form", "predicted": "news article", "score": 0.15246830544910064}
+{"id": "dev-024471", "label": "form", "predicted": "form", "score": 0.7073061884629659}
+{"id": "dev-001248", "label": "form", "predicted": "scientific report", "score": 0.25447282833520185}
+{"id": "dev-024870", "label": "form", "predicted": "scientific report", "score": 0.1732756265544442}
+{"id": "dev-030425", "label": "form", "predicted": "form", "score": 0.4565288732141581}
+{"id": "dev-037875", "label": "form", "predicted": "form", "score": 0.28588979370773504}
+{"id": "dev-028118", "label": "form", "predicted": "form", "score": 0.1965158116717204}
+{"id": "dev-023987", "label": "form", "predicted": "form", "score": 0.22296178775929956}
+{"id": "dev-033811", "label": "form", "predicted": "form", "score": 0.13847661907503456}
+{"id": "dev-037710", "label": "form", "predicted": "budget", "score": 0.18229714387904464}
+{"id": "dev-004414", "label": "form", "predicted": "memo", "score": 0.8072253689308726}
+{"id": "dev-001465", "label": "form", "predicted": "form", "score": 0.8868322560508185}
+{"id": "dev-034016", "label": "form", "predicted": "form", "score": 0.5580057244799471}
+{"id": "dev-038641", "label": "form", "predicted": "letter", "score": 0.22500096085445231}
+{"id": "dev-003493", "label": "form", "predicted": "scientific report", "score": 0.35542188127568164}
+{"id": "dev-033084", "label": "questionnaire", "predicted": "questionnaire", "score": 0.6242599049010309}
+{"id": "dev-002572", "label": "questionnaire", "predicted": "invoice", "score": 0.15721793766819853}
+{"id": "dev-027077", "label": "questionnaire", "predicted": "invoice", "score": 0.15987768496937582}
+{"id": "dev-033042", "label": "questionnaire", "predicted": "questionnaire", "score": 0.21329869164008441}
+{"id": "dev-032370", "label": "questionnaire", "predicted": "form", "score": 0.24075103034045992}
+{"id": "dev-002148", "label": "questionnaire", "predicted": "questionnaire", "score": 0.9044014272491928}
+{"id": "dev-014391", "label": "questionnaire", "predicted": "questionnaire", "score": 0.38387977719293903}
+{"id": "dev-035873", "label": "questionnaire", "predicted": "questionnaire", "score": 0.8056336184864005}
+{"id": "dev-006947", "label": "questionnaire", "predicted": "questionnaire", "score": 0.9047994397192369}
+{"id": "dev-008974", "label": "questionnaire", "predicted": "invoice", "score": 0.19047587877072794}
+{"id": "dev-007177", "label": "questionnaire", "predicted": "questionnaire", "score": 0.7160948475071408}
+{"id": "dev-004027", "label": "questionnaire", "predicted": "questionnaire", "score": 0.7515189969331786}
+{"id": "dev-022621", "label": "questionnaire", "predicted": "questionnaire", "score": 0.9431001214082403}
+{"id": "dev-025028", "label": "questionnaire", "predicted": "questionnaire", "score": 0.8482815928904356}
+{"id": "dev-022551", "label": "questionnaire", "predicted": "budget", "score": 0.17740584325995498}
+{"id": "dev-028296", "label": "questionnaire", "predicted": "invoice", "score": 0.1447977126236759}
+{"id": "dev-016665", "label": "questionnaire", "predicted": "questionnaire", "score": 0.35358982347524603}
+{"id": "dev-012456", "label": "questionnaire", "predicted": "questionnaire", "score": 0.8541573455788665}
+{"id": "dev-034683", "label": "questionnaire", "predicted": "questionnaire", "score": 0.39998999983892153}
+{"id": "dev-021588", "label": "questionnaire", "predicted": "questionnaire", "score": 0.8601104446331442}
+{"id": "dev-006504", "label": "budget", "predicted": "budget", "score": 0.341253523096956}
+{"id": "dev-030944", "label": "budget", "predicted": "memo", "score": 0.16801420538736828}
+{"id": "dev-018177", "label": "budget", "predicted": "invoice", "score": 0.52969098409956}
+{"id": "dev-005193", "label": "budget", "predicted": "invoice", "score": 0.15987768496937582}
+{"id": "dev-021138", "label": "budget", "predicted": "scientific report", "score": 0.27714886681983525}
+{"id": "dev-002549", "label": "budget", "predicted": "budget", "score": 0.16266801303939285}
+{"id": "dev-036201", "label": "budget", "predicted": "budget", "score": 0.6224337354767243}
+{"id": "dev-038891", "label": "budget", "predicted": "invoice", "score": 0.16316358724566105}
+{"id": "dev-025155", "label": "budget", "predicted": "budget", "score": 0.23007470329883095}
+{"id": "dev-020801", "label": "budget", "predicted": "invoice", "score": 0.2426713314964031}
+{"id": "dev-028042", "label": "budget", "predicted": "budget", "score": 0.6948838858295434}
+{"id": "dev-009414", "label": "budget", "predicted": "letter", "score": 0.15660906562583077}
+{"id": "dev-028068", "label": "budget", "predicted": "budget", "score": 0.2812393531893607}
+{"id": "dev-039304", "label": "budget", "predicted": "budget", "score": 0.4381476425769061}
+{"id": "dev-002176", "label": "budget", "predicted": "invoice", "score": 0.23917232385540316}
+{"id": "dev-002354", "label": "budget", "predicted": "budget", "score": 0.6271423524462614}
+{"id": "dev-013927", "label": "budget", "predicted": "invoice", "score": 0.15930201366533128}
+{"id": "dev-008359", "label": "budget", "predicted": "invoice", "score": 0.15987768496937582}
+{"id": "dev-035017", "label": "budget", "predicted": "invoice", "score": 0.15833689144758184}
+{"id": "dev-004381", "label": "budget", "predicted": "invoice", "score": 0.17436249186828806}
+{"id": "dev-010610", "label": "invoice", "predicted": "invoice", "score": 0.17540823384411772}
+{"id": "dev-021332", "label": "invoice", "predicted": "invoice", "score": 0.2636075608141301}
+{"id": "dev-030163", "label": "invoice", "predicted": "invoice", "score": 0.2703433845645846}
+{"id": "dev-039590", "label": "invoice", "predicted": "invoice", "score": 0.36072437389047346}
+{"id": "dev-027866", "label": "invoice", "predicted": "scientific report", "score": 0.37350889669880133}
+{"id": "dev-010919", "label": "invoice", "predicted": "invoice", "score": 0.5829904352970136}
+{"id": "dev-035936", "label": "invoice", "predicted": "invoice", "score": 0.31093284683687106}
+{"id": "dev-001718", "label": "invoice", "predicted": "letter", "score": 0.1370411537904002}
+{"id": "dev-011696", "label": "invoice", "predicted": "invoice", "score": 0.34291804829657224}
+{"id": "dev-021873", "label": "invoice", "predicted": "invoice", "score": 0.38351339799125245}
+{"id": "dev-008140", "label": "invoice", "predicted": "invoice", "score": 0.2517772510187315}
+{"id": "dev-020891", "label": "invoice", "predicted": "invoice", "score": 0.5548111677994256}
+{"id": "dev-005409", "label": "invoice", "predicted": "letter", "score": 0.27195160868344476}
+{"id": "dev-020808", "label": "invoice", "predicted": "invoice", "score": 0.45677011277265445}
+{"id": "dev-024158", "label": "invoice", "predicted": "invoice", "score": 0.42436321795486415}
+{"id": "dev-034584", "label": "invoice", "predicted": "budget", "score": 0.1785875296326491}
+{"id": "dev-015793", "label": "invoice", "predicted": "invoice", "score": 0.2398690341558629}
+{"id": "dev-034492", "label": "invoice", "predicted": "invoice", "score": 0.4415687064307016}
+{"id": "dev-016857", "label": "invoice", "predicted": "invoice", "score": 0.5168018657072188}
+{"id": "dev-033315", "label": "invoice", "predicted": "form", "score": 0.24047714351165025}
+{"id": "dev-003282", "label": "scientific report", "predicted": "scientific publication", "score": 0.23113724616904419}
+{"id": "dev-003964", "label": "scientific report", "predicted": "scientific report", "score": 0.3510613783415382}
+{"id": "dev-016334", "label": "scientific report", "predicted": "scientific report", "score": 0.275220644349167}
+{"id": "dev-004807", "label": "scientific report", "predicted": "scientific report", "score": 0.34046198842995024}
+{"id": "dev-002720", "label": "scientific report", "predicted": "scientific report", "score": 0.329271446351479}
+{"id": "dev-016386", "label": "scientific report", "predicted": "memo", "score": 0.24056612906736913}
+{"id": "dev-005690", "label": "scientific report", "predicted": "scientific report", "score": 0.8360113329469605}
+{"id": "dev-026992", "label": "scientific report", "predicted": "scientific publication", "score": 0.29790681000050784}
+{"id": "dev-001298", "label": "scientific report", "predicted": "scientific report", "score": 0.2888579342853607}
+{"id": "dev-020196", "label": "scientific report", "predicted": "scientific report", "score": 0.3724524577653755}
+{"id": "dev-037812", "label": "scientific report", "predicted": "scientific publication", "score": 0.4807235162055452}
+{"id": "dev-006990", "label": "scientific report", "predicted": "scientific report", "score": 0.5287325624456386}
+{"id": "dev-015637", "label": "scientific report", "predicted": "form", "score": 0.2032360708232663}
+{"id": "dev-033296", "label": "scientific report", "predicted": "form", "score": 0.24935218256740263}
+{"id": "dev-013676", "label": "scientific report", "predicted": "news article", "score": 0.22940067351743365}
+{"id": "dev-001192", "label": "scientific report", "predicted": "scientific report", "score": 0.34099115839759464}
+{"id": "dev-028653", "label": "scientific report", "predicted": "memo", "score": 0.36170588431932604}
+{"id": "dev-014173", "label": "scientific report", "predicted": "memo", "score": 0.3172013252891176}
+{"id": "dev-004512", "label": "scientific report", "predicted": "memo", "score": 0.1887545026249048}
+{"id": "dev-024394", "label": "scientific report", "predicted": "scientific report", "score": 0.4783062716461624}
+{"id": "dev-032082", "label": "scientific publication", "predicted": "scientific publication", "score": 0.46689828964556146}
+{"id": "dev-024389", "label": "scientific publication", "predicted": "scientific publication", "score": 0.4903157234249266}
+{"id": "dev-022311", "label": "scientific publication", "predicted": "scientific publication", "score": 0.6347124098897877}
+{"id": "dev-036695", "label": "scientific publication", "predicted": "scientific publication", "score": 0.3494145223024216}
+{"id": "dev-020457", "label": "scientific publication", "predicted": "scientific publication", "score": 0.8491343028667063}
+{"id": "dev-033759", "label": "scientific publication", "predicted": "scientific publication", "score": 0.5256362488010384}
+{"id": "dev-022405", "label": "scientific publication", "predicted": "scientific publication", "score": 0.5356946364875252}
+{"id": "dev-036381", "label": "scientific publication", "predicted": "scientific publication", "score": 0.38058297849395717}
+{"id": "dev-004673", "label": "scientific publication", "predicted": "scientific publication", "score": 0.4421396794270047}
+{"id": "dev-007335", "label": "scientific publication", "predicted": "scientific publication", "score": 0.7876133809277006}
+{"id": "dev-027850", "label": "scientific publication", "predicted": "scientific publication", "score": 0.4488154337340283}
+{"id": "dev-023320", "label": "scientific publication", "predicted": "scientific publication", "score": 0.7041703476060154}
+{"id": "dev-031867", "label": "scientific publication", "predicted": "scientific publication", "score": 0.35753522853560676}
+{"id": "dev-003154", "label": "scientific publication", "predicted": "scientific publication", "score": 0.6758683373974512}
+{"id": "dev-012181", "label": "scientific publication", "predicted": "scientific publication", "score": 0.3347638680998928}
+{"id": "dev-001592", "label": "scientific publication", "predicted": "scientific publication", "score": 0.835579341679112}
+{"id": "dev-020180", "label": "scientific publication", "predicted": "news article", "score": 0.17974977694403085}
+{"id": "dev-015387", "label": "scientific publication", "predicted": "news article", "score": 0.18782663067030245}
+{"id": "dev-002679", "label": "scientific publication", "predicted": "invoice", "score": 0.1480155664204256}
+{"id": "dev-029013", "label": "scientific publication", "predicted": "news article", "score": 0.3715026671897883}
+{"id": "dev-028616", "label": "email", "predicted": "email", "score": 0.2590394664649957}
+{"id": "dev-003638", "label": "email", "predicted": "budget", "score": 0.5016578389509307}
+{"id": "dev-024885", "label": "email", "predicted": "email", "score": 0.8542592161745541}
+{"id": "dev-032056", "label": "email", "predicted": "email", "score": 0.8550021778868008}
+{"id": "dev-026546", "label": "email", "predicted": "news article", "score": 0.363339416726609}
+{"id": "dev-022286", "label": "email", "predicted": "email", "score": 0.6580400681501606}
+{"id": "dev-013614", "label": "email", "predicted": "email", "score": 0.5977233409492774}
+{"id": "dev-008266", "label": "email", "predicted": "email", "score": 0.6513540904119102}
+{"id": "dev-028939", "label": "email", "predicted": "memo", "score": 0.17342782866423623}
+{"id": "dev-027919", "label": "email", "predicted": "email", "score": 0.7688648921762361}
+{"id": "dev-023810", "label": "email", "predicted": "email", "score": 0.5100582603286692}
+{"id": "dev-035916", "label": "email", "predicted": "email", "score": 0.9076592173555295}
+{"id": "dev-036496", "label": "email", "predicted": "letter", "score": 0.18741942207221007}
+{"id": "dev-033792", "label": "email", "predicted": "email", "score": 0.9140224405167205}
+{"id": "dev-001123", "label": "email", "predicted": "email", "score": 0.43250549061260973}
+{"id": "dev-037621", "label": "email", "predicted": "email", "score": 0.32669621017703937}
+{"id": "dev-029151", "label": "email", "predicted": "news article", "score": 0.38709099156803184}
+{"id": "dev-027390", "label": "email", "predicted": "email", "score": 0.4715327520039666}
+{"id": "dev-039476", "label": "email", "predicted": "email", "score": 0.8091271711419622}
+{"id": "dev-033255", "label": "email", "predicted": "email", "score": 0.5993908480842343}
+{"id": "dev-009611", "label": "news article", "predicted": "news article", "score": 0.6536838941251414}
+{"id": "dev-030360", "label": "news article", "predicted": "news article", "score": 0.3315115813759497}
+{"id": "dev-002416", "label": "news article", "predicted": "news article", "score": 0.3127358306223871}
+{"id": "dev-015563", "label": "news article", "predicted": "scientific report", "score": 0.19365882730849573}
+{"id": "dev-032039", "label": "news article", "predicted": "news article", "score": 0.5336472902748287}
+{"id": "dev-034347", "label": "news article", "predicted": "news article", "score": 0.5736363682075726}
+{"id": "dev-025590", "label": "news article", "predicted": "news article", "score": 0.3348625622211808}
+{"id": "dev-016579", "label": "news article", "predicted": "budget", "score": 0.17759004219998792}
+{"id": "dev-004422", "label": "news article", "predicted": "news article", "score": 0.18166721375772032}
+{"id": "dev-019922", "label": "news article", "predicted": "news article", "score": 0.1690956121271518}
+{"id": "dev-029870", "label": "news article", "predicted": "news article", "score": 0.4322006427004543}
+{"id": "dev-013572", "label": "news article", "predicted": "news article", "score": 0.2668030719518317}
+{"id": "dev-005416", "label": "news article", "predicted": "invoice", "score": 0.15987768496937582}
+{"id": "dev-009058", "label": "news article", "predicted": "news article", "score": 0.6431064605903399}
+{"id": "dev-027939", "label": "news article", "predicted": "scientific publication", "score": 0.5122370816476988}
+{"id": "dev-033751", "label": "news article", "predicted": "news article", "score": 0.4628244137704641}
+{"id": "dev-031919", "label": "news article", "predicted": "news article", "score": 0.452574631717845}
+{"id": "dev-020185", "label": "news article", "predicted": "news article", "score": 0.23787100144647483}
+{"id": "dev-007212", "label": "news article", "predicted": "news article", "score": 0.2880059938931039}
+{"id": "dev-030892", "label": "news article", "predicted": "invoice", "score": 0.17100076873811723}
+{"id": "dev-015311", "label": "none of these", "predicted": "news article", "score": 0.17128066940214295}
+{"id": "dev-019967", "label": "none of these", "predicted": "form", "score": 0.1402033902358392}
+{"id": "dev-024631", "label": "none of these", "predicted": "invoice", "score": 0.15987768496937582}
+{"id": "dev-033443", "label": "none of these", "predicted": "invoice", "score": 0.189070372491586}
+{"id": "dev-029120", "label": "none of these", "predicted": "news article", "score": 0.16940487636913854}
+{"id": "dev-001644", "label": "none of these", "predicted": "invoice", "score": 0.15987768496937582}
+{"id": "dev-016429", "label": "none of these", "predicted": "questionnaire", "score": 0.18816689299766867}
+{"id": "dev-034465", "label": "none of these", "predicted": "memo", "score": 0.18031205078939908}
+{"id": "dev-023322", "label": "none of these", "predicted": "form", "score": 0.25599101412148156}
+{"id": "dev-036259", "label": "none of these", "predicted": "form", "score": 0.2675551360831589}
+{"id": "dev-018070", "label": "none of these", "predicted": "budget", "score": 0.2028824564451703}
+{"id": "dev-000800", "label": "none of these", "predicted": "invoice", "score": 0.15987768496937582}
+{"id": "dev-013868", "label": "none of these", "predicted": "invoice", "score": 0.15987768496937582}
+{"id": "dev-031365", "label": "none of these", "predicted": "invoice", "score": 0.15987768496937582}
+{"id": "dev-011007", "label": "none of these", "predicted": "budget", "score": 0.2695707292836731}
+{"id": "dev-008818", "label": "none of these", "predicted": "news article", "score": 0.15492968870748217}
+{"id": "dev-034771", "label": "none of these", "predicted": "letter", "score": 0.3092885305353169}
+{"id": "dev-025324", "label": "none of these", "predicted": "scientific publication", "score": 0.5273102812283799}
+{"id": "dev-014188", "label": "none of these", "predicted": "scientific publication", "score": 0.44833233004511125}
+{"id": "dev-025616", "label": "none of these", "predicted": "scientific publication", "score": 0.2256873305695525}

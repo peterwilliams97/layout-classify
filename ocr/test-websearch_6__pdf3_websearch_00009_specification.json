@@ -1,0 +1,11 @@
+{"text": "luminis lamps\n\nTwenty-five floor Tech Sheet\n\n\"\n\naomg",
+"words": [
+{"text": "luminis", "x0": 73, "y0": 75, "x1": 117, "y1": 90, "conf": 63.0},
+{"text": "lamps", "x0": 124, "y0": 75, "x1": 162, "y1": 93, "conf": 84.0},
+{"text": "Twenty-five", "x0": 66, "y0": 160, "x1": 121, "y1": 172, "conf": 76.0},
+{"text": "floor", "x0": 125, "y0": 160, "x1": 148, "y1": 170, "conf": 96.0},
+{"text": "Tech", "x0": 151, "y0": 161, "x1": 172, "y1": 170, "conf": 95.0},
+{"text": "Sheet", "x0": 177, "y0": 161, "x1": 203, "y1": 170, "conf": 80.0},
+{"text": "\"", "x0": 139, "y0": 607, "x1": 175, "y1": 637, "conf": 0.0},
+{"text": "aomg", "x0": 69, "y0": 651, "x1": 86, "y1": 723, "conf": 57.0}
+]}

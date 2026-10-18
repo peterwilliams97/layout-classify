@@ -1,17 +1,8 @@
-run 2026-10-17, splits run: train, dev, test
+run 2026-10-18, splits run: train, dev, test
 tesseract 5.5.3, pytesseract defaults, one page per call
-pages in manifest      1660
-pages run              1660
+pages in manifest      741
+pages run              741
 pages skipped          0 (ocr/<id>.json already present)
-pages with no words    26
-total seconds          524.2 (wall 525.4)
-seconds per page       mean 0.316  median 0.258  max 1.571
-
-run 2026-10-18, splits run: test-n
-tesseract 5.5.3, pytesseract defaults, one page per call
-pages in manifest      2301
-pages run              641
-pages skipped          1660 (ocr/<id>.json already present)
-pages with no words    5
-total seconds          245.2 (wall 245.7)
-seconds per page       mean 0.383  median 0.359  max 1.211
+pages with no words    7
+total seconds          290.0 (wall 290.4)
+seconds per page       mean 0.391  median 0.366  max 1.248

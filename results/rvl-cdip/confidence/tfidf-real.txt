@@ -1,0 +1,207 @@
+model     tfidf-real
+dev       results/confidence/dumps/tfidf-real-dev.jsonl (220 pages, 20 reject; accuracy 0.6091)
+score     top probability over CLASSES; a REJECT_LABEL page is always wrong
+routing: accept a page when its score is at least the cut-off, chosen on every dev page
+  tau     lowest dev score whose accepted dev error is at most alpha
+  tau_cp  the same with the dev error's one-sided 90% Clopper-Pearson upper bound
+  alpha 0.02
+    tau    0.809127  dev coverage 0.0727 error 0.0000
+    tau_cp -         dev coverage 0.0000 error -
+  alpha 0.05
+    tau    0.533647  dev coverage 0.2364 error 0.0385
+    tau_cp -         dev coverage 0.0000 error -
+  alpha 0.10
+    tau    0.490316  dev coverage 0.2773 error 0.0984
+    tau_cp 0.533647  dev coverage 0.2364 error 0.0385
+
+test, all pages: results/confidence/dumps/tfidf-real-test.jsonl (440 pages, accuracy 0.5955)
+  AUROC of score against correctness  0.8580
+  mean score, right predictions       0.4730 (262)
+  mean score, wrong predictions       0.2346 (178)
+  ECE, 10 equal-count bins, isotonic fitted on dev  before 0.2269  after 0.0520
+  alpha 0.02
+    tau    0.809127  coverage 0.0432 error 0.0000
+    tau_cp -         coverage 0.0000 error -
+    recall among accepted at tau, per true class (accepted of total)
+      letter                 1.0000 (1 of 40)
+      memo                   1.0000 (1 of 40)
+      form                   1.0000 (1 of 40)
+      questionnaire          1.0000 (7 of 40)
+      budget                 1.0000 (1 of 40)
+      invoice                - (0 of 40)
+      scientific report      - (0 of 40)
+      scientific publication 1.0000 (6 of 40)
+      email                  1.0000 (2 of 40)
+      news article           - (0 of 40)
+      none of these          - (0 of 40)
+  alpha 0.05
+    tau    0.533647  coverage 0.2159 error 0.0211
+    tau_cp -         coverage 0.0000 error -
+    recall among accepted at tau, per true class (accepted of total)
+      letter                 1.0000 (7 of 40)
+      memo                   1.0000 (4 of 40)
+      form                   1.0000 (5 of 40)
+      questionnaire          1.0000 (21 of 40)
+      budget                 1.0000 (5 of 40)
+      invoice                1.0000 (6 of 40)
+      scientific report      1.0000 (3 of 40)
+      scientific publication 1.0000 (20 of 40)
+      email                  0.9474 (19 of 40)
+      news article           0.8000 (5 of 40)
+      none of these          - (0 of 40)
+  alpha 0.10
+    tau    0.490316  coverage 0.2591 error 0.0351
+    tau_cp 0.533647  coverage 0.2159 error 0.0211
+    recall among accepted at tau, per true class (accepted of total)
+      letter                 1.0000 (10 of 40)
+      memo                   1.0000 (6 of 40)
+      form                   0.8333 (6 of 40)
+      questionnaire          1.0000 (23 of 40)
+      budget                 1.0000 (6 of 40)
+      invoice                1.0000 (7 of 40)
+      scientific report      1.0000 (3 of 40)
+      scientific publication 1.0000 (24 of 40)
+      email                  0.9524 (21 of 40)
+      news article           0.7500 (8 of 40)
+      none of these          - (0 of 40)
+
+test, without reject pages: results/confidence/dumps/tfidf-real-test.jsonl (400 pages, accuracy 0.6550)
+  AUROC of score against correctness  0.8496
+  mean score, right predictions       0.4730 (262)
+  mean score, wrong predictions       0.2401 (138)
+  ECE, 10 equal-count bins, isotonic fitted on dev  before 0.2623  after 0.0605
+  alpha 0.02
+    tau    0.809127  coverage 0.0475 error 0.0000
+    tau_cp -         coverage 0.0000 error -
+    recall among accepted at tau, per true class (accepted of total)
+      letter                 1.0000 (1 of 40)
+      memo                   1.0000 (1 of 40)
+      form                   1.0000 (1 of 40)
+      questionnaire          1.0000 (7 of 40)
+      budget                 1.0000 (1 of 40)
+      invoice                - (0 of 40)
+      scientific report      - (0 of 40)
+      scientific publication 1.0000 (6 of 40)
+      email                  1.0000 (2 of 40)
+      news article           - (0 of 40)
+  alpha 0.05
+    tau    0.533647  coverage 0.2375 error 0.0211
+    tau_cp -         coverage 0.0000 error -
+    recall among accepted at tau, per true class (accepted of total)
+      letter                 1.0000 (7 of 40)
+      memo                   1.0000 (4 of 40)
+      form                   1.0000 (5 of 40)
+      questionnaire          1.0000 (21 of 40)
+      budget                 1.0000 (5 of 40)
+      invoice                1.0000 (6 of 40)
+      scientific report      1.0000 (3 of 40)
+      scientific publication 1.0000 (20 of 40)
+      email                  0.9474 (19 of 40)
+      news article           0.8000 (5 of 40)
+  alpha 0.10
+    tau    0.490316  coverage 0.2850 error 0.0351
+    tau_cp 0.533647  coverage 0.2375 error 0.0211
+    recall among accepted at tau, per true class (accepted of total)
+      letter                 1.0000 (10 of 40)
+      memo                   1.0000 (6 of 40)
+      form                   0.8333 (6 of 40)
+      questionnaire          1.0000 (23 of 40)
+      budget                 1.0000 (6 of 40)
+      invoice                1.0000 (7 of 40)
+      scientific report      1.0000 (3 of 40)
+      scientific publication 1.0000 (24 of 40)
+      email                  0.9524 (21 of 40)
+      news article           0.7500 (8 of 40)
+
+test-n, all pages: results/confidence/dumps/tfidf-real-test-n.jsonl (641 pages, accuracy 0.7395)
+  AUROC of score against correctness  0.8837
+  mean score, right predictions       0.3689 (474)
+  mean score, wrong predictions       0.2022 (167)
+  ECE, 10 equal-count bins, isotonic fitted on dev  before 0.4158  after 0.1875
+  alpha 0.02
+    tau    0.809127  coverage 0.0031 error 0.0000
+    tau_cp -         coverage 0.0000 error -
+    recall among accepted at tau, per true class (accepted of total)
+      letter                 - (0 of 152)
+      memo                   - (0 of 47)
+      form                   - (0 of 70)
+      questionnaire          1.0000 (1 of 39)
+      budget                 - (0 of 58)
+      invoice                - (0 of 57)
+      scientific publication 1.0000 (1 of 39)
+      email                  - (0 of 33)
+      news article           - (0 of 86)
+      none of these          - (0 of 60)
+  alpha 0.05
+    tau    0.533647  coverage 0.0920 error 0.0000
+    tau_cp -         coverage 0.0000 error -
+    recall among accepted at tau, per true class (accepted of total)
+      letter                 1.0000 (9 of 152)
+      memo                   - (0 of 47)
+      form                   - (0 of 70)
+      questionnaire          1.0000 (17 of 39)
+      budget                 1.0000 (17 of 58)
+      invoice                1.0000 (3 of 57)
+      scientific publication 1.0000 (8 of 39)
+      email                  1.0000 (5 of 33)
+      news article           - (0 of 86)
+      none of these          - (0 of 60)
+  alpha 0.10
+    tau    0.490316  coverage 0.1435 error 0.0000
+    tau_cp 0.533647  coverage 0.0920 error 0.0000
+    recall among accepted at tau, per true class (accepted of total)
+      letter                 1.0000 (14 of 152)
+      memo                   - (0 of 47)
+      form                   1.0000 (3 of 70)
+      questionnaire          1.0000 (23 of 39)
+      budget                 1.0000 (27 of 58)
+      invoice                1.0000 (6 of 57)
+      scientific publication 1.0000 (11 of 39)
+      email                  1.0000 (6 of 33)
+      news article           1.0000 (2 of 86)
+      none of these          - (0 of 60)
+
+test-n, without reject pages: results/confidence/dumps/tfidf-real-test-n.jsonl (581 pages, accuracy 0.8158)
+  AUROC of score against correctness  0.8487
+  mean score, right predictions       0.3689 (474)
+  mean score, wrong predictions       0.2177 (107)
+  ECE, 10 equal-count bins, isotonic fitted on dev  before 0.4748  after 0.2240
+  alpha 0.02
+    tau    0.809127  coverage 0.0034 error 0.0000
+    tau_cp -         coverage 0.0000 error -
+    recall among accepted at tau, per true class (accepted of total)
+      letter                 - (0 of 152)
+      memo                   - (0 of 47)
+      form                   - (0 of 70)
+      questionnaire          1.0000 (1 of 39)
+      budget                 - (0 of 58)
+      invoice                - (0 of 57)
+      scientific publication 1.0000 (1 of 39)
+      email                  - (0 of 33)
+      news article           - (0 of 86)
+  alpha 0.05
+    tau    0.533647  coverage 0.1015 error 0.0000
+    tau_cp -         coverage 0.0000 error -
+    recall among accepted at tau, per true class (accepted of total)
+      letter                 1.0000 (9 of 152)
+      memo                   - (0 of 47)
+      form                   - (0 of 70)
+      questionnaire          1.0000 (17 of 39)
+      budget                 1.0000 (17 of 58)
+      invoice                1.0000 (3 of 57)
+      scientific publication 1.0000 (8 of 39)
+      email                  1.0000 (5 of 33)
+      news article           - (0 of 86)
+  alpha 0.10
+    tau    0.490316  coverage 0.1583 error 0.0000
+    tau_cp 0.533647  coverage 0.1015 error 0.0000
+    recall among accepted at tau, per true class (accepted of total)
+      letter                 1.0000 (14 of 152)
+      memo                   - (0 of 47)
+      form                   1.0000 (3 of 70)
+      questionnaire          1.0000 (23 of 39)
+      budget                 1.0000 (27 of 58)
+      invoice                1.0000 (6 of 57)
+      scientific publication 1.0000 (11 of 39)
+      email                  1.0000 (6 of 33)
+      news article           1.0000 (2 of 86)

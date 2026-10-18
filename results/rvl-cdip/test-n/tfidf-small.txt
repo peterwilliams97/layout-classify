@@ -1,0 +1,19 @@
+model     models/tfidf-small
+test-n pages 641 (60 reject pages, always wrong)
+accuracy  0.6303
+wrong     237
+accuracy  0.6954 without reject pages
+seconds   0.000253 median, 0.000269 mean per page, one page per call, OCR excluded
+confusion (row: true class, column: predicted class, numbered as the rows are)
+                              0   1   2   3   4   5   6   7   8   9  10
+   0 letter                 124   8   0   4   0   0   0   4   0  12   0
+   1 memo                    18  18   1   2   0   0   1   5   0   2   0
+   2 form                     6   6  31  17   1   1   0   3   0   5   0
+   3 questionnaire            1   0   0  36   0   0   0   1   1   0   0
+   4 budget                   0   1   0   0  47   1   1   4   0   4   0
+   5 invoice                  0   0   2   2   8  44   0   0   0   1   0
+   6 scientific report        0   0   0   0   0   0   0   0   0   0   0
+   7 scientific publication   0   0   0   0   0   0   0  38   0   1   0
+   8 email                    5   0   4   0   0   0   0   1  21   2   0
+   9 news article             4   2   6   2   1   0   0  26   0  45   0
+  10 none of these           10   5   4   4   0   2   5  10   0  20   0

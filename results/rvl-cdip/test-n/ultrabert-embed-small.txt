@@ -1,0 +1,19 @@
+model     models/ultrabert-embed-small
+test-n pages 641 (60 reject pages, always wrong)
+accuracy  0.5101
+wrong     314
+accuracy  0.5628 without reject pages
+seconds   0.0354 median, 0.0322 mean per page, one page per call, OCR excluded
+confusion (row: true class, column: predicted class, numbered as the rows are)
+                              0   1   2   3   4   5   6   7   8   9  10
+   0 letter                  45   5  22   2   1   4   2   4  53  14   0
+   1 memo                     6  17   3   0   2   1   0   0  14   4   0
+   2 form                     9   2  26   4   2   8   1   0  17   1   0
+   3 questionnaire            2   0   2  34   0   0   0   0   0   1   0
+   4 budget                   0   0   0   1  45   9   0   0   0   3   0
+   5 invoice                  1   0   2   0   7  44   0   0   3   0   0
+   6 scientific report        0   0   0   0   0   0   0   0   0   0   0
+   7 scientific publication   0   2   3   2   1   0   3  25   0   3   0
+   8 email                    1   0   0   0   0   0   0   0  31   1   0
+   9 news article             5   5   2   4   3   3   1   1   2  60   0
+  10 none of these            9   3   7   8   6   6  10   3   6   2   0
