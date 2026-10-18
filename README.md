@@ -75,7 +75,11 @@ same seeded order. None failed.
   instruction before the page text and the first 512 tokens kept. `--train real` is all 288 train
   pages; `--train small` is 10 per class, 90 in all, drawn with seed 0, the ids in
   data/selection.json under `small`. Neither holds a reject page. Every classifier uses
-  `class_weight="balanced"`. `--dit` reads the page image instead: logistic regression on frozen
+  `class_weight="balanced"`. For `--embed` and `--dit`, C is the value in `C_GRID` (0.01, 0.1, 1,
+  10), each fitted on train, with the highest dev AUROC of top probability against correctness
+  over all dev pages, a tie going to the smaller C; `results/train/<name>.txt` gives each value's
+  AUROC and the choice. `--tfidf` keeps its fixed C of 10 on its sparse features, with no grid.
+  `--dit` reads the page image instead: logistic regression on frozen
   `microsoft/dit-base` embeddings, at a pinned revision, each the mean of the last hidden state over
   the 196 patches of the page resized to 224 × 224, standardised by a `StandardScaler` fitted on
   the train embeddings. Names are `tfidf-real`, `tfidf-small`,
@@ -96,8 +100,9 @@ same seeded order. None failed.
   `results/confidence/<name>.txt` for routing, with its inputs in `results/confidence/dumps/`, and
   `results/ocr-time.txt` for OCR time. `results/unweighted/` holds the train, score and
   confidence files from the run without class weights, `results/unscaled/` those of the `dit-`
-  models without the scaler, and `results/rvl-cdip/` the same files from
-  the RVL-CDIP runs in the appendix.
+  models without the scaler, `results/c1/` those of the `ultrabert-embed-` and `dit-` models at
+  C = 1, before `C_GRID`, and `results/rvl-cdip/` the same files from the RVL-CDIP runs in the
+  appendix.
 
 ## Run
 
@@ -136,8 +141,8 @@ accepted reject pages plus the accepted in-class errors, over that coverage.
 |-------------------------|-------------|---------------------|------------------|-------------|------------------------|---------------------|
 | `tfidf-small`           | 90          | 0.4420              | 0.0125           | 0.0200      | 0.3998                 | 0.0174              |
 | `tfidf-real`            | 288         | 0.3536              | 0.0000           | 0.0000      | 0.3182                 | 0.0000              |
-| `ultrabert-embed-small` | 90          | 0.0055              | 0.0000           | 0.0000      | 0.0050                 | 0.0000              |
-| `ultrabert-embed-real`  | 288         | 0.2265              | 0.0000           | 0.0200      | 0.2059                 | 0.0097              |
+| `ultrabert-embed-small` | 90          | 0.0221              | 0.0000           | 0.0000      | 0.0199                 | 0.0000              |
+| `ultrabert-embed-real`  | 288         | 0.3149              | 0.0000           | 0.0200      | 0.2854                 | 0.0070              |
 | `dit-small`             | 90          | 0.0000              | -                | 0.0000      | 0.0000                 | -                   |
 | `dit-real`              | 288         | 0.0000              | -                | 0.0000      | 0.0000                 | -                   |
 
@@ -154,22 +159,22 @@ accept no page.
 |-------------------------|-------------|--------|----------------------|------------------|
 | `tfidf-small`           | 90          | 0.4982 | 0.7735               | 0.000282         |
 | `tfidf-real`            | 288         | 0.4911 | 0.7624               | 0.000255         |
-| `ultrabert-embed-small` | 90          | 0.5231 | 0.8122               | 0.035            |
-| `ultrabert-embed-real`  | 288         | 0.5587 | 0.8674               | 0.0351           |
-| `dit-small`             | 90          | 0.4057 | 0.6298               | 0.0136           |
-| `dit-real`              | 288         | 0.4235 | 0.6575               | 0.0137           |
+| `ultrabert-embed-small` | 90          | 0.5231 | 0.8122               | 0.0422           |
+| `ultrabert-embed-real`  | 288         | 0.5623 | 0.8729               | 0.0371           |
+| `dit-small`             | 90          | 0.3986 | 0.6188               | 0.0129           |
+| `dit-real`              | 288         | 0.4306 | 0.6685               | 0.0132           |
 
 Test is over all 281 pages, reject pages included. The in-class column is over the 181 pages whose
 label is in `CLASSES` (line `accuracy … without reject pages`). All from `results/test/<model>.txt`.
 
 ### Hand labels against coverage
 
-| Hand labels | Model         | Dev coverage | Coverage at 10% reject | Error at 10% reject |
-|-------------|---------------|--------------|------------------------|---------------------|
-| 90          | `tfidf-small` | 0.2965       | 0.3998                 | 0.0174              |
-| 90          | `dit-small`   | 0.0000       | 0.0000                 | -                   |
-| 288         | `tfidf-real`  | 0.2674       | 0.3182                 | 0.0000              |
-| 288         | `dit-real`    | 0.0000       | 0.0000                 | -                   |
+| Hand labels | Model                  | Dev coverage | Coverage at 10% reject | Error at 10% reject |
+|-------------|------------------------|--------------|------------------------|---------------------|
+| 90          | `tfidf-small`          | 0.2965       | 0.3998                 | 0.0174              |
+| 90          | `dit-small`            | 0.0000       | 0.0000                 | -                   |
+| 288         | `ultrabert-embed-real` | 0.3023       | 0.2854                 | 0.0070              |
+| 288         | `dit-real`             | 0.0000       | 0.0000                 | -                   |
 
 At each count, the text row is the text model with the higher dev coverage at α 0.05, over all 172
 dev pages, and the `dit-` row is the image model; test was not used to choose either.
@@ -182,18 +187,20 @@ dev pages, and the `dit-` row is the image model; test was not used to choose ei
   alone. `--train small` already has 10 pages per class, so the weights leave the `-small` models
   unchanged. The `StandardScaler` in `--dit` was added after the unscaled run saturated at
   probability 1.0 (`results/unscaled/`).
+- C chosen on dev from `C_GRID`: `ultrabert-embed-small` 0.01, `ultrabert-embed-real` 10,
+  `dit-small` 10, `dit-real` 10 (`results/train/<model>.txt`; C = 1 results in `results/c1/`).
 - AUROC of score against correctness on all dev pages: `tfidf-small` 0.8552, `tfidf-real` 0.8349,
-  `ultrabert-embed-small` 0.8315, `ultrabert-embed-real` 0.8554.
-- UltraBERT-Embed has the higher in-class accuracy at both sizes, 0.8674 for
-  `ultrabert-embed-real`, but its top probabilities on dev leave fewer pages above a 5% cut-off:
-  0.2059 of the 10% reject stream for `ultrabert-embed-real` and 0.0050 for
-  `ultrabert-embed-small`.
+  `ultrabert-embed-small` 0.8549, `ultrabert-embed-real` 0.8872. The `ultrabert-embed-` and
+  `dit-` values are those that chose C, so they are not held out.
+- UltraBERT-Embed has the higher in-class accuracy at both sizes, 0.8729 for
+  `ultrabert-embed-real`. At the 5% cut-off `ultrabert-embed-real` covers 0.2854 of the 10% reject
+  stream, against 0.3182 for `tfidf-real`; `ultrabert-embed-small` covers 0.0199.
 - Question 2: the OCR text beats the page image. At 10% reject, `tfidf-real` covers 0.3182 and
   `dit-real` 0.0000. With the scaler, `dit-real` still gives a wrong dev page a score of 1.0, so no
   cut-off reaches 5% dev error.
-- AUROC on all dev pages for the image model: `dit-small` 0.6926, `dit-real` 0.7037.
+- AUROC on all dev pages for the image model: `dit-small` 0.7285, `dit-real` 0.7298.
 - At the 5% cut-off no model lets through more than 2 of the 100 test reject pages.
-- Seconds per page on test: TF-IDF about 0.0003, UltraBERT-Embed about 0.035, DiT about 0.014.
+- Seconds per page on test: TF-IDF about 0.0003, UltraBERT-Embed about 0.04, DiT about 0.013.
 
 ### Limits
 

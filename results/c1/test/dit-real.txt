@@ -1,0 +1,18 @@
+model     models/dit-real
+test pages 281 (100 reject pages, always wrong)
+accuracy  0.4235
+wrong     162
+accuracy  0.6575 without reject pages
+seconds   0.0137 median, 0.0141 mean per page, one page per call, image read excluded
+confusion (row: true class, column: predicted class, numbered as the rows are)
+                              0   1   2   3   4   5   6   7   8   9
+   0 letter                  38   3   1   0   0   1   0   0   3   0
+   1 memo                     6   4   0   1   0   1   1   1   1   0
+   2 form                     1   1  15   0   0   3   0   0   1   0
+   3 questionnaire            1   2   4   3   1   0   0   1   1   0
+   4 budget                   0   0   1   1  12   1   1   1   1   0
+   5 invoice                  4   0   4   1   2   7   0   0   0   0
+   6 scientific publication   0   1   0   0   0   0  12   0   0   0
+   7 email                    2   2   1   2   0   0   0   4   0   0
+   8 news article             1   0   1   0   0   0   0   0  24   0
+   9 none of these            9   9  28   8   4  23  10   1   8   0

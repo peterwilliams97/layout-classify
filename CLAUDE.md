@@ -79,7 +79,8 @@ run.
   `results/<split>/<name>.txt`, `results/train/<name>.txt`, `results/confidence/<name>.txt` and
   `results/confidence/dumps/<name>-<split>.jsonl`. Every number reported needs a file there.
   `results/unweighted/` holds train, score and confidence files from the run without class weights,
-  `results/unscaled/` the same for the `dit-` models without `StandardScaler`, and
+  `results/unscaled/` the same for the `dit-` models without `StandardScaler`, `results/c1/` the
+  same for the `ultrabert-embed-` and `dit-` models at C = 1, before `train.py`'s `C_GRID`, and
   `results/rvl-cdip/` the same layout from the RVL-CDIP runs, plus test-n; no script writes to any
   of them.
 

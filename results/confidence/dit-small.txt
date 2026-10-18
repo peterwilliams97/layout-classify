@@ -1,7 +1,7 @@
 model     dit-small
-dev       results/confidence/dumps/dit-small-dev.jsonl (172 pages, 60 reject; accuracy 0.3721)
+dev       results/confidence/dumps/dit-small-dev.jsonl (172 pages, 60 reject; accuracy 0.3547)
 score     top probability over CLASSES; a REJECT_LABEL page is always wrong
-dev AUROC of score against correctness, all pages  0.6926
+dev AUROC of score against correctness, all pages  0.7285
 routing: accept a page when its score is at least the cut-off, chosen on every dev page
   tau     lowest dev score whose accepted dev error is at most alpha
   tau_cp  the same with the dev error's one-sided 90% Clopper-Pearson upper bound
@@ -17,11 +17,11 @@ routing: accept a page when its score is at least the cut-off, chosen on every d
     tau_cp -         dev coverage 0.0000 error - reject_leak 0.0000
 
 test: results/confidence/dumps/dit-small-test.jsonl (281 pages, 100 reject)
-  in-class pages 181, accuracy 0.6298
-  AUROC of score against correctness, in-class  0.6485
-  mean score, right predictions       0.7900 (114)
-  mean score, wrong predictions       0.6825 (67)
-  ECE, 10 equal-count bins, isotonic fitted on dev  before 0.1720  after 0.2126
+  in-class pages 181, accuracy 0.6188
+  AUROC of score against correctness, in-class  0.6473
+  mean score, right predictions       0.8636 (112)
+  mean score, wrong predictions       0.7722 (69)
+  ECE, 10 equal-count bins, isotonic fitted on dev  before 0.2277  after 0.2203
   stream_10: 10% reject pages, 90% in-class
   alpha 0.02
     tau    -

@@ -1,4 +1,9 @@
 model     models/dit-real
 train     real (288 pages)
 pages     288
-seconds   9.13 (base model load to save; page image reads included)
+seconds   20.08 (base model load to save; dev embedding, C grid and page image reads included)
+C 0.01  dev AUROC 0.7030
+C 0.1   dev AUROC 0.7038
+C 1     dev AUROC 0.7037
+C 10    dev AUROC 0.7298
+chosen    C 10 (highest dev AUROC; a tie goes to the smaller C)

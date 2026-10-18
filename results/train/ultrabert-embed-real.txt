@@ -1,4 +1,9 @@
 model     models/ultrabert-embed-real
 train     real (288 pages)
 pages     288
-seconds   13.07 (base model load to save; OCR excluded)
+seconds   20.76 (base model load to save; dev embedding and C grid included; OCR excluded)
+C 0.01  dev AUROC 0.8600
+C 0.1   dev AUROC 0.8547
+C 1     dev AUROC 0.8554
+C 10    dev AUROC 0.8872
+chosen    C 10 (highest dev AUROC; a tie goes to the smaller C)

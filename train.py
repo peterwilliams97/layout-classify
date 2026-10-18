@@ -2,12 +2,14 @@
 ocr.py writes, and saves it to models/<name>/. `--tfidf` fits TF-IDF + logistic regression; `--embed`
 fits logistic regression on frozen `EMBED_BASE` embeddings of the page text with `EMBED_PROMPT`
 before it. `--dit` reads the page image instead of the text: logistic regression on frozen
-`DIT_BASE` embeddings of data/<split>/<id>.png. `--train real` is every train page; `--train small` is `SMALL_PER_CLASS` of them per
-class, drawn with SEED and recorded in data/selection.json under "small". Neither holds a reject
-page: train has none.
+`DIT_BASE` embeddings of data/<split>/<id>.png. `--train real` is every train page; `--train
+small` is `SMALL_PER_CLASS` of them per class, drawn with SEED and recorded in data/selection.json
+under "small". Neither holds a reject page: train has none.
 
-Adapted from synth-classify's train.py. Regularisation, n-grams and the token limit are fixed, not
-tuned, so score.py's numbers are not tuned on what they measure. Every classifier weights classes
+Adapted from synth-classify's train.py. For `--embed` and `--dit`, the logistic regression's C is
+chosen from C_GRID on dev, never test: each C is fitted on train, and the one whose top probability
+best ranks dev pages right over wrong, by AUROC, is kept (`choose_c`). Everything else — TF-IDF's
+C, n-grams, the token limit — is fixed, not tuned. Every classifier weights classes
 inversely to their train counts (`class_weight="balanced"`): train runs from 16 email pages to 76
 letter pages, and without weights `tfidf-real` predicts no test page as memo
 (results/unweighted/test/tfidf-real.txt)."""
@@ -19,12 +21,14 @@ import random
 import sys
 import time
 
-from classes import CLASSES
+from classes import CLASSES, REJECT_LABEL
 
 MANIFEST = "data/manifest.jsonl"
 SELECTION = "data/selection.json"
 SEED = 0
 SMALL_PER_CLASS = 10
+# The logistic regression C values `choose_c` tries for the frozen embeddings, smallest first.
+C_GRID = [0.01, 0.1, 1, 10]
 
 # The embedding model is pinned: its modeling code is fetched from the Hub and run
 # (trust_remote_code), so a revision that moves would change what runs as well as the weights.
@@ -96,15 +100,51 @@ def training_pages(which):
     return [r["id"] for r in rows], [names.index(r["label"]) for r in rows]
 
 
-def write_seconds(name, which, pages, seconds, scope):
+def dev_pages():
+    """The (page ids, label indices) of every dev page, reject pages included, in manifest order. A
+    reject page's index is -1, which no prediction equals."""
+    rows = [r for r in manifest() if r["split"] == "dev"]
+    if not rows:
+        sys.exit(f"{MANIFEST}: no dev pages")
+    names = list(CLASSES)
+    unknown = sorted({r["label"] for r in rows} - set(names) - {REJECT_LABEL})
+    if unknown:
+        sys.exit(f"{MANIFEST}: dev labels not in CLASSES or REJECT_LABEL: {unknown}")
+    gold = [names.index(r["label"]) if r["label"] in names else -1 for r in rows]
+    return [r["id"] for r in rows], gold
+
+
+def choose_c(make, x, labels, dev_x, dev_gold):
+    """choose_c fits `make(C)` on the train rows `x` for each C in C_GRID and keeps the one with the
+    highest dev AUROC of top probability against correctness — the ranking confidence.py's cut-off
+    depends on. Every dev page counts, a reject page as wrong. A tie goes to the smaller C. Returns
+    the chosen C, its fitted classifier and the "C … dev AUROC …" lines for results/train/."""
+    import numpy as np
+    from sklearn.metrics import roc_auc_score
+
+    best, lines = None, []
+    for c in C_GRID:
+        clf = make(c).fit(x, labels)
+        proba = clf.predict_proba(dev_x)
+        correct = clf.classes_[proba.argmax(axis=1)] == np.array(dev_gold)
+        auroc = roc_auc_score(correct, proba.max(axis=1))
+        lines.append(f"C {c:<5} dev AUROC {auroc:.4f}")
+        if best is None or auroc > best[2]:
+            best = (c, clf, auroc)
+    lines.append(f"chosen    C {best[0]} (highest dev AUROC; a tie goes to the smaller C)")
+    return best[0], best[1], lines
+
+
+def write_seconds(name, which, pages, seconds, scope, grid):
     """write_seconds records how long a training run took, base model load included, in
-    results/train/<name>.txt. `scope` says what the seconds cover."""
+    results/train/<name>.txt, followed by `choose_c`'s `grid` lines. `scope` says what the seconds
+    cover."""
     text = (
         f"model     models/{name}\n"
         f"train     {which} ({pages} pages)\n"
         f"pages     {pages}\n"
         f"seconds   {seconds:.2f} ({scope})\n"
-    )
+    ) + "".join(line + "\n" for line in grid)
     sys.stderr.write(text)
     path = os.path.join("results", "train", name + ".txt")
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -163,19 +203,22 @@ def embed(texts, tok, model, device):
         return model(**batch).last_hidden_state[:, 0].float().cpu().numpy()
 
 
-def train_embed(texts, labels, out, batch_size):
+def train_embed(texts, labels, dev_texts, dev_gold, out, batch_size):
     """train_embed fits logistic regression on frozen embeddings; the encoder is not updated. C is
-    sklearn's default, as in MTEB's classification evaluator, and is not tuned. Class weights are
-    balanced, as in `train_tfidf`."""
+    chosen on dev by `choose_c`. Class weights are balanced, as in `train_tfidf`. Returns
+    `choose_c`'s lines."""
     import joblib
     import numpy as np
     from sklearn.linear_model import LogisticRegression
 
     tok, model, device = load_embedder()
-    starts = range(0, len(texts), batch_size)
-    x = np.concatenate([embed(texts[i : i + batch_size], tok, model, device) for i in starts])
-    clf = LogisticRegression(max_iter=1000, class_weight="balanced").fit(x, labels)
+    rows = lambda ts: np.concatenate(
+        [embed(ts[i : i + batch_size], tok, model, device) for i in range(0, len(ts), batch_size)]
+    )
+    make = lambda c: LogisticRegression(C=c, max_iter=1000, class_weight="balanced")
+    _, clf, grid = choose_c(make, rows(texts), labels, rows(dev_texts), dev_gold)
     joblib.dump(clf, os.path.join(out, "embed.joblib"))
+    return grid
 
 
 def load_dit():
@@ -206,11 +249,12 @@ def embed_images(images, processor, model, device):
         return model(**batch).last_hidden_state[:, 1:].mean(dim=1).float().cpu().numpy()
 
 
-def train_dit(ids, labels, out, batch_size):
+def train_dit(ids, labels, dev_ids, dev_gold, out, batch_size):
     """train_dit fits logistic regression on frozen DiT embeddings, as `train_embed` does on text
-    embeddings: encoder not updated, sklearn's default C, balanced class weights. A StandardScaler
-    fitted on the train embeddings comes first; results/unscaled/ holds the fit without it. Images are read one batch at a time, so the read is inside
-    the training seconds."""
+    embeddings: encoder not updated, C chosen on dev by `choose_c`, balanced class weights. A
+    StandardScaler fitted on the train embeddings comes first; results/unscaled/ holds the fit
+    without it. Images are read one batch at a time, so the read is inside the training seconds.
+    Returns `choose_c`'s lines."""
     import joblib
     import numpy as np
     from sklearn.linear_model import LogisticRegression
@@ -218,15 +262,20 @@ def train_dit(ids, labels, out, batch_size):
     from sklearn.preprocessing import StandardScaler
 
     processor, model, device = load_dit()
-    rows = []
-    for i in range(0, len(ids), batch_size):
-        images = [page_image(page_id) for page_id in ids[i : i + batch_size]]
-        rows.append(embed_images(images, processor, model, device))
-    x = np.concatenate(rows)
-    clf = make_pipeline(
-        StandardScaler(), LogisticRegression(max_iter=1000, class_weight="balanced")
-    ).fit(x, labels)
+
+    def rows(page_ids):
+        out = []
+        for i in range(0, len(page_ids), batch_size):
+            images = [page_image(page_id) for page_id in page_ids[i : i + batch_size]]
+            out.append(embed_images(images, processor, model, device))
+        return np.concatenate(out)
+
+    make = lambda c: make_pipeline(
+        StandardScaler(), LogisticRegression(C=c, max_iter=1000, class_weight="balanced")
+    )
+    _, clf, grid = choose_c(make, rows(ids), labels, rows(dev_ids), dev_gold)
     joblib.dump(clf, os.path.join(out, "dit.joblib"))
+    return grid
 
 
 def main():
@@ -245,19 +294,25 @@ def main():
     out = os.path.join("models", name)
     ids, labels = training_pages(args.train)
     os.makedirs(out, exist_ok=True)
+    grid = []
     if args.dit:
+        dev_ids, dev_gold = dev_pages()
         start = time.perf_counter()
-        train_dit(ids, labels, out, args.batch_size)
-        scope = "base model load to save; page image reads included"
+        grid = train_dit(ids, labels, dev_ids, dev_gold, out, args.batch_size)
+        scope = "base model load to save; dev embedding, C grid and page image reads included"
     else:
         texts = [page_text(page_id) for page_id in ids]
-        start = time.perf_counter()
         if args.tfidf:
+            start = time.perf_counter()
             train_tfidf(texts, labels, out)
+            scope = "base model load to save; OCR excluded"
         else:
-            train_embed(texts, labels, out, args.batch_size)
-        scope = "base model load to save; OCR excluded"
-    write_seconds(name, args.train, len(ids), time.perf_counter() - start, scope)
+            dev_ids, dev_gold = dev_pages()
+            dev_texts = [page_text(page_id) for page_id in dev_ids]
+            start = time.perf_counter()
+            grid = train_embed(texts, labels, dev_texts, dev_gold, out, args.batch_size)
+            scope = "base model load to save; dev embedding and C grid included; OCR excluded"
+    write_seconds(name, args.train, len(ids), time.perf_counter() - start, scope, grid)
 
 
 if __name__ == "__main__":
