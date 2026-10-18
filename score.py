@@ -4,8 +4,10 @@ a reject page is labelled REJECT_LABEL, which no model predicts, so it is always
 also writes each page's prediction and top probability to
 results/confidence/dumps/<name>-<split>.jsonl, for confidence.py.
 
-Input is the OCR text in ocr/<id>.json; nothing here runs OCR, so the seconds are the classifier's
-alone. ocr.py's time is in results/ocr-time.txt. Adapted from synth-classify's score.py."""
+A text model's input is the OCR text in ocr/<id>.json; nothing here runs OCR, so the seconds are
+the classifier's alone. ocr.py's time is in results/ocr-time.txt. A `dit-` model's input is the page
+image, data/<split>/<id>.png, and its seconds are embedding and logistic regression, the image read
+excluded. Adapted from synth-classify's score.py."""
 
 import argparse
 import json
@@ -17,20 +19,22 @@ import time
 from sklearn.metrics import confusion_matrix
 
 from classes import CLASSES, REJECT_LABEL
-from train import manifest, page_text
+from train import manifest, page_image, page_text
 
 SPLITS = ["dev", "test"]
 
 
-def predict(model_dir, texts):
-    """predict returns, for each of `texts`, a label index in CLASSES, its probability, and the
+def predict(model_dir, ids):
+    """predict returns, for each page of `ids`, a label index in CLASSES, its probability, and the
     seconds taken. Each page is classified in a call of its own, so the seconds are what one page
-    costs."""
+    costs. The page's text or image is read before the clock starts."""
     import joblib
 
     preds, scores, seconds = [], [], []
     tfidf = os.path.join(model_dir, "tfidf.joblib")
     frozen = os.path.join(model_dir, "embed.joblib")
+    dit = os.path.join(model_dir, "dit.joblib")
+    read = page_text
     if os.path.exists(tfidf):
         clf = joblib.load(tfidf)
         features = lambda text: [text]
@@ -40,12 +44,20 @@ def predict(model_dir, texts):
         clf = joblib.load(frozen)
         tok, model, device = load_embedder()
         features = lambda text: embed([text], tok, model, device)
-    else:
-        sys.exit(f"{model_dir}: no tfidf.joblib or embed.joblib")
+    elif os.path.exists(dit):
+        from train import embed_images, load_dit
 
-    for text in texts:
+        clf = joblib.load(dit)
+        processor, model, device = load_dit()
+        read = page_image
+        features = lambda image: embed_images([image], processor, model, device)
+    else:
+        sys.exit(f"{model_dir}: no tfidf.joblib, embed.joblib or dit.joblib")
+
+    for page_id in ids:
+        page = read(page_id)
         start = time.perf_counter()
-        row = clf.predict_proba(features(text))[0]
+        row = clf.predict_proba(features(page))[0]
         seconds.append(time.perf_counter() - start)
         # `classes_` holds the training label indices, so a column is mapped through it rather
         # than taken as a position in CLASSES.
@@ -61,6 +73,7 @@ def report(model, split, gold, preds, seconds, names):
     ids = range(len(names))
     width = max(len(name) for name in names)
     reject = names.index(REJECT_LABEL)
+    excluded = "image read" if os.path.basename(model).startswith("dit-") else "OCR"
     wrong = sum(g != p for g, p in zip(gold, preds))
     kept = [(g, p) for g, p in zip(gold, preds) if g != reject]
     lines = [
@@ -70,7 +83,7 @@ def report(model, split, gold, preds, seconds, names):
         f"wrong     {wrong}",
         f"accuracy  {sum(g == p for g, p in kept) / len(kept):.4f} without reject pages",
         f"seconds   {statistics.median(seconds):.3g} median, {statistics.mean(seconds):.3g} mean"
-        " per page, one page per call, OCR excluded",
+        f" per page, one page per call, {excluded} excluded",
         "confusion (row: true class, column: predicted class, numbered as the rows are)",
         f"  {'':<{width + 3}}" + "".join(f"{i:>4}" for i in ids),
     ]
@@ -96,7 +109,7 @@ def main():
     gold = [names.index(r["label"]) for r in rows]
 
     model_dir = os.path.join("models", args.model)
-    preds, scores, seconds = predict(model_dir, [page_text(r["id"]) for r in rows])
+    preds, scores, seconds = predict(model_dir, [r["id"] for r in rows])
 
     text = report(model_dir, args.split, gold, preds, seconds, names)
     sys.stdout.write(text)

@@ -1,12 +1,13 @@
 """train.py fits a classifier over CLASSES on the OCR text of train pages, read from the cache
 ocr.py writes, and saves it to models/<name>/. `--tfidf` fits TF-IDF + logistic regression; `--embed`
 fits logistic regression on frozen `EMBED_BASE` embeddings of the page text with `EMBED_PROMPT`
-before it. `--train real` is every train page; `--train small` is `SMALL_PER_CLASS` of them per
+before it. `--dit` reads the page image instead of the text: logistic regression on frozen
+`DIT_BASE` embeddings of data/<split>/<id>.png. `--train real` is every train page; `--train small` is `SMALL_PER_CLASS` of them per
 class, drawn with SEED and recorded in data/selection.json under "small". Neither holds a reject
 page: train has none.
 
 Adapted from synth-classify's train.py. Regularisation, n-grams and the token limit are fixed, not
-tuned, so score.py's numbers are not tuned on what they measure. Both classifiers weight classes
+tuned, so score.py's numbers are not tuned on what they measure. Every classifier weights classes
 inversely to their train counts (`class_weight="balanced"`): train runs from 16 email pages to 76
 letter pages, and without weights `tfidf-real` predicts no test page as memo
 (results/unweighted/test/tfidf-real.txt)."""
@@ -36,6 +37,11 @@ EMBED_PROMPT = "Instruct: Given the OCR text of a scanned document page, find it
 # tokens rather than synth-classify's 128. It is fixed, not chosen on dev.
 EMBED_MAX_TOKENS = 512
 
+# The image model: DiT's self-supervised checkpoint, not microsoft/dit-base-finetuned-rvlcdip,
+# which was fine-tuned on RVL-CDIP test pages. Pinned so the weights cannot move under the results.
+DIT_BASE = "microsoft/dit-base"
+DIT_REVISION = "9bc15e2112d775c8e8f5a88f4bba876f50b77892"
+
 
 def manifest():
     with open(MANIFEST) as f:
@@ -46,6 +52,15 @@ def page_text(page_id):
     """The OCR text of one page from ocr/<id>.json; "" for a page Tesseract found no words on."""
     with open(os.path.join("ocr", page_id + ".json")) as f:
         return json.load(f)["text"]
+
+
+def page_image(page_id):
+    """The page image data/<split>/<id>.png as RGB; an id starts with its split."""
+    from PIL import Image
+
+    split = page_id.split("-", 1)[0]
+    with Image.open(os.path.join("data", split, page_id + ".png")) as im:
+        return im.convert("RGB")
 
 
 def small_ids(train_rows):
@@ -67,7 +82,7 @@ def small_ids(train_rows):
 
 
 def training_pages(which):
-    """The (texts, label indices in CLASSES) of the `which` training set, in manifest order."""
+    """The (page ids, label indices in CLASSES) of the `which` training set, in manifest order."""
     rows = [r for r in manifest() if r["split"] == "train"]
     if not rows:
         sys.exit(f"{MANIFEST}: no train pages")
@@ -78,17 +93,17 @@ def training_pages(which):
     if which == "small":
         keep = small_ids(rows)
         rows = [r for r in rows if r["id"] in keep]
-    return [page_text(r["id"]) for r in rows], [names.index(r["label"]) for r in rows]
+    return [r["id"] for r in rows], [names.index(r["label"]) for r in rows]
 
 
-def write_seconds(name, which, pages, seconds):
+def write_seconds(name, which, pages, seconds, scope):
     """write_seconds records how long a training run took, base model load included, in
-    results/train/<name>.txt."""
+    results/train/<name>.txt. `scope` says what the seconds cover."""
     text = (
         f"model     models/{name}\n"
         f"train     {which} ({pages} pages)\n"
         f"pages     {pages}\n"
-        f"seconds   {seconds:.2f} (base model load to save; OCR excluded)\n"
+        f"seconds   {seconds:.2f} ({scope})\n"
     )
     sys.stderr.write(text)
     path = os.path.join("results", "train", name + ".txt")
@@ -163,26 +178,86 @@ def train_embed(texts, labels, out, batch_size):
     joblib.dump(clf, os.path.join(out, "embed.joblib"))
 
 
+def load_dit():
+    """load_dit returns the image processor, model and device `embed_images` takes. The checkpoint
+    is `BeitForMaskedImageModeling`; loading it as `BeitModel` keeps the encoder and drops the
+    masked-image head. No pooling layer: `embed_images` pools itself."""
+    import torch
+    from transformers import BeitImageProcessor, BeitModel
+
+    device = "mps" if torch.backends.mps.is_available() else "cpu"
+    print(f"device: {device}", file=sys.stderr)
+    processor = BeitImageProcessor.from_pretrained(DIT_BASE, revision=DIT_REVISION)
+    model = BeitModel.from_pretrained(
+        DIT_BASE, revision=DIT_REVISION, add_pooling_layer=False, dtype=torch.float32
+    )
+    return processor, model.to(device).eval(), device
+
+
+def embed_images(images, processor, model, device):
+    """embed_images returns one row of 768 per image: the final hidden state averaged over the
+    patch positions, position 0 (CLS) left out. The processor resizes each page to 224 x 224
+    without keeping its aspect ratio, as DiT was pretrained. score.py's `predict` calls it with one
+    image at a time; train.py with a batch."""
+    import torch
+
+    batch = processor(images=images, return_tensors="pt").to(device)
+    with torch.no_grad():
+        return model(**batch).last_hidden_state[:, 1:].mean(dim=1).float().cpu().numpy()
+
+
+def train_dit(ids, labels, out, batch_size):
+    """train_dit fits logistic regression on frozen DiT embeddings, as `train_embed` does on text
+    embeddings: encoder not updated, sklearn's default C, balanced class weights. A StandardScaler
+    fitted on the train embeddings comes first; results/unscaled/ holds the fit without it. Images are read one batch at a time, so the read is inside
+    the training seconds."""
+    import joblib
+    import numpy as np
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import StandardScaler
+
+    processor, model, device = load_dit()
+    rows = []
+    for i in range(0, len(ids), batch_size):
+        images = [page_image(page_id) for page_id in ids[i : i + batch_size]]
+        rows.append(embed_images(images, processor, model, device))
+    x = np.concatenate(rows)
+    clf = make_pipeline(
+        StandardScaler(), LogisticRegression(max_iter=1000, class_weight="balanced")
+    ).fit(x, labels)
+    joblib.dump(clf, os.path.join(out, "dit.joblib"))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--train", choices=["real", "small"], required=True)
     ap.add_argument("--tfidf", action="store_true")
     ap.add_argument("--embed", action="store_true", help=f"frozen {EMBED_BASE} + logistic regression")
+    ap.add_argument("--dit", action="store_true", help=f"frozen {DIT_BASE} + logistic regression")
     ap.add_argument("--batch-size", type=int, default=16)
     args = ap.parse_args()
-    if args.tfidf == args.embed:
-        ap.error("give one of --tfidf and --embed")
+    if args.tfidf + args.embed + args.dit != 1:
+        ap.error("give one of --tfidf, --embed and --dit")
 
-    name = f"{'tfidf' if args.tfidf else 'ultrabert-embed'}-{args.train}"
+    kind = "tfidf" if args.tfidf else "ultrabert-embed" if args.embed else "dit"
+    name = f"{kind}-{args.train}"
     out = os.path.join("models", name)
-    texts, labels = training_pages(args.train)
+    ids, labels = training_pages(args.train)
     os.makedirs(out, exist_ok=True)
-    start = time.perf_counter()
-    if args.tfidf:
-        train_tfidf(texts, labels, out)
+    if args.dit:
+        start = time.perf_counter()
+        train_dit(ids, labels, out, args.batch_size)
+        scope = "base model load to save; page image reads included"
     else:
-        train_embed(texts, labels, out, args.batch_size)
-    write_seconds(name, args.train, len(texts), time.perf_counter() - start)
+        texts = [page_text(page_id) for page_id in ids]
+        start = time.perf_counter()
+        if args.tfidf:
+            train_tfidf(texts, labels, out)
+        else:
+            train_embed(texts, labels, out, args.batch_size)
+        scope = "base model load to save; OCR excluded"
+    write_seconds(name, args.train, len(ids), time.perf_counter() - start, scope)
 
 
 if __name__ == "__main__":

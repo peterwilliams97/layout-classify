@@ -3,7 +3,7 @@
 [synth-classify](../synth-classify/README.md) measured local text classifiers on short messages.
 This repo asks the same questions of document pages, using 9 types from
 RVL-CDIP-N, modern pages labelled with RVL-CDIP's types, plus pages that fit none of them.
-So far it holds the data, the OCR cache and two classifiers on the OCR text.
+So far it holds the data, the OCR cache, two classifiers on the OCR text and one on the page image.
 
 ## Aim
 
@@ -74,11 +74,15 @@ same seeded order. None failed.
   `dmis-lab/UltraBERT-Embed-150M` embeddings, at synth-classify's pinned revision, with a task
   instruction before the page text and the first 512 tokens kept. `--train real` is all 288 train
   pages; `--train small` is 10 per class, 90 in all, drawn with seed 0, the ids in
-  data/selection.json under `small`. Neither holds a reject page. Both classifiers use
-  `class_weight="balanced"`. Names are `tfidf-real`, `tfidf-small`, `ultrabert-embed-real` and
-  `ultrabert-embed-small`.
+  data/selection.json under `small`. Neither holds a reject page. Every classifier uses
+  `class_weight="balanced"`. `--dit` reads the page image instead: logistic regression on frozen
+  `microsoft/dit-base` embeddings, at a pinned revision, each the mean of the last hidden state over
+  the 196 patches of the page resized to 224 × 224, standardised by a `StandardScaler` fitted on
+  the train embeddings. Names are `tfidf-real`, `tfidf-small`,
+  `ultrabert-embed-real`, `ultrabert-embed-small`, `dit-real` and `dit-small`.
 - `score.py` — scores a model on every page of dev or test, reject pages included. A model
-  predicts one of `CLASSES`, so a reject page is always wrong. `--dump` writes each page's
+  predicts one of `CLASSES`, so a reject page is always wrong. A `dit-` model reads
+  `data/<split>/<id>.png`; its seconds leave out the image read. `--dump` writes each page's
   prediction and top probability for `confidence.py`.
 - `confidence.py` — adapted from synth-classify's. It picks the cut-offs on every dev page, then
   reports on test, at each cut-off, coverage and error on in-class pages, the reject leak, and
@@ -91,7 +95,8 @@ same seeded order. None failed.
   `results/<split>/<name>.txt` for score reports, `results/train/<name>.txt` for training time,
   `results/confidence/<name>.txt` for routing, with its inputs in `results/confidence/dumps/`, and
   `results/ocr-time.txt` for OCR time. `results/unweighted/` holds the train, score and
-  confidence files from the run without class weights, and `results/rvl-cdip/` the same files from
+  confidence files from the run without class weights, `results/unscaled/` those of the `dit-`
+  models without the scaler, and `results/rvl-cdip/` the same files from
   the RVL-CDIP runs in the appendix.
 
 ## Run
@@ -104,14 +109,14 @@ uv run pytest           # checks classes.py against aharley/rvl_cdip's label nam
 uv run python data.py   # about 12 s
 uv run python ocr.py    # about 5 min
 
-uv run python train.py --tfidf --train real          # also --train small; --embed for UltraBERT
+uv run python train.py --tfidf --train real          # also --train small; --embed for UltraBERT, --dit for DiT
 for split in dev test; do
   uv run python score.py --model tfidf-real --split $split --dump
 done
 uv run python confidence.py --model tfidf-real
 ```
 
-`--embed` training and scoring fetch the model from Hugging Face on first use.
+`--embed` and `--dit` training and scoring fetch the model from Hugging Face on first use.
 
 ## Results
 
@@ -133,11 +138,15 @@ accepted reject pages plus the accepted in-class errors, over that coverage.
 | `tfidf-real`            | 288         | 0.3536              | 0.0000           | 0.0000      | 0.3182                 | 0.0000              |
 | `ultrabert-embed-small` | 90          | 0.0055              | 0.0000           | 0.0000      | 0.0050                 | 0.0000              |
 | `ultrabert-embed-real`  | 288         | 0.2265              | 0.0000           | 0.0200      | 0.2059                 | 0.0097              |
+| `dit-small`             | 90          | 0.0000              | -                | 0.0000      | 0.0000                 | -                   |
+| `dit-real`              | 288         | 0.0000              | -                | 0.0000      | 0.0000                 | -                   |
 
 From `results/confidence/<model>.txt`, cut-off `tau` under `alpha 0.05` in the test section. That
 file also gives coverage and error over all 281 test pages, whose mix is 100 reject to 181
 in-class. With the dev error replaced by its one-sided 90% Clopper-Pearson upper bound (`tau_cp`),
 only `tfidf-small` accepts any page at α 0.05: 0.3690 of the 10% reject stream at 0.0027 error.
+For `dit-small` and `dit-real` no dev score gives at most 5% error, so `tau` is `-` and they
+accept no page.
 
 ### Accuracy
 
@@ -147,19 +156,23 @@ only `tfidf-small` accepts any page at α 0.05: 0.3690 of the 10% reject stream 
 | `tfidf-real`            | 288         | 0.4911 | 0.7624               | 0.000255         |
 | `ultrabert-embed-small` | 90          | 0.5231 | 0.8122               | 0.035            |
 | `ultrabert-embed-real`  | 288         | 0.5587 | 0.8674               | 0.0351           |
+| `dit-small`             | 90          | 0.4057 | 0.6298               | 0.0136           |
+| `dit-real`              | 288         | 0.4235 | 0.6575               | 0.0137           |
 
 Test is over all 281 pages, reject pages included. The in-class column is over the 181 pages whose
 label is in `CLASSES` (line `accuracy … without reject pages`). All from `results/test/<model>.txt`.
 
 ### Hand labels against coverage
 
-| Hand labels | Best model    | Dev coverage | Coverage at 10% reject | Error at 10% reject |
+| Hand labels | Model         | Dev coverage | Coverage at 10% reject | Error at 10% reject |
 |-------------|---------------|--------------|------------------------|---------------------|
 | 90          | `tfidf-small` | 0.2965       | 0.3998                 | 0.0174              |
+| 90          | `dit-small`   | 0.0000       | 0.0000                 | -                   |
 | 288         | `tfidf-real`  | 0.2674       | 0.3182                 | 0.0000              |
+| 288         | `dit-real`    | 0.0000       | 0.0000                 | -                   |
 
-Best is the model with the higher dev coverage at α 0.05, over all 172 dev pages; test was not used
-to choose it.
+At each count, the text row is the text model with the higher dev coverage at α 0.05, over all 172
+dev pages, and the `dit-` row is the image model; test was not used to choose either.
 
 ### Discussion
 
@@ -167,15 +180,20 @@ to choose it.
   `tfidf-small` (`results/unweighted/`). `tfidf-real`'s in-class test accuracy is 0.6685 unweighted
   and 0.7624 balanced. That comparison was read on test, so this one choice was not fixed on dev
   alone. `--train small` already has 10 pages per class, so the weights leave the `-small` models
-  unchanged.
+  unchanged. The `StandardScaler` in `--dit` was added after the unscaled run saturated at
+  probability 1.0 (`results/unscaled/`).
 - AUROC of score against correctness on all dev pages: `tfidf-small` 0.8552, `tfidf-real` 0.8349,
   `ultrabert-embed-small` 0.8315, `ultrabert-embed-real` 0.8554.
 - UltraBERT-Embed has the higher in-class accuracy at both sizes, 0.8674 for
   `ultrabert-embed-real`, but its top probabilities on dev leave fewer pages above a 5% cut-off:
   0.2059 of the 10% reject stream for `ultrabert-embed-real` and 0.0050 for
   `ultrabert-embed-small`.
+- Question 2: the OCR text beats the page image. At 10% reject, `tfidf-real` covers 0.3182 and
+  `dit-real` 0.0000. With the scaler, `dit-real` still gives a wrong dev page a score of 1.0, so no
+  cut-off reaches 5% dev error.
+- AUROC on all dev pages for the image model: `dit-small` 0.6926, `dit-real` 0.7037.
 - At the 5% cut-off no model lets through more than 2 of the 100 test reject pages.
-- Seconds per page on test: TF-IDF about 0.0003, UltraBERT-Embed about 0.035.
+- Seconds per page on test: TF-IDF about 0.0003, UltraBERT-Embed about 0.035, DiT about 0.014.
 
 ### Limits
 
@@ -289,4 +307,5 @@ RVL-CDIP's limits: 26 pages of train, dev and test and 5 of test-n have no OCR w
 layout-classify is MIT; see `LICENSE`. RVL-CDIP is a subset of IIT-CDIP, from the Legacy Tobacco
 Document Library, and is for research use. Its terms are at
 <https://www.industrydocuments.ucsf.edu/help/copyright/>. RVL-CDIP-N is under Creative Commons
-Attribution 3.0 Unported, per the `LICENSE.txt` it ships with.
+Attribution 3.0 Unported, per the `LICENSE.txt` it ships with. `microsoft/dit-base` is MIT, per
+its model card.
