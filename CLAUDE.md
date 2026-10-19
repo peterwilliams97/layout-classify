@@ -9,8 +9,9 @@ A worked example, not a library. It is the sibling of `../synth-classify`, which
 classifiers on Banking77. This repo asks the same questions of document pages, plus a reject class.
 The corpus must be native digital documents or good scans of them, rendered here at 200 dpi, split
 train / validation / test with no page in two. RVL-CDIP and RVL-CDIP-N images are out, as is any
-model trained on them. The corpus is not chosen yet, so the repo holds no data, OCR cache, models
-or results. The plan is `~/Downloads/layout-classify_plan.md` (version 1, 2026-10-17). It is not a
+model trained on them. The corpus is RVL-CDIP-N's source PDFs, with RVL-CDIP-O PDFs as reject
+pages (README § Data); the repo holds its manifests, split and OCR cache, and no models or
+results. The plan is `~/Downloads/layout-classify_plan.md` (version 1, 2026-10-17). It is not a
 claude.ai artifact. It runs in six steps, one Claude Code prompt each. Step 1 has data and the
 OCR cache. Steps 2–5 add the classifiers (TF-IDF + LR, UltraBERT-Embed-150M + LR, dit-base + LR,
 layoutlmv3-base, gemma4:e4b on page images). Step 6 is the README.
@@ -25,6 +26,8 @@ saying why the file exists, as in synth-classify.
 uv sync
 uv run python fetch.py                          # source PDFs to data/pdf/ and its manifest; resumable
 uv run python quality.py                        # quality gate on each PDF's labelled page
+uv run python split.py                          # data/manifest.jsonl and data/fewshot.txt
+uv run python render.py                         # labelled pages at 200 dpi to data/<split>/
 uv run pytest                                   # the one test: classes.py vs data/pdf/manifest.jsonl labels
 uv run pytest test_classes.py::test_classes_match_manifest_labels
 uv run python ocr.py                            # Tesseract on every manifest page; resumable
@@ -56,8 +59,10 @@ run.
   types and their one-sentence definitions. The definitions are the only type description a
   prompt-based classifier gets. `REJECT_LABEL = "none"`; reject pages are RVL-CDIP-O PDFs. Names
   are the N labels of `data/pdf/manifest.jsonl`, with underscores (`news_article`).
-- **No data builder yet.** The scripts read `data/manifest.jsonl`, one row per page with `id`,
-  `split` and `label`; `id` starts with its split and names both `data/<split>/<id>.png` and
+- **`split.py` is the only place a page gets a split.** It writes `data/manifest.jsonl`, one row
+  per page with `id`, `split`, `label`, `pdf`, `page` and `sha256`, to which `render.py` adds
+  `width` and `height`; rerunning `split.py` drops those, so `render.py` follows it. `id` starts
+  with its split and names both `data/<split>/<id>.png` and
   `ocr/<id>.json`. Splits are disjoint. Git ignores the page images (`data/*/`); the manifest and
   selection are tracked.
 - **`ocr.py` is the only OCR path.** It reads the manifest, writes `ocr/<id>.json` (`text` plus

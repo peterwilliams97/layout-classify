@@ -4,7 +4,8 @@
 This repo asks the same questions of document pages: native digital documents, or good scans of
 them, rendered here at 200 dpi, plus pages that fit none of the types. It holds two classifiers on
 the OCR text, one on the page image, one fine-tuned on both, and a local vision LLM given the page
-image and no hand labels. It holds no corpus and no results yet.
+image and no hand labels. It holds the corpus manifest, the page split and the OCR cache, and no
+results yet.
 
 ## Aim
 
@@ -23,17 +24,109 @@ Four questions, measured on one laptop:
 
 ## Data
 
-Not chosen yet. The corpus must be native digital documents or good scans of them, rendered at
-200 dpi, split train / validation / test with no page in two splits. RVL-CDIP and RVL-CDIP-N page
-images are not used, nor any model trained on them; the data, OCR cache, models and results built
-from them have been removed. The scripts read `data/manifest.jsonl`, one row per page with `id`,
-`split` and `label`, and `data/<split>/<id>.png`; the builder that writes them is still to come.
+**Source.** The corpus is the source PDFs of RVL-CDIP-N (Larson et al., *Evaluating
+Out-of-Distribution Performance on Document Image Classifiers*, NeurIPS 2022 Datasets and
+Benchmarks), from the Google Drive folder that `github.com/gxlarson/rvl-cdip-ood` links: 1002 PDFs
+behind RVL-CDIP-N's 1002 images, in 12 types, and the 254 PDFs that RVL-CDIP-O's images name,
+documents of none of the types. Most are DocumentCloud documents. The dataset is CC BY 3.0, per the
+`license` field of `jordyvl/RVL-CDIP-N`'s dataset card; the Drive folder's `LICENSE.txt` was not
+read. RVL-CDIP and RVL-CDIP-N page images are not used, nor any model trained on them: every page
+is rendered here from its PDF at 200 dpi. `docs/2026-10-19-corpus-plan.md` has the Drive listing
+and the match of images to PDFs. `fetch.py` downloads the PDFs to `data/pdf/` and writes
+`data/pdf/manifest.jsonl`.
+
+**Duplicates.** `fetch.py` hashes every PDF. 27 of the 1256 are byte copies of another and become
+aliases of the first in manifest order, which drops them before the gate: 15 N PDFs copy an N PDF
+of the same type (`pdfs_2-documentcloud_00259_news_article` has two copies), and 12 O PDFs copy an
+N one. Six file names occur in two Drive folders with different contents, so a local file name is
+`<folder>-<stem>.pdf`.
+
+**In-class pages in O.** The 12 O copies, `pdfs_2-documentcloud_00589_ood` to `_00602_ood` less
+`_00590` and `_00592`, are all the N email `pdfs_2-documentcloud_00590_email`, whose N copy is
+`_00592_email`. So RVL-CDIP-O, the set of documents of none of the types, holds an email. As
+aliases of an N PDF they are never drawn as reject pages.
+
+**Labelled page.** RVL-CDIP-N does not record which page of a PDF its image shows; 612 of the 1002
+N PDFs have more than one page. `fetch.py` renders every page at the image's pixel size and takes
+the page with the smallest perceptual-hash (phash) distance to the image. For all 1002 it is page
+1: 636 at distance 0 and 978 within 10 of 64 bits. The other 24, at 12 to 40, are RVL-CDIP-N images
+distorted from their PDF page; page 1 is taken for them too, and 8 of them are in the split.
+
+**Quality gate.** `quality.py` checks the labelled page of each of the 1229 PDFs that are not
+aliases against "native digital documents or good scans of them". A page whose largest image covers
+at least 80% of it is a scan and passes only at an image resolution of at least 150 dpi, whatever
+its text layer. Any other page passes with at least 50 non-space characters of text layer, or else
+with its largest image at 150 dpi or more. 1045 pass and 184 fail: 129 scans under 150 dpi, 53
+pages with neither a text layer nor an image at 150 dpi, and 2 that pdfplumber cannot read
+(`data/pdf/quality.jsonl`).
+
+| Type                   | Kept | Dropped |
+|------------------------|------|---------|
+| budget                 | 50   | 8       |
+| email                  | 30   | 2       |
+| form                   | 64   | 4       |
+| handwritten            | 131  | 40      |
+| invoice                | 45   | 12      |
+| letter                 | 123  | 26      |
+| memo                   | 42   | 5       |
+| news_article           | 62   | 22      |
+| questionnaire          | 39   | 0       |
+| resume                 | 131  | 51      |
+| scientific_publication | 39   | 0       |
+| specification          | 60   | 1       |
+| O (reject source)      | 229  | 13      |
+| **Total**              | 1045 | 184     |
+
+**Splits.** `split.py` splits the 816 kept N PDFs by class with `random.Random(0)`: test 40%,
+validation 30%, train 30%, each class rounded by largest remainder, a tie going to test, then
+validation, then train. A PDF gives one page, so no document is in two splits, and the run asserts
+that no sha256 is. It writes `data/manifest.jsonl` (`id`, `split`, `label`, `pdf`, `page`,
+`sha256`, and from `render.py` `width` and `height`) and `data/fewshot.txt`, the first 3 train pages
+of each class, 36 in all, a subset of train and not a fourth split. `render.py` writes each page to
+`data/<split>/<id>.png`.
+
+| Class                  | Train | Validation | Test | Total |
+|------------------------|-------|------------|------|-------|
+| budget                 | 15    | 15         | 20   | 50    |
+| email                  | 9     | 9          | 12   | 30    |
+| form                   | 19    | 19         | 26   | 64    |
+| handwritten            | 39    | 39         | 53   | 131   |
+| invoice                | 13    | 14         | 18   | 45    |
+| letter                 | 37    | 37         | 49   | 123   |
+| memo                   | 12    | 13         | 17   | 42    |
+| news_article           | 18    | 19         | 25   | 62    |
+| questionnaire          | 12    | 12         | 15   | 39    |
+| resume                 | 39    | 39         | 53   | 131   |
+| scientific_publication | 12    | 12         | 15   | 39    |
+| specification          | 18    | 18         | 24   | 60    |
+| **In-class**           | 243   | 246        | 327  | 816   |
+| reject (RVL-CDIP-O)    | 27    | 27         | 36   | 90    |
+| **Split total**        | 270   | 273        | 363  | 906   |
+
+**Reject pages.** Each split gets round(in-class / 9) reject pages, a tenth of the split: page 1 of
+kept O PDFs, drawn with the same `random.Random(0)` after the classes, labelled `none`. Train's 27
+are in the manifest but no classifier trains on them.
+
+**Limits.**
+
+- Phone photos of documents pass the gate: a photo at 150 dpi or more is a scan by its rule.
+- email, questionnaire and scientific_publication have 12 to 16 test pages each (12, 15 and 15), so
+  their per-class figures are coarse.
+- DocumentCloud documents keep their own rights; CC BY 3.0 covers the dataset, not them.
+- DiT and LayoutLMv3 are pretrained on IIT-CDIP, which does not contain these documents.
 
 ## Files
 
 - `classes.py` — `CLASSES`, the 12 RVL-CDIP-N types with a one-sentence definition each, saying
   what separates the type from its near pair; `REJECT_LABEL`, `"none"`. `test_classes.py` checks
   that `CLASSES` are the labels of the N rows of `data/pdf/manifest.jsonl`.
+- `fetch.py` — downloads the source PDFs to `data/pdf/` and writes `data/pdf/manifest.jsonl`, one
+  row per PDF with its sha256, aliases and labelled page; resumable.
+- `quality.py` — the quality gate above, on each PDF's labelled page; writes
+  `data/pdf/quality.jsonl`.
+- `split.py` — the split above; writes `data/manifest.jsonl` and `data/fewshot.txt`.
+- `render.py` — renders each manifest page at 200 dpi to `data/<split>/<id>.png` and records its
+  pixel size in the manifest.
 - `ocr.py` — runs Tesseract once on every page in the manifest. It writes `ocr/<id>.json`:
   `{"text", "words": [{"text", "x0", "y0", "x1", "y1", "conf"}]}`, with boxes in pixels of the
   page image. It skips pages already cached. Each run that OCRs a page appends a block to
@@ -99,7 +192,11 @@ Tesseract must be installed (`brew install tesseract`).
 
 ```sh
 uv sync
-uv run pytest           # checks classes.py against data/pdf/manifest.jsonl's labels
+uv run python fetch.py      # source PDFs to data/pdf/; resumable
+uv run python quality.py
+uv run python split.py
+uv run python render.py
+uv run pytest               # checks classes.py against data/pdf/manifest.jsonl's labels
 uv run python ocr.py
 
 uv run python train.py --tfidf --train real          # also --train small; --embed for UltraBERT, --dit for DiT
