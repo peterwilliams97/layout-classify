@@ -6,14 +6,14 @@ before it. `--dit` reads the page image instead of the text: logistic regression
 small` is `SMALL_PER_CLASS` of them per class, drawn with SEED and recorded in data/selection.json
 under "small". Neither holds a reject page: train has none. `--labels llm` fits on the labels
 llm.py's `label_split` wrote to data/llm-labels/train.jsonl instead of the hand labels, and the
-model name takes the suffix `-llm`; dev keeps its hand labels, so C is still chosen on them.
+model name takes the suffix `-llm`; validation keeps its hand labels, so C is still chosen on them.
 
 Adapted from synth-classify's train.py. For `--embed` and `--dit`, the logistic regression's C is
-chosen from C_GRID on dev, never test: each C is fitted on train, and the one whose top probability
-best ranks dev pages right over wrong, by AUROC, is kept (`choose_c`). Everything else — TF-IDF's
-C, n-grams, the token limit — is fixed, not tuned. Every classifier weights classes
-inversely to their train counts (`class_weight="balanced"`), so a class with few train pages is
-not crowded out by one with many."""
+chosen from C_GRID on validation, never test: each C is fitted on train, and the one whose top
+probability best ranks validation pages right over wrong, by AUROC, is kept (`choose_c`). Everything
+else — TF-IDF's C, n-grams, the token limit — is fixed, not tuned. Every classifier weights classes
+inversely to their train counts (`class_weight="balanced"`), so a class with few train pages is not
+crowded out by one with many."""
 
 import argparse
 import json
@@ -40,7 +40,7 @@ EMBED_REVISION = "367d5343b5a0164d57b810cedf5de4b8983d5984"
 # instruction, this one names the domain and the task and no class.
 EMBED_PROMPT = "Instruct: Given the OCR text of a scanned document page, find its document type\nQuery: "
 # A page runs to hundreds of words where a Banking77 message has a dozen, so the limit is 512
-# tokens rather than synth-classify's 128. It is fixed, not chosen on dev.
+# tokens rather than synth-classify's 128. It is fixed, not chosen on validation.
 EMBED_MAX_TOKENS = 512
 
 # The image model: DiT's self-supervised checkpoint, not microsoft/dit-base-finetuned-rvlcdip,
@@ -143,38 +143,39 @@ def training_pages(which, source):
     return [r["id"] for r in rows], llm, agreement(hand, llm)
 
 
-def dev_pages():
-    """The (page ids, label indices) of every dev page, reject pages included, in manifest order. A
-    reject page's index is -1, which no prediction equals."""
-    rows = [r for r in manifest() if r["split"] == "dev"]
+def validation_pages():
+    """The (page ids, label indices) of every validation page, reject pages included, in manifest
+    order. A reject page's index is -1, which no prediction equals."""
+    rows = [r for r in manifest() if r["split"] == "validation"]
     if not rows:
-        sys.exit(f"{MANIFEST}: no dev pages")
+        sys.exit(f"{MANIFEST}: no validation pages")
     names = list(CLASSES)
     unknown = sorted({r["label"] for r in rows} - set(names) - {REJECT_LABEL})
     if unknown:
-        sys.exit(f"{MANIFEST}: dev labels not in CLASSES or REJECT_LABEL: {unknown}")
+        sys.exit(f"{MANIFEST}: validation labels not in CLASSES or REJECT_LABEL: {unknown}")
     gold = [names.index(r["label"]) if r["label"] in names else -1 for r in rows]
     return [r["id"] for r in rows], gold
 
 
-def choose_c(make, x, labels, dev_x, dev_gold):
+def choose_c(make, x, labels, validation_x, validation_gold):
     """choose_c fits `make(C)` on the train rows `x` for each C in C_GRID and keeps the one with the
-    highest dev AUROC of top probability against correctness — the ranking confidence.py's cut-off
-    depends on. Every dev page counts, a reject page as wrong. A tie goes to the smaller C. Returns
-    the chosen C, its fitted classifier and the "C … dev AUROC …" lines for results/train/."""
+    highest validation AUROC of top probability against correctness — the ranking confidence.py's
+    cut-off depends on. Every validation page counts, a reject page as wrong. A tie goes to the
+    smaller C. Returns the chosen C, its fitted classifier and the "C … validation AUROC …" lines
+    for results/train/."""
     import numpy as np
     from sklearn.metrics import roc_auc_score
 
     best, lines = None, []
     for c in C_GRID:
         clf = make(c).fit(x, labels)
-        proba = clf.predict_proba(dev_x)
-        correct = clf.classes_[proba.argmax(axis=1)] == np.array(dev_gold)
+        proba = clf.predict_proba(validation_x)
+        correct = clf.classes_[proba.argmax(axis=1)] == np.array(validation_gold)
         auroc = roc_auc_score(correct, proba.max(axis=1))
-        lines.append(f"C {c:<5} dev AUROC {auroc:.4f}")
+        lines.append(f"C {c:<5} validation AUROC {auroc:.4f}")
         if best is None or auroc > best[2]:
             best = (c, clf, auroc)
-    lines.append(f"chosen    C {best[0]} (highest dev AUROC; a tie goes to the smaller C)")
+    lines.append(f"chosen    C {best[0]} (highest validation AUROC; a tie goes to the smaller C)")
     return best[0], best[1], lines
 
 
@@ -247,9 +248,9 @@ def embed(texts, tok, model, device):
         return model(**batch).last_hidden_state[:, 0].float().cpu().numpy()
 
 
-def train_embed(texts, labels, dev_texts, dev_gold, out, batch_size):
+def train_embed(texts, labels, validation_texts, validation_gold, out, batch_size):
     """train_embed fits logistic regression on frozen embeddings; the encoder is not updated. C is
-    chosen on dev by `choose_c`. Class weights are balanced, as in `train_tfidf`. Returns
+    chosen on validation by `choose_c`. Class weights are balanced, as in `train_tfidf`. Returns
     `choose_c`'s lines."""
     import joblib
     import numpy as np
@@ -260,7 +261,7 @@ def train_embed(texts, labels, dev_texts, dev_gold, out, batch_size):
         [embed(ts[i : i + batch_size], tok, model, device) for i in range(0, len(ts), batch_size)]
     )
     make = lambda c: LogisticRegression(C=c, max_iter=1000, class_weight="balanced")
-    _, clf, grid = choose_c(make, rows(texts), labels, rows(dev_texts), dev_gold)
+    _, clf, grid = choose_c(make, rows(texts), labels, rows(validation_texts), validation_gold)
     joblib.dump(clf, os.path.join(out, "embed.joblib"))
     return grid
 
@@ -293,9 +294,9 @@ def embed_images(images, processor, model, device):
         return model(**batch).last_hidden_state[:, 1:].mean(dim=1).float().cpu().numpy()
 
 
-def train_dit(ids, labels, dev_ids, dev_gold, out, batch_size):
+def train_dit(ids, labels, validation_ids, validation_gold, out, batch_size):
     """train_dit fits logistic regression on frozen DiT embeddings, as `train_embed` does on text
-    embeddings: encoder not updated, C chosen on dev by `choose_c`, balanced class weights. A
+    embeddings: encoder not updated, C chosen on validation by `choose_c`, balanced class weights. A
     StandardScaler fitted on the train embeddings comes first. Images are read one batch at a time,
     so the read is inside the training seconds. Returns `choose_c`'s lines."""
     import joblib
@@ -316,7 +317,7 @@ def train_dit(ids, labels, dev_ids, dev_gold, out, batch_size):
     make = lambda c: make_pipeline(
         StandardScaler(), LogisticRegression(C=c, max_iter=1000, class_weight="balanced")
     )
-    _, clf, grid = choose_c(make, rows(ids), labels, rows(dev_ids), dev_gold)
+    _, clf, grid = choose_c(make, rows(ids), labels, rows(validation_ids), validation_gold)
     joblib.dump(clf, os.path.join(out, "dit.joblib"))
     return grid
 
@@ -340,10 +341,11 @@ def main():
     os.makedirs(out, exist_ok=True)
     grid = []
     if args.dit:
-        dev_ids, dev_gold = dev_pages()
+        validation_ids, validation_gold = validation_pages()
         start = time.perf_counter()
-        grid = train_dit(ids, labels, dev_ids, dev_gold, out, args.batch_size)
-        scope = "base model load to save; dev embedding, C grid and page image reads included"
+        grid = train_dit(ids, labels, validation_ids, validation_gold, out, args.batch_size)
+        scope = ("base model load to save; validation embedding, C grid and page image reads"
+                 " included")
     else:
         texts = [page_text(page_id) for page_id in ids]
         if args.tfidf:
@@ -351,11 +353,13 @@ def main():
             train_tfidf(texts, labels, out)
             scope = "base model load to save; OCR excluded"
         else:
-            dev_ids, dev_gold = dev_pages()
-            dev_texts = [page_text(page_id) for page_id in dev_ids]
+            validation_ids, validation_gold = validation_pages()
+            validation_texts = [page_text(page_id) for page_id in validation_ids]
             start = time.perf_counter()
-            grid = train_embed(texts, labels, dev_texts, dev_gold, out, args.batch_size)
-            scope = "base model load to save; dev embedding and C grid included; OCR excluded"
+            grid = train_embed(texts, labels, validation_texts, validation_gold, out,
+                               args.batch_size)
+            scope = ("base model load to save; validation embedding and C grid included; OCR"
+                     " excluded")
     seconds = time.perf_counter() - start
     write_seconds(name, args.train, args.labels, len(ids), seconds, scope, grid + agree)
 

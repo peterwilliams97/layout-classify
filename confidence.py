@@ -1,25 +1,25 @@
 """Selective-routing report for one classifier.
 
-Input: the two `score.py --dump` files of one model, dev and test, at
+Input: the two `score.py --dump` files of one model, validation and test, at
 results/confidence/dumps/<model>-<split>.jsonl. Each row has `id`, `label`, `predicted` and
 `score`, the top probability over CLASSES. A row labelled REJECT_LABEL is always wrong: no model
 predicts it, so a reject page that scores above a cut-off is an accepted error.
 
 Computed:
-  AUROC of score against correctness on every dev page.
-  For each alpha in ALPHAS, two cut-offs from dev, every dev page included:
-    tau     the lowest dev score at which the dev error among pages
+  AUROC of score against correctness on every validation page.
+  For each alpha in ALPHAS, two cut-offs from validation, every validation page included:
+    tau     the lowest validation score at which the validation error among pages
             scoring >= tau is <= alpha;
-    tau_cp  the same, with the dev error replaced by its one-sided
+    tau_cp  the same, with the validation error replaced by its one-sided
             CP_LEVEL Clopper-Pearson upper bound.
   Then on test, the same cut-offs applied:
     on in-class pages (label in CLASSES): AUROC of score against
     correctness; isotonic regression of correctness on score, fitted on
-    dev, and ECE over ECE_BINS equal-count bins, before and after;
+    validation, and ECE over ECE_BINS equal-count bins, before and after;
     coverage (share of pages scoring >= cut-off) and error among them;
     at tau, recall per true class among accepted pages;
     reject_leak, the share of REJECT_LABEL pages scoring >= cut-off, also
-    given on dev;
+    given on validation;
     coverage and error of a stream that is REJECT_SHARE reject pages and
     the rest in-class, from the in-class numbers and reject_leak:
       coverage_10 = (1 - r) * coverage_inclass + r * reject_leak
@@ -47,7 +47,7 @@ from classes import CLASSES, REJECT_LABEL
 
 ALPHAS = [0.02, 0.05, 0.10]
 ECE_BINS = 10
-# One-sided confidence level of the Clopper-Pearson upper bound on dev error behind `tau_cp`.
+# One-sided confidence level of the Clopper-Pearson upper bound on validation error behind `tau_cp`.
 CP_LEVEL = 0.90
 # Share of reject pages in the stream the deployed numbers are reported for. Test's own share is
 # set by the corpus's counts, not by any expected input.
@@ -118,38 +118,40 @@ def main():
     width = max(len(name) for name in names)
     path = lambda split: os.path.join(DUMPS, f"{args.model}-{split}.jsonl")
 
-    dev_s, dev_c, dev_y = read_dump(path("dev"), names)
+    validation_s, validation_c, validation_y = read_dump(path("validation"), names)
     iso = IsotonicRegression(increasing=True, y_min=0, y_max=1, out_of_bounds="clip")
-    iso.fit(dev_s, dev_c)
+    iso.fit(validation_s, validation_c)
     cuts = {
         alpha: {
-            "tau   ": threshold(dev_s, dev_c, alpha, bound=False),
-            "tau_cp": threshold(dev_s, dev_c, alpha, bound=True),
+            "tau   ": threshold(validation_s, validation_c, alpha, bound=False),
+            "tau_cp": threshold(validation_s, validation_c, alpha, bound=True),
         }
         for alpha in ALPHAS
     }
-    dev_reject = dev_y == reject
+    validation_reject = validation_y == reject
 
     lines = [
         f"model     {args.model}",
-        f"dev       {path('dev')} ({len(dev_s)} pages, {int(dev_reject.sum())} reject;"
-        f" accuracy {dev_c.mean():.4f})",
+        f"validation {path('validation')} ({len(validation_s)} pages,"
+        f" {int(validation_reject.sum())} reject; accuracy {validation_c.mean():.4f})",
         "score     top probability over CLASSES; a REJECT_LABEL page is always wrong",
-        f"dev AUROC of score against correctness, all pages  {roc_auc_score(dev_c, dev_s):.4f}",
-        "routing: accept a page when its score is at least the cut-off, chosen on every dev page",
-        "  tau     lowest dev score whose accepted dev error is at most alpha",
-        f"  tau_cp  the same with the dev error's one-sided {CP_LEVEL:.0%} Clopper-Pearson upper"
-        " bound",
+        "validation AUROC of score against correctness, all pages  "
+        f"{roc_auc_score(validation_c, validation_s):.4f}",
+        "routing: accept a page when its score is at least the cut-off, chosen on every"
+        " validation page",
+        "  tau     lowest validation score whose accepted validation error is at most alpha",
+        f"  tau_cp  the same with the validation error's one-sided {CP_LEVEL:.0%} Clopper-Pearson"
+        " upper bound",
         "  reject_leak  share of reject pages scoring at least the cut-off",
     ]
     for alpha, taus in cuts.items():
         lines.append(f"  alpha {alpha:.2f}")
         for label, t in taus.items():
-            cov, err = routed(dev_s, dev_c, t)
-            leak = (dev_s[dev_reject] >= t).mean()
+            cov, err = routed(validation_s, validation_c, t)
+            leak = (validation_s[validation_reject] >= t).mean()
             lines.append(
                 f"    {label} {fmt(None if np.isinf(t) else t, '.6f'):<8}  "
-                f"dev coverage {cov:.4f} error {fmt(err)} reject_leak {leak:.4f}"
+                f"validation coverage {cov:.4f} error {fmt(err)} reject_leak {leak:.4f}"
             )
 
     all_s, all_c, all_y = read_dump(path("test"), names)
@@ -167,7 +169,7 @@ def main():
         f"  AUROC of score against correctness, in-class  {roc_auc_score(c, s):.4f}",
         f"  mean score, right predictions       {s[c == 1].mean():.4f} ({int(c.sum())})",
         f"  mean score, wrong predictions       {s[c == 0].mean():.4f} ({int(len(c) - c.sum())})",
-        f"  ECE, {ECE_BINS} equal-count bins, isotonic fitted on dev"
+        f"  ECE, {ECE_BINS} equal-count bins, isotonic fitted on validation"
         f"  before {ece(s, c, s):.4f}  after {ece(iso.predict(s), c, s):.4f}",
         f"  stream_10: {REJECT_SHARE:.0%} reject pages, {1 - REJECT_SHARE:.0%} in-class",
     ]

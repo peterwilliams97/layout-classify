@@ -5,12 +5,13 @@ data/<split>/<id>.png; the first `MAX_TOKENS` tokens are kept. Every weight is t
 included, unlike train.py's frozen embeddings. `--train real` and `--train small` are train.py's
 training sets (`training_pages`).
 
-The ModernBERT analogue of synth-classify's train.py. The settings were fixed before any dev page
-was read: `EPOCHS`, `LR`, `BATCH_SIZE`, seed `SEED`, AdamW with weight decay 0.01, a linear schedule
-with a 10% warm-up, cross-entropy weighted inversely to train counts as train.py's
-`class_weight="balanced"`. The one choice dev makes is the epoch: after each, every dev page is
-scored, a reject page as wrong, and the model is saved when its dev accuracy is the highest so far,
-a tie keeping the earlier epoch. So dev is not held out for confidence.py, as for train.py's C."""
+The ModernBERT analogue of synth-classify's train.py. The settings were fixed before any validation
+page was read: `EPOCHS`, `LR`, `BATCH_SIZE`, seed `SEED`, AdamW with weight decay 0.01, a linear
+schedule with a 10% warm-up, cross-entropy weighted inversely to train counts as train.py's
+`class_weight="balanced"`. The one choice validation makes is the epoch: after each, every
+validation page is scored, a reject page as wrong, and the model is saved when its validation
+accuracy is the highest so far, a tie keeping the earlier epoch. So validation is not held out for
+confidence.py, as for train.py's C."""
 
 import argparse
 import os
@@ -22,7 +23,7 @@ import time
 os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
 
 from classes import CLASSES
-from train import SEED, dev_pages, page_image, training_pages
+from train import SEED, validation_pages, page_image, training_pages
 
 # CC BY-NC-SA 4.0. Pinned so the weights cannot move under the results.
 LAYOUTLMV3_BASE = "microsoft/layoutlmv3-base"
@@ -90,9 +91,9 @@ def load_model(path, revision=None):
     return model.to(device), device
 
 
-def finetune(ids, labels, dev_ids, dev_gold, out):
-    """finetune trains for `EPOCHS` and saves the epoch with the best dev accuracy to `out`. Returns
-    the best epoch, from 1, and each epoch's dev accuracy."""
+def finetune(ids, labels, validation_ids, validation_gold, out):
+    """finetune trains for `EPOCHS` and saves the epoch with the best validation accuracy to `out`.
+    Returns the best epoch, from 1, and each epoch's validation accuracy."""
     import torch
     from transformers import get_linear_schedule_with_warmup
 
@@ -102,7 +103,7 @@ def finetune(ids, labels, dev_ids, dev_gold, out):
     # Encoded once, every page padded to MAX_TOKENS so a batch is rows of one tensor. Padding is
     # masked out of attention, so it changes the time and not the result.
     pages = encode(ids, processor, "max_length")
-    dev = encode(dev_ids, processor, "max_length")
+    validation = encode(validation_ids, processor, "max_length")
 
     counts = [labels.count(c) for c in range(len(CLASSES))]
     weight = torch.tensor([len(labels) / (len(CLASSES) * n) for n in counts], device=device)
@@ -133,13 +134,14 @@ def finetune(ids, labels, dev_ids, dev_gold, out):
         model.eval()
         preds = []
         with torch.no_grad():
-            for i in range(0, len(dev_ids), BATCH_SIZE):
-                batch = {k: v[i : i + BATCH_SIZE].to(device) for k, v in dev.items()}
+            for i in range(0, len(validation_ids), BATCH_SIZE):
+                batch = {k: v[i : i + BATCH_SIZE].to(device) for k, v in validation.items()}
                 preds += model(**batch).logits.argmax(dim=1).tolist()
-        accuracy = sum(p == g for p, g in zip(preds, dev_gold)) / len(dev_gold)
+        accuracy = sum(p == g for p, g in zip(preds, validation_gold)) / len(validation_gold)
         accuracies.append(accuracy)
         print(
-            f"epoch {epoch}/{EPOCHS} loss {total / len(order):.4f} dev accuracy {accuracy:.4f}",
+            f"epoch {epoch}/{EPOCHS} loss {total / len(order):.4f}"
+            f" validation accuracy {accuracy:.4f}",
             file=sys.stderr,
         )
         if accuracy > max(accuracies[:-1], default=-1):
@@ -160,10 +162,10 @@ def main():
     name = f"layoutlmv3-{args.train}"
     out = os.path.join("models", name)
     ids, labels, _ = training_pages(args.train, "hand")
-    dev_ids, dev_gold = dev_pages()
+    validation_ids, validation_gold = validation_pages()
     os.makedirs(out, exist_ok=True)
     start = time.perf_counter()
-    best, accuracies = finetune(ids, labels, dev_ids, dev_gold, out)
+    best, accuracies = finetune(ids, labels, validation_ids, validation_gold, out)
     minutes = (time.perf_counter() - start) / 60
 
     text = (
@@ -171,10 +173,11 @@ def main():
         f"train     {args.train} ({len(ids)} pages)\n"
         f"pages     {len(ids)}\n"
         f"epochs    {EPOCHS}\n"
-        f"minutes   {minutes:.1f} (base model load to last save; encoding and dev scoring included)\n"
-        f"best      epoch {best} (highest dev accuracy, all {len(dev_gold)} dev pages, reject pages"
-        f" wrong; a tie keeps the earlier epoch)\n"
-    ) + "".join(f"epoch {i:<3} dev accuracy {a:.4f}\n" for i, a in enumerate(accuracies, 1))
+        f"minutes   {minutes:.1f} (base model load to last save; encoding and validation scoring"
+        " included)\n"
+        f"best      epoch {best} (highest validation accuracy, all {len(validation_gold)} validation"
+        " pages, reject pages wrong; a tie keeps the earlier epoch)\n"
+    ) + "".join(f"epoch {i:<3} validation accuracy {a:.4f}\n" for i, a in enumerate(accuracies, 1))
     sys.stderr.write(text)
     path = os.path.join("results", "train", name + ".txt")
     os.makedirs(os.path.dirname(path), exist_ok=True)

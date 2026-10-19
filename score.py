@@ -30,7 +30,7 @@ from classes import CLASSES, REJECT_LABEL
 from llm import MODEL, NAMES, classify
 from train import manifest, page_image, page_text
 
-SPLITS = ["dev", "test"]
+SPLITS = ["validation", "test"]
 
 
 def predict(model_dir, ids):

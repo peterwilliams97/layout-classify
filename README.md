@@ -42,49 +42,48 @@ from them have been removed. The scripts read `data/manifest.jsonl`, one row per
   `--tfidf` is TF-IDF + logistic regression; `--embed` is logistic regression on frozen
   `dmis-lab/UltraBERT-Embed-150M` embeddings, at synth-classify's pinned revision, with a task
   instruction before the page text and the first 512 tokens kept. `--train real` is every train
-  page; `--train small` is 10 per class, drawn with seed 0, the ids in
-  data/selection.json under `small`. Neither holds a reject page. Every classifier uses
-  `class_weight="balanced"`. For `--embed` and `--dit`, C is the value in `C_GRID` (0.01, 0.1, 1,
-  10), each fitted on train, with the highest dev AUROC of top probability against correctness
-  over all dev pages, a tie going to the smaller C; `results/train/<name>.txt` gives each value's
-  AUROC and the choice. `--tfidf` keeps its fixed C of 10 on its sparse features, with no grid.
-  `--dit` reads the page image instead: logistic regression on frozen
-  `microsoft/dit-base` embeddings, at a pinned revision, each the mean of the last hidden state over
-  the 196 patches of the page resized to 224 × 224, standardised by a `StandardScaler` fitted on
-  the train embeddings. Names are `tfidf-real`, `tfidf-small`,
-  `ultrabert-embed-real`, `ultrabert-embed-small`, `dit-real` and `dit-small`. `--labels llm` fits
-  on the labels in `data/llm-labels/train.jsonl` instead of the hand labels and adds `-llm` to the
-  name, as in `tfidf-real-llm` and `ultrabert-embed-real-llm`; dev keeps its hand labels, so C is
-  still chosen on them. Its `results/train/<name>.txt` adds the share of train pages whose llm
-  label equals the hand label, and the confusion matrix, rows hand and columns llm.
+  page; `--train small` is 10 per class, drawn with seed 0, the ids in data/selection.json under
+  `small`. Neither holds a reject page. Every classifier uses `class_weight="balanced"`. For
+  `--embed` and `--dit`, C is the value in `C_GRID` (0.01, 0.1, 1, 10), each fitted on train, with
+  the highest validation AUROC of top probability against correctness over all validation pages, a
+  tie going to the smaller C; `results/train/<name>.txt` gives each value's AUROC and the choice.
+  `--tfidf` keeps its fixed C of 10 on its sparse features, with no grid. `--dit` reads the page
+  image instead: logistic regression on frozen `microsoft/dit-base` embeddings, at a pinned
+  revision, each the mean of the last hidden state over the 196 patches of the page resized to 224 ×
+  224, standardised by a `StandardScaler` fitted on the train embeddings. Names are `tfidf-real`,
+  `tfidf-small`, `ultrabert-embed-real`, `ultrabert-embed-small`, `dit-real` and `dit-small`.
+  `--labels llm` fits on the labels in `data/llm-labels/train.jsonl` instead of the hand labels and
+  adds `-llm` to the name, as in `tfidf-real-llm` and `ultrabert-embed-real-llm`; validation keeps
+  its hand labels, so C is still chosen on them. Its `results/train/<name>.txt` adds the share of
+  train pages whose llm label equals the hand label, and the confusion matrix, rows hand and columns
+  llm.
 - `finetune.py` — fine-tunes every weight of `microsoft/layoutlmv3-base`, at a pinned revision, with
   a new head over `CLASSES`, and saves it to `models/<name>/`. A page's input is its OCR words and
   boxes from `ocr/<id>.json`, the boxes scaled to 0–1000 of the page, and `data/<split>/<id>.png`;
   the first 512 tokens are kept. `--layoutlmv3 --train real` or `--train small` takes `train.py`'s
-  training sets. The settings were fixed before any dev page was read: 10 epochs, learning rate
-  2e-5, batch 8, seed 0, AdamW with weight decay 0.01, a linear schedule with 10% warm-up, and
-  cross-entropy weighted as `class_weight="balanced"`. After each epoch every dev page is scored, a
-  reject page as wrong, and the epoch with the highest dev accuracy is kept, a tie keeping the
-  earlier; `results/train/<name>.txt` gives each epoch's accuracy and the minutes. Names are
-  `layoutlmv3-real` and `layoutlmv3-small`.
-- `score.py` — scores a model on every page of dev or test, reject pages included. A model predicts
-  one of `CLASSES`, so a reject page is always wrong. A `dit-` model reads `data/<split>/<id>.png`;
-  its seconds leave out the image read. A `layoutlmv3-` model reads the OCR words and boxes and the
-  image; its seconds are the forward pass, the page read and the processor excluded. `--dump` writes
-  each page's prediction and top probability for `confidence.py`.
+  training sets. The settings were fixed before any validation page was read: 10 epochs, learning
+  rate 2e-5, batch 8, seed 0, AdamW with weight decay 0.01, a linear schedule with 10% warm-up, and
+  cross-entropy weighted as `class_weight="balanced"`. After each epoch every validation page is
+  scored, a reject page as wrong, and the epoch with the highest validation accuracy is kept, a tie
+  keeping the earlier; `results/train/<name>.txt` gives each epoch's accuracy and the minutes. Names
+  are `layoutlmv3-real` and `layoutlmv3-small`.
+- `score.py` — scores a model on every page of validation or test, reject pages included. A model
+  predicts one of `CLASSES`, so a reject page is always wrong. A `dit-` model reads
+  `data/<split>/<id>.png`; its seconds leave out the image read. A `layoutlmv3-` model reads the OCR
+  words and boxes and the image; its seconds are the forward pass, the page read and the processor
+  excluded. `--dump` writes each page's prediction and top probability for `confidence.py`.
 - `llm.py` — `classify` sends one page image, `data/<split>/<id>.png`, to `gemma4:e4b` on Ollama
   with `PROMPT`: the 12 `CLASSES` names and their definitions. The reply is restricted by Ollama's
   structured output to an enum of those names, at temperature 0 with thinking off. With
-  `allow_reject` the prompt is `REJECT_PROMPT`, which adds `none` for a page that fits no
-  type, and the enum holds it too. `score.py --llm gemma4-image` or `--llm gemma4-image-reject`
-  scores it; its seconds are the Ollama request, the image read excluded. It gives no probability,
-  so there is no `--dump` and no cut-off. The report of `gemma4-image-reject` adds the share of
-  reject pages it labelled `none` and the share of in-class pages it did. `label_split`
-  runs `classify` without reject on every page of a split and writes `data/llm-labels/<split>.jsonl`,
-  one row per page with `id`, `label` and `seconds`: `uv run python llm.py --split train`. That
-  file is tracked.
-- `confidence.py` — adapted from synth-classify's. It picks the cut-offs on every dev page, then
-  reports on test, at each cut-off, coverage and error on in-class pages, the reject leak, and
+  `allow_reject` the prompt is `REJECT_PROMPT`, which adds `none` for a page that fits no type, and
+  the enum holds it too. `score.py --llm gemma4-image` or `--llm gemma4-image-reject` scores it; its
+  seconds are the Ollama request, the image read excluded. It gives no probability, so there is no
+  `--dump` and no cut-off. The report of `gemma4-image-reject` adds the share of reject pages it
+  labelled `none` and the share of in-class pages it did. `label_split` runs `classify` without
+  reject on every page of a split and writes `data/llm-labels/<split>.jsonl`, one row per page with
+  `id`, `label` and `seconds`: `uv run python llm.py --split train`. That file is tracked.
+- `confidence.py` — adapted from synth-classify's. It picks the cut-offs on every validation page,
+  then reports on test, at each cut-off, coverage and error on in-class pages, the reject leak, and
   coverage and error for a stream with 10% reject pages and for all test pages.
 - `data/` — the manifest and the selection are tracked. The page images are ignored by git.
 - `ocr/` — the OCR cache, one JSON file per page.
@@ -105,12 +104,12 @@ uv run python ocr.py
 
 uv run python train.py --tfidf --train real          # also --train small; --embed for UltraBERT, --dit for DiT
 uv run python finetune.py --layoutlmv3 --train real  # also --train small
-for split in dev test; do
+for split in validation test; do
   uv run python score.py --model tfidf-real --split $split --dump
 done
 uv run python confidence.py --model tfidf-real
 ollama serve &   # gemma4:e4b pulled
-uv run python score.py --llm gemma4-image --split test   # also gemma4-image-reject; dev
+uv run python score.py --llm gemma4-image --split test   # also gemma4-image-reject; validation
 uv run python llm.py --split train                       # gemma4:e4b labels train
 uv run python train.py --tfidf --train real --labels llm # also --embed
 ```

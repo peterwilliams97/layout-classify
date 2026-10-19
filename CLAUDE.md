@@ -30,9 +30,9 @@ uv run pytest test_classes.py::test_classes_match_manifest_labels
 uv run python ocr.py                            # Tesseract on every manifest page; resumable
 uv run python train.py --tfidf --train real     # or --embed, --dit; or --train small
 uv run python finetune.py --layoutlmv3 --train real   # or --train small; ~11 min real, ~4 small
-uv run python score.py --model tfidf-real --split dev --dump   # also test
-uv run python confidence.py --model tfidf-real  # needs the dev and test dumps
-uv run python score.py --llm gemma4-image --split dev   # or gemma4-image-reject; needs ollama serve
+uv run python score.py --model tfidf-real --split validation --dump   # also test
+uv run python confidence.py --model tfidf-real  # needs the validation and test dumps
+uv run python score.py --llm gemma4-image --split validation   # or gemma4-image-reject; needs ollama serve
 uv run python llm.py --split train              # gemma4:e4b labels to data/llm-labels/; ~4 min
 uv run python train.py --tfidf --train real --labels llm   # or --embed; name gets -llm
 ```
@@ -58,7 +58,8 @@ run.
   are the N labels of `data/pdf/manifest.jsonl`, with underscores (`news_article`).
 - **No data builder yet.** The scripts read `data/manifest.jsonl`, one row per page with `id`,
   `split` and `label`; `id` starts with its split and names both `data/<split>/<id>.png` and
-  `ocr/<id>.json`. Splits are disjoint. The scripts still call the middle split `dev`. Git ignores the page images (`data/*/`); the manifest and selection are tracked.
+  `ocr/<id>.json`. Splits are disjoint. Git ignores the page images (`data/*/`); the manifest and
+  selection are tracked.
 - **`ocr.py` is the only OCR path.** It reads the manifest, writes `ocr/<id>.json` (`text` plus
   word boxes in page pixels) and skips files already present. Every text classifier reads this
   cache and never re-OCRs. `results/ocr-time.txt` is the one OCR timing, reported apart from
@@ -68,17 +69,17 @@ run.
   back the same entry.
 - **One scoring script, one confidence script.** `score.py` scores every page of a split, reject
   pages included; models predict only `CLASSES`, so a `REJECT_LABEL` page is always wrong.
-  `confidence.py` chooses cut-offs on all dev pages and reports, on test, in-class coverage and
-  error, `reject_leak`, and a stream with `REJECT_SHARE` (10%) reject pages.
-  A later classifier (image or LLM) adds a branch to `score.py`'s `predict` and writes the same dump
-  format: `id`, `label`, `predicted`, `score`.
+  `confidence.py` chooses cut-offs on all validation pages and reports, on test, in-class coverage
+  and error, `reject_leak`, and a stream with `REJECT_SHARE` (10%) reject pages. A later classifier
+  (image or LLM) adds a branch to `score.py`'s `predict` and writes the same dump format: `id`,
+  `label`, `predicted`, `score`.
 - **`results/`** follows synth-classify's naming without its class-set level:
   `results/<split>/<name>.txt`, `results/train/<name>.txt`, `results/confidence/<name>.txt` and
   `results/confidence/dumps/<name>-<split>.jsonl`. Every number reported needs a file there.
 
 ## Constraints from the plan
 
-- Test is read once, after every cut-off and choice has been fixed on dev.
+- Test is read once, after every cut-off and choice has been fixed on validation.
 - Exclude `microsoft/dit-base-finetuned-rvlcdip`: it was trained on RVL-CDIP test pages.
 - Each step's prompt says: no branches, no commits, no push. Leave work uncommitted for Peter.
 - Indra OCR (`prompts/2026-10-17-indra-ocr-pass.md`, a hand-off from the indra session) adds a

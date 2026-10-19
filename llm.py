@@ -98,5 +98,5 @@ def label_split(split):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--split", choices=["train", "dev", "test"], required=True)
+    ap.add_argument("--split", choices=["train", "validation", "test"], required=True)
     label_split(ap.parse_args().split)
