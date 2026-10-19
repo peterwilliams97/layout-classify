@@ -2,10 +2,11 @@
 
 [synth-classify](../synth-classify/README.md) measured local text classifiers on short messages.
 This repo asks the same questions of document pages: native digital documents, or good scans of
-them, rendered here at 200 dpi, plus pages that fit none of the types. It holds two classifiers on
-the OCR text, one on the page image, one fine-tuned on both, and a local vision LLM given the page
-image and no hand labels. It holds the corpus manifest, the page split and the OCR cache, and no
-results yet.
+them, rendered here at 200 dpi, plus pages that fit none of the types. It holds two classifiers
+trained on the OCR text, a local decision model asked about the OCR text with no training, one
+classifier on the page image, one fine-tuned on both, and a local vision LLM given the page image
+and no hand labels. It holds the corpus manifest, the page split, the OCR cache and the results of
+the classifiers on the OCR text.
 
 ## Aim
 
@@ -114,6 +115,46 @@ are in the manifest but no classifier trains on them.
   their per-class figures are coarse.
 - DocumentCloud documents keep their own rights; CC BY 3.0 covers the dataset, not them.
 - DiT and LayoutLMv3 are pretrained on IIT-CDIP, which does not contain these documents.
+
+## Results
+
+On the OCR text. A page is accepted when its score is at least the cut-off `tau_cp`, chosen on
+validation so that the one-sided 90% Clopper-Pearson upper bound on the accepted validation error
+is at most 5%, or 2% (`confidence.py`). Coverage is the share of all 363 test pages accepted, the
+36 reject pages included; error is the share of accepted pages whose type is wrong, a reject page
+always wrong; reject leak is the share of the 36 reject pages accepted. Small is 10 train pages per
+type, 9 for email.
+
+**Coverage certified under 5% and under 2% error, all test pages**
+
+| Classifier                                  | Labels | Coverage at 5% | Error at 5% | Reject leak at 5% | Coverage at 2% | Error at 2% | Reject leak at 2% |
+|---------------------------------------------|--------|----------------|-------------|-------------------|----------------|-------------|-------------------|
+| TF-IDF + LR, train                          | 243    | 0.3223         | 0.0085      | 0.0278 (1 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
+| TF-IDF + LR, small                          | 119    | 0.3499         | 0.0157      | 0.0556 (2 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
+| UltraBERT-Embed-150M + LR, train            | 243    | 0.5592         | 0.0099      | 0.0278 (1 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
+| UltraBERT-Embed-150M + LR, small            | 119    | 0.4298         | 0.0064      | 0.0278 (1 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
+| d3-flash, `definitions`                     | 0      | 0.6915         | 0.0080      | 0.0556 (2 of 36)  | 0.4408         | 0.0000      | 0.0000 (0 of 36)  |
+
+From `results/confidence/<name>.txt`, `tau_cp` lines, "all pages". Validation is 246 in-class
+pages, with 27 reject pages beside them. In synth-classify, at 200 validation rows the certified
+coverage at 5% ranged from 0 to 0.95 between draws for UltraBERT-Embed-150M + LR, and at 400 from
+0.72 to 0.93 (synth-classify `README.md` @ `6368e3b`), so one draw of 246 pages here is not a
+stable figure. At 2% the bound needs the top 114 validation pages right with no error before it
+accepts any page; only d3-flash's ranking gives that.
+
+**Accuracy and seconds per page, test**
+
+| Classifier                       | Accuracy, 327 in-class test pages | Seconds per page, median | Seconds per page, mean |
+|----------------------------------|-----------------------------------|--------------------------|------------------------|
+| TF-IDF + LR, train               | 0.8410                            | 0.00028                  | 0.0003                 |
+| TF-IDF + LR, small               | 0.8654                            | 0.000261                 | 0.000282               |
+| UltraBERT-Embed-150M + LR, train | 0.9480                            | 0.0347                   | 0.0316                 |
+| UltraBERT-Embed-150M + LR, small | 0.8991                            | 0.0346                   | 0.0315                 |
+| d3-flash, `definitions`          | 0.9511                            | 2.36                     | 2.71                   |
+
+From `results/test/<name>.txt`. Seconds are the classifier alone, one page per call, on MPS for
+UltraBERT and d3-flash; OCR is not in them. Tesseract takes 0.622 s a page median and 0.724 mean
+(`results/ocr-time.txt`), the same for every classifier here.
 
 ## Files
 
