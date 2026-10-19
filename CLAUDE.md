@@ -70,8 +70,8 @@ run.
   word boxes in page pixels) and skips files already present. Every text classifier reads this
   cache and never re-OCRs. `results/ocr-time.txt` is the one OCR timing, reported apart from
   classifier seconds.
-- **`train.py` draws `small` itself.** `--train small` takes 10 train pages per class, one seeded
-  `random.Random` per type, and writes the ids to `data/selection.json` under `small`. A rerun puts
+- **`train.py` draws `small` itself.** `--train small` takes 10 train pages per class (email's 9, all it
+  has), one seeded `random.Random` per type, and writes the ids to `data/selection.json` under `small`. A rerun puts
   back the same entry.
 - **One scoring script, one confidence script.** `score.py` scores every page of a split, reject
   pages included; models predict only `CLASSES`, so a `REJECT_LABEL` page is always wrong.

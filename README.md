@@ -136,7 +136,8 @@ are in the manifest but no classifier trains on them.
   `dmis-lab/UltraBERT-Embed-150M` embeddings, at synth-classify's pinned revision, with a task
   instruction before the page text and the first 512 tokens kept. `--train real` is every train
   page; `--train small` is 10 per class, drawn with seed 0, the ids in data/selection.json under
-  `small`. Neither holds a reject page. Every classifier uses `class_weight="balanced"`. For
+  `small`; email has 9 train pages and gives all 9, so small is 119 pages. Neither holds a reject
+  page: train's 27 are left out. Every classifier uses `class_weight="balanced"`. For
   `--embed` and `--dit`, C is the value in `C_GRID` (0.01, 0.1, 1, 10), each fitted on train, with
   the highest validation AUROC of top probability against correctness over all validation pages, a
   tie going to the smaller C; `results/train/<name>.txt` gives each value's AUROC and the choice.

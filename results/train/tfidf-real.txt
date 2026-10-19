@@ -1,0 +1,4 @@
+model     models/tfidf-real
+train     real (243 pages)
+pages     243
+seconds   1.61 (base model load to save; OCR excluded)

@@ -4,7 +4,8 @@ fits logistic regression on frozen `EMBED_BASE` embeddings of the page text with
 before it. `--dit` reads the page image instead of the text: logistic regression on frozen
 `DIT_BASE` embeddings of data/<split>/<id>.png. `--train real` is every train page; `--train
 small` is `SMALL_PER_CLASS` of them per class, drawn with SEED and recorded in data/selection.json
-under "small". Neither holds a reject page: train has none. `--labels llm` fits on the labels
+under "small". Neither holds a reject page: train's are left out, as no model predicts
+REJECT_LABEL. `--labels llm` fits on the labels
 llm.py's `label_split` wrote to data/llm-labels/train.jsonl instead of the hand labels, and the
 model name takes the suffix `-llm`; validation keeps its hand labels, so C is still chosen on them.
 
@@ -71,15 +72,18 @@ def page_image(page_id):
 
 def small_ids(train_rows):
     """small_ids draws SMALL_PER_CLASS train pages per class, each class with its own seeded
-    generator, and records the ids in data/selection.json under "small". The draw is
-    deterministic, so rewriting the entry restores it."""
+    generator, and records the ids in data/selection.json under "small". A class with fewer train
+    pages gives all of them: email has 9. The draw is deterministic, so rewriting the entry
+    restores it."""
     ids = []
     for label in CLASSES:
         pool = [r["id"] for r in train_rows if r["label"] == label]
         rng = random.Random(f"{SEED}/small/{label}")
-        ids += rng.sample(pool, SMALL_PER_CLASS)
-    with open(SELECTION) as f:
-        selection = json.load(f)
+        ids += rng.sample(pool, min(SMALL_PER_CLASS, len(pool)))
+    selection = {}
+    if os.path.exists(SELECTION):
+        with open(SELECTION) as f:
+            selection = json.load(f)
     selection["small"] = {"seed": SEED, "per_class": SMALL_PER_CLASS, "ids": ids}
     with open(SELECTION, "w") as f:
         json.dump(selection, f, indent=1)
@@ -124,9 +128,10 @@ def agreement(hand, llm):
 
 def training_pages(which, source):
     """The (page ids, label indices in CLASSES) of the `which` training set, in manifest order, and
-    the "agreement" lines for results/train/. The labels are the hand labels, or with `source`
-    "llm" those in LLM_LABELS, and the lines are then `agreement`'s; with "hand" there are none."""
-    rows = [r for r in manifest() if r["split"] == "train"]
+    the "agreement" lines for results/train/. Train's REJECT_LABEL pages are left out. The labels
+    are the hand labels, or with `source` "llm" those in LLM_LABELS, and the lines are then
+    `agreement`'s; with "hand" there are none."""
+    rows = [r for r in manifest() if r["split"] == "train" and r["label"] != REJECT_LABEL]
     if not rows:
         sys.exit(f"{MANIFEST}: no train pages")
     names = list(CLASSES)
