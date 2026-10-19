@@ -1,0 +1,281 @@
+{"id": "test-idood__pdf2_documentcloud_00099_letter", "label": "letter", "predicted": "letter", "score": 0.9689110517501831}
+{"id": "test-idood__pdf2_documentcloud_00103_letter", "label": "letter", "predicted": "letter", "score": 0.898293137550354}
+{"id": "test-idood__pdf2_documentcloud_00094_letter", "label": "letter", "predicted": "letter", "score": 0.632235050201416}
+{"id": "test-idood__pdf2_documentcloud_00015_letter", "label": "letter", "predicted": "letter", "score": 0.6826139092445374}
+{"id": "test-idood__pdf2_documentcloud_00131_letter", "label": "letter", "predicted": "memo", "score": 0.7107439637184143}
+{"id": "test-idood__pdf2_documentcloud_00136_letter", "label": "letter", "predicted": "letter", "score": 0.9390954375267029}
+{"id": "test-idood__pdf2_documentcloud_00175_letter", "label": "letter", "predicted": "letter", "score": 0.9384753704071045}
+{"id": "test-idood__pdf2_documentcloud_00183_letter", "label": "letter", "predicted": "letter", "score": 0.7728903293609619}
+{"id": "test-idood__pdf2_documentcloud_00189_letter", "label": "letter", "predicted": "letter", "score": 0.9492491483688354}
+{"id": "test-idood__pdf2_documentcloud_00009_letter", "label": "letter", "predicted": "letter", "score": 0.9376700520515442}
+{"id": "test-idood__pdf2_documentcloud_00066_letter", "label": "letter", "predicted": "letter", "score": 0.7953363656997681}
+{"id": "test-idood__pdf2_documentcloud_00091_letter", "label": "letter", "predicted": "letter", "score": 0.9420152306556702}
+{"id": "test-idood__pdf2_documentcloud_00246_letter", "label": "letter", "predicted": "letter", "score": 0.8137595057487488}
+{"id": "test-idood__pdf2_documentcloud_00125_letter", "label": "letter", "predicted": "letter", "score": 0.9487366676330566}
+{"id": "test-idood__pdf2_documentcloud_00179_letter", "label": "letter", "predicted": "letter", "score": 0.3850007951259613}
+{"id": "test-idood__pdf2_documentcloud_00023_letter", "label": "letter", "predicted": "letter", "score": 0.8318749070167542}
+{"id": "test-idood__pdf2_documentcloud_00182_letter", "label": "letter", "predicted": "letter", "score": 0.9611600637435913}
+{"id": "test-idood__pdf2_documentcloud_00169_letter", "label": "letter", "predicted": "letter", "score": 0.8170212507247925}
+{"id": "test-idood__pdf2_documentcloud_00746_letter", "label": "letter", "predicted": "letter", "score": 0.6630982756614685}
+{"id": "test-idood__pdf2_documentcloud_00159_letter", "label": "letter", "predicted": "letter", "score": 0.9799162149429321}
+{"id": "test-idood__pdf2_documentcloud_00172_letter", "label": "letter", "predicted": "letter", "score": 0.8655124306678772}
+{"id": "test-idood__pdf2_documentcloud_00108_letter", "label": "letter", "predicted": "letter", "score": 0.9384901523590088}
+{"id": "test-idood__pdf2_documentcloud_00163_letter", "label": "letter", "predicted": "letter", "score": 0.8942474722862244}
+{"id": "test-idood__pdf2_documentcloud_00203_letter", "label": "letter", "predicted": "letter", "score": 0.9304827451705933}
+{"id": "test-idood__pdf2_documentcloud_00195_letter", "label": "letter", "predicted": "letter", "score": 0.8187571167945862}
+{"id": "test-idood__pdf2_documentcloud_00126_letter", "label": "letter", "predicted": "letter", "score": 0.9464645385742188}
+{"id": "test-idood__pdf2_documentcloud_00096_letter", "label": "letter", "predicted": "letter", "score": 0.8383299708366394}
+{"id": "test-idood__pdf2_documentcloud_00162_letter", "label": "letter", "predicted": "letter", "score": 0.9846621751785278}
+{"id": "test-idood__pdf2_documentcloud_00198_letter", "label": "letter", "predicted": "letter", "score": 0.8966733813285828}
+{"id": "test-idood__pdf2_documentcloud_00177_letter", "label": "letter", "predicted": "letter", "score": 0.8024198412895203}
+{"id": "test-idood__pdf2_documentcloud_00624_letter", "label": "letter", "predicted": "letter", "score": 0.6575800776481628}
+{"id": "test-idood__pdf2_documentcloud_00141_letter", "label": "letter", "predicted": "letter", "score": 0.8581239581108093}
+{"id": "test-idood__pdf2_documentcloud_00188_letter", "label": "letter", "predicted": "letter", "score": 0.8992534279823303}
+{"id": "test-idood__pdf2_documentcloud_00206_letter", "label": "letter", "predicted": "letter", "score": 0.9423584342002869}
+{"id": "test-idood__pdf2_documentcloud_00204_letter", "label": "letter", "predicted": "letter", "score": 0.6971127390861511}
+{"id": "test-idood__pdf2_documentcloud_00152_letter", "label": "letter", "predicted": "letter", "score": 0.7257966995239258}
+{"id": "test-idood__pdf2_documentcloud_00076_letter", "label": "letter", "predicted": "letter", "score": 0.45694783329963684}
+{"id": "test-idood__pdf2_documentcloud_00161_letter", "label": "letter", "predicted": "letter", "score": 0.9126361012458801}
+{"id": "test-idood__pdf2_documentcloud_00213_letter", "label": "letter", "predicted": "letter", "score": 0.8577449917793274}
+{"id": "test-idood__pdf2_documentcloud_00079_letter", "label": "letter", "predicted": "letter", "score": 0.9760128855705261}
+{"id": "test-idood__pdf2_documentcloud_00110_letter", "label": "letter", "predicted": "letter", "score": 0.8895063400268555}
+{"id": "test-idood__pdf2_documentcloud_00164_letter", "label": "letter", "predicted": "letter", "score": 0.7491350173950195}
+{"id": "test-idood__pdf2_documentcloud_00155_letter", "label": "letter", "predicted": "letter", "score": 0.6396239399909973}
+{"id": "test-idood__pdf2_documentcloud_00090_letter", "label": "letter", "predicted": "letter", "score": 0.8807914853096008}
+{"id": "test-idood__pdf2_documentcloud_00145_letter", "label": "letter", "predicted": "form", "score": 0.6692536473274231}
+{"id": "test-idood__pdf2_documentcloud_00518_letter", "label": "letter", "predicted": "form", "score": 0.6779209971427917}
+{"id": "test-websearch_8__pdf3_websearch_8_00012_memo", "label": "memo", "predicted": "memo", "score": 0.8057125806808472}
+{"id": "test-idood__pdf2_documentcloud_00027_memo", "label": "memo", "predicted": "letter", "score": 0.673272967338562}
+{"id": "test-idood__pdf2_documentcloud_00051_memo", "label": "memo", "predicted": "letter", "score": 0.8852764368057251}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00044_memo", "label": "memo", "predicted": "memo", "score": 0.7324391603469849}
+{"id": "test-idood__pdf2_documentcloud_00026_memo", "label": "memo", "predicted": "memo", "score": 0.32368671894073486}
+{"id": "test-idood__pdf2_documentcloud_00047_memo", "label": "memo", "predicted": "memo", "score": 0.5803837180137634}
+{"id": "test-websearch_8__pdf3_websearch_8_00002_memo", "label": "memo", "predicted": "memo", "score": 0.8533970713615417}
+{"id": "test-idood__pdf2_documentcloud_00046_memo", "label": "memo", "predicted": "memo", "score": 0.7907654643058777}
+{"id": "test-websearch_8__pdf3_websearch_8_00004_memo", "label": "memo", "predicted": "memo", "score": 0.9230997562408447}
+{"id": "test-websearch_8__pdf3_websearch_8_00000_memo", "label": "memo", "predicted": "letter", "score": 0.5502516627311707}
+{"id": "test-idood__pdf2_documentcloud_00049_memo", "label": "memo", "predicted": "memo", "score": 0.948727011680603}
+{"id": "test-idood__pdf2_documentcloud_00054_memo", "label": "memo", "predicted": "memo", "score": 0.3584331274032593}
+{"id": "test-idood__pdf2_documentcloud_00053_memo", "label": "memo", "predicted": "letter", "score": 0.47580114006996155}
+{"id": "test-idood__pdf2_documentcloud_00059_memo", "label": "memo", "predicted": "memo", "score": 0.922609806060791}
+{"id": "test-idood__pdf2_documentcloud_00024_memo", "label": "memo", "predicted": "memo", "score": 0.8872688412666321}
+{"id": "test-idood__pdf2_documentcloud_00459_form", "label": "form", "predicted": "form", "score": 0.8858758211135864}
+{"id": "test-idood__pdf2_documentcloud_00432_form", "label": "form", "predicted": "form", "score": 0.6276422739028931}
+{"id": "test-idood__pdf2_documentcloud_00440_form", "label": "form", "predicted": "form", "score": 0.9724338054656982}
+{"id": "test-idood__pdf2_documentcloud_00449_form", "label": "form", "predicted": "form", "score": 0.8971778750419617}
+{"id": "test-idood__pdf2_documentcloud_00417_form", "label": "form", "predicted": "form", "score": 0.5444275736808777}
+{"id": "test-idood__pdf2_documentcloud_00477_form", "label": "form", "predicted": "form", "score": 0.30079251527786255}
+{"id": "test-idood__pdf2_documentcloud_00413_form", "label": "form", "predicted": "form", "score": 0.8786700963973999}
+{"id": "test-idood__pdf2_documentcloud_00606_form", "label": "form", "predicted": "news article", "score": 0.5783039927482605}
+{"id": "test-idood__pdf2_documentcloud_00474_form", "label": "form", "predicted": "form", "score": 0.9461988210678101}
+{"id": "test-idood__pdf2_documentcloud_00438_form", "label": "form", "predicted": "form", "score": 0.912408173084259}
+{"id": "test-idood__pdf2_documentcloud_00446_form", "label": "form", "predicted": "form", "score": 0.9455496072769165}
+{"id": "test-idood__pdf2_documentcloud_00457_form", "label": "form", "predicted": "form", "score": 0.9219567775726318}
+{"id": "test-idood__pdf2_documentcloud_00420_form", "label": "form", "predicted": "letter", "score": 0.26944735646247864}
+{"id": "test-idood__pdf2_documentcloud_00455_form", "label": "form", "predicted": "form", "score": 0.9779478907585144}
+{"id": "test-idood__pdf2_documentcloud_00454_form", "label": "form", "predicted": "form", "score": 0.9218842387199402}
+{"id": "test-idood__pdf2_documentcloud_00452_form", "label": "form", "predicted": "budget", "score": 0.2684464454650879}
+{"id": "test-idood__pdf2_documentcloud_00435_form", "label": "form", "predicted": "invoice", "score": 0.2773246765136719}
+{"id": "test-idood__pdf2_documentcloud_00471_form", "label": "form", "predicted": "form", "score": 0.7203348278999329}
+{"id": "test-idood__pdf2_documentcloud_00818_form", "label": "form", "predicted": "form", "score": 0.6968172788619995}
+{"id": "test-idood__pdf2_documentcloud_00465_form", "label": "form", "predicted": "form", "score": 0.8407014608383179}
+{"id": "test-idood__pdf2_documentcloud_00442_form", "label": "form", "predicted": "form", "score": 0.9821221828460693}
+{"id": "test-websearch_5__pdf3_websearch_00015_questionnaire", "label": "questionnaire", "predicted": "news article", "score": 0.3835383653640747}
+{"id": "test-websearch_5__pdf3_websearch_00012_questionnaire", "label": "questionnaire", "predicted": "questionnaire", "score": 0.9535548686981201}
+{"id": "test-websearch_5__pdf3_websearch_00002_questionnaire", "label": "questionnaire", "predicted": "questionnaire", "score": 0.9848467111587524}
+{"id": "test-websearch_5__pdf3_websearch_00003_questionnaire", "label": "questionnaire", "predicted": "questionnaire", "score": 0.9558812379837036}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00009_questionnaire", "label": "questionnaire", "predicted": "letter", "score": 0.34442761540412903}
+{"id": "test-websearch_5__pdf3_websearch_00001_questionnaire", "label": "questionnaire", "predicted": "questionnaire", "score": 0.9940890073776245}
+{"id": "test-websearch_5__pdf3_websearch_00000_questionnaire", "label": "questionnaire", "predicted": "questionnaire", "score": 0.9156880378723145}
+{"id": "test-websearch_5__pdf3_websearch_00023_questionnaire", "label": "questionnaire", "predicted": "questionnaire", "score": 0.9774826169013977}
+{"id": "test-websearch_5__pdf3_websearch_00025_questionnaire", "label": "questionnaire", "predicted": "questionnaire", "score": 0.9590975642204285}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00005_questionnaire", "label": "questionnaire", "predicted": "questionnaire", "score": 0.3535931408405304}
+{"id": "test-websearch_5__pdf3_websearch_00021_questionnaire", "label": "questionnaire", "predicted": "questionnaire", "score": 0.8350843191146851}
+{"id": "test-websearch_5__pdf3_websearch_00024_questionnaire", "label": "questionnaire", "predicted": "questionnaire", "score": 0.9522200226783752}
+{"id": "test-websearch_5__pdf3_websearch_00014_questionnaire", "label": "questionnaire", "predicted": "questionnaire", "score": 0.9753535389900208}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00026_budget", "label": "budget", "predicted": "budget", "score": 0.9331709742546082}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00052_budget", "label": "budget", "predicted": "budget", "score": 0.8228753209114075}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00054_budget", "label": "budget", "predicted": "budget", "score": 0.9386968612670898}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00038_budget", "label": "budget", "predicted": "budget", "score": 0.9953472018241882}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00037_budget", "label": "budget", "predicted": "budget", "score": 0.9091619253158569}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00093_budget", "label": "budget", "predicted": "budget", "score": 0.985957682132721}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00067_budget", "label": "budget", "predicted": "budget", "score": 0.2699992060661316}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00062_budget", "label": "budget", "predicted": "budget", "score": 0.8408286571502686}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00032_budget", "label": "budget", "predicted": "budget", "score": 0.9650698304176331}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00043_budget", "label": "budget", "predicted": "budget", "score": 0.9782136082649231}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00081_budget", "label": "budget", "predicted": "budget", "score": 0.9253289103507996}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00070_budget", "label": "budget", "predicted": "budget", "score": 0.9878988862037659}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00019_budget", "label": "budget", "predicted": "budget", "score": 0.9729627966880798}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00042_budget", "label": "budget", "predicted": "budget", "score": 0.9935193657875061}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00100_budget", "label": "budget", "predicted": "budget", "score": 0.9541264176368713}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00075_budget", "label": "budget", "predicted": "budget", "score": 0.9680739045143127}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00018_budget", "label": "budget", "predicted": "budget", "score": 0.9788780212402344}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00025_budget", "label": "budget", "predicted": "budget", "score": 0.9031351208686829}
+{"id": "test-idood__pdf2_documentcloud_00398_invoice", "label": "invoice", "predicted": "form", "score": 0.22037753462791443}
+{"id": "test-idood__pdf2_documentcloud_00357_invoice", "label": "invoice", "predicted": "invoice", "score": 0.9509372115135193}
+{"id": "test-idood__pdf2_documentcloud_00548_invoice", "label": "invoice", "predicted": "invoice", "score": 0.938083291053772}
+{"id": "test-idood__pdf2_documentcloud_00367_invoice", "label": "invoice", "predicted": "invoice", "score": 0.8457484841346741}
+{"id": "test-idood__pdf2_documentcloud_00383_invoice", "label": "invoice", "predicted": "letter", "score": 0.6357287764549255}
+{"id": "test-idood__pdf2_documentcloud_00407_invoice", "label": "invoice", "predicted": "invoice", "score": 0.6360273957252502}
+{"id": "test-idood__pdf2_documentcloud_00363_invoice", "label": "invoice", "predicted": "invoice", "score": 0.8859585523605347}
+{"id": "test-idood__pdf2_documentcloud_00374_invoice", "label": "invoice", "predicted": "invoice", "score": 0.9812281727790833}
+{"id": "test-idood__pdf2_documentcloud_00390_invoice", "label": "invoice", "predicted": "invoice", "score": 0.848750114440918}
+{"id": "test-idood__pdf2_documentcloud_00369_invoice", "label": "invoice", "predicted": "invoice", "score": 0.987220048904419}
+{"id": "test-idood__pdf2_documentcloud_00391_invoice", "label": "invoice", "predicted": "invoice", "score": 0.9518620371818542}
+{"id": "test-idood__pdf2_documentcloud_00400_invoice", "label": "invoice", "predicted": "invoice", "score": 0.9440581202507019}
+{"id": "test-idood__pdf2_documentcloud_00352_invoice", "label": "invoice", "predicted": "invoice", "score": 0.534986674785614}
+{"id": "test-idood__pdf2_documentcloud_00389_invoice", "label": "invoice", "predicted": "invoice", "score": 0.8441722393035889}
+{"id": "test-idood__pdf2_documentcloud_00368_invoice", "label": "invoice", "predicted": "invoice", "score": 0.985373318195343}
+{"id": "test-idood__pdf2_documentcloud_00404_invoice", "label": "invoice", "predicted": "invoice", "score": 0.911272406578064}
+{"id": "test-idood__pdf2_documentcloud_00365_invoice", "label": "invoice", "predicted": "invoice", "score": 0.958284854888916}
+{"id": "test-idood__pdf2_documentcloud_00396_invoice", "label": "invoice", "predicted": "invoice", "score": 0.9895373582839966}
+{"id": "test-websearch_7__pdf3_websearch_7_00016_scientific_publication", "label": "scientific publication", "predicted": "scientific publication", "score": 0.9963894486427307}
+{"id": "test-idood__pdf2_documentcloud_00335_scientific_publication", "label": "scientific publication", "predicted": "scientific publication", "score": 0.8887773156166077}
+{"id": "test-websearch_7__pdf3_websearch_7_00024_scientific_publication", "label": "scientific publication", "predicted": "scientific publication", "score": 0.9535548686981201}
+{"id": "test-idood__pdf2_documentcloud_00342_scientific_publication", "label": "scientific publication", "predicted": "scientific publication", "score": 0.9465078115463257}
+{"id": "test-idood__pdf2_documentcloud_00337_scientific_publication", "label": "scientific publication", "predicted": "scientific publication", "score": 0.6853004693984985}
+{"id": "test-idood__pdf2_documentcloud_00625_scientific_publication", "label": "scientific publication", "predicted": "scientific publication", "score": 0.8601405024528503}
+{"id": "test-idood__pdf2_documentcloud_00231_scientific_publication", "label": "scientific publication", "predicted": "scientific publication", "score": 0.7365468144416809}
+{"id": "test-websearch_7__pdf3_websearch_7_00005_scientific_publication", "label": "scientific publication", "predicted": "scientific publication", "score": 0.7725615501403809}
+{"id": "test-websearch_7__pdf3_websearch_7_00021_scientific_publication", "label": "scientific publication", "predicted": "scientific publication", "score": 0.966715931892395}
+{"id": "test-idood__pdf2_documentcloud_00275_scientific_publication", "label": "scientific publication", "predicted": "scientific publication", "score": 0.5534088611602783}
+{"id": "test-idood__pdf2_documentcloud_00236_scientific_publication", "label": "scientific publication", "predicted": "scientific publication", "score": 0.9964304566383362}
+{"id": "test-websearch_7__pdf3_websearch_7_00003_scientific_publication", "label": "scientific publication", "predicted": "scientific publication", "score": 0.9884287714958191}
+{"id": "test-websearch_7__pdf3_websearch_7_00006_scientific_publication", "label": "scientific publication", "predicted": "scientific publication", "score": 0.8973069787025452}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00099_email", "label": "email", "predicted": "email", "score": 0.8553062677383423}
+{"id": "test-idood__pdf2_documentcloud_00592_email", "label": "email", "predicted": "news article", "score": 0.2847275137901306}
+{"id": "test-idood__pdf2_documentcloud_00277_email", "label": "email", "predicted": "letter", "score": 0.3485977053642273}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00046_email", "label": "email", "predicted": "email", "score": 0.5370909571647644}
+{"id": "test-idood__pdf2_documentcloud_00620_email", "label": "email", "predicted": "letter", "score": 0.49270111322402954}
+{"id": "test-idood__pdf2_documentcloud_00037_email", "label": "email", "predicted": "email", "score": 0.7796996831893921}
+{"id": "test-idood__pdf2_documentcloud_00039_email", "label": "email", "predicted": "letter", "score": 0.5410987734794617}
+{"id": "test-documentcloud_4_idood__pdf3_documentcloud_00071_email", "label": "email", "predicted": "email", "score": 0.8850904107093811}
+{"id": "test-idood__pdf2_documentcloud_00590_email", "label": "email", "predicted": "news article", "score": 0.2847275137901306}
+{"id": "test-idood__pdf2_documentcloud_00445_email", "label": "email", "predicted": "email", "score": 0.6102955341339111}
+{"id": "test-idood__pdf2_documentcloud_00289_email", "label": "email", "predicted": "letter", "score": 0.8018547296524048}
+{"id": "test-idood__pdf2_documentcloud_00299_news_article", "label": "news article", "predicted": "news article", "score": 0.8817561268806458}
+{"id": "test-idood__pdf2_documentcloud_00263_news_article", "label": "news article", "predicted": "news article", "score": 0.9686257243156433}
+{"id": "test-idood__pdf2_documentcloud_00274_news_article", "label": "news article", "predicted": "news article", "score": 0.437791645526886}
+{"id": "test-idood__pdf2_documentcloud_00248_news_article", "label": "news article", "predicted": "news article", "score": 0.821052074432373}
+{"id": "test-idood__pdf2_documentcloud_00311_news_article", "label": "news article", "predicted": "news article", "score": 0.9832164645195007}
+{"id": "test-idood__pdf2_documentcloud_00223_news_article", "label": "news article", "predicted": "news article", "score": 0.5598156452178955}
+{"id": "test-idood__pdf2_documentcloud_00242_news_article", "label": "news article", "predicted": "news article", "score": 0.951227068901062}
+{"id": "test-idood__pdf2_documentcloud_00264_news_article", "label": "news article", "predicted": "news article", "score": 0.3845517933368683}
+{"id": "test-idood__pdf2_documentcloud_00284_news_article", "label": "news article", "predicted": "news article", "score": 0.8560599088668823}
+{"id": "test-idood__pdf2_documentcloud_00279_news_article", "label": "news article", "predicted": "news article", "score": 0.940645694732666}
+{"id": "test-idood__pdf2_documentcloud_00325_news_article", "label": "news article", "predicted": "news article", "score": 0.9141581058502197}
+{"id": "test-idood__pdf2_documentcloud_00259_news_article", "label": "news article", "predicted": "news article", "score": 0.9686257243156433}
+{"id": "test-idood__pdf2_documentcloud_00220_news_article", "label": "news article", "predicted": "news article", "score": 0.2555415630340576}
+{"id": "test-idood__pdf2_documentcloud_00241_news_article", "label": "news article", "predicted": "news article", "score": 0.9886001944541931}
+{"id": "test-idood__pdf2_documentcloud_00232_news_article", "label": "news article", "predicted": "news article", "score": 0.8553681373596191}
+{"id": "test-idood__pdf2_documentcloud_00296_news_article", "label": "news article", "predicted": "news article", "score": 0.9939800500869751}
+{"id": "test-idood__pdf2_documentcloud_00316_news_article", "label": "news article", "predicted": "news article", "score": 0.8610115051269531}
+{"id": "test-idood__pdf2_documentcloud_00332_news_article", "label": "news article", "predicted": "news article", "score": 0.8482328653335571}
+{"id": "test-idood__pdf2_documentcloud_00313_news_article", "label": "news article", "predicted": "news article", "score": 0.9681577682495117}
+{"id": "test-idood__pdf2_documentcloud_00320_news_article", "label": "news article", "predicted": "news article", "score": 0.8625885248184204}
+{"id": "test-idood__pdf2_documentcloud_00319_news_article", "label": "news article", "predicted": "news article", "score": 0.9139953255653381}
+{"id": "test-idood__pdf2_documentcloud_00286_news_article", "label": "news article", "predicted": "news article", "score": 0.9870367050170898}
+{"id": "test-idood__pdf2_documentcloud_00288_news_article", "label": "news article", "predicted": "news article", "score": 0.7200254797935486}
+{"id": "test-idood__pdf2_documentcloud_00324_news_article", "label": "news article", "predicted": "news article", "score": 0.8862067461013794}
+{"id": "test-idood__pdf2_documentcloud_00290_news_article", "label": "news article", "predicted": "news article", "score": 0.7530829906463623}
+{"id": "test-idood__pdf2_documentcloud_00291_news_article", "label": "news article", "predicted": "news article", "score": 0.9931948184967041}
+{"id": "test-idood__pdf3_documentcloud_00015_handwritten", "label": "none of these", "predicted": "news article", "score": 0.8157547116279602}
+{"id": "test-idood__pdf3_documentcloud_00167_handwritten", "label": "none of these", "predicted": "news article", "score": 0.8456690311431885}
+{"id": "test-idood__pdf3_documentcloud_00160_handwritten", "label": "none of these", "predicted": "news article", "score": 0.8445358276367188}
+{"id": "test-idood__pdf3_documentcloud_00123_handwritten", "label": "none of these", "predicted": "news article", "score": 0.9611352682113647}
+{"id": "test-idood__pdf3_documentcloud_00141_handwritten", "label": "none of these", "predicted": "form", "score": 0.6179422736167908}
+{"id": "test-idood__pdf3_documentcloud_00103_handwritten", "label": "none of these", "predicted": "form", "score": 0.4487364888191223}
+{"id": "test-idood__pdf2_documentcloud_00215_handwritten", "label": "none of these", "predicted": "news article", "score": 0.5564337968826294}
+{"id": "test-idood__pdf3_documentcloud_00060_handwritten", "label": "none of these", "predicted": "news article", "score": 0.9710876941680908}
+{"id": "test-idood__pdf3_documentcloud_00071_handwritten", "label": "none of these", "predicted": "news article", "score": 0.7879626154899597}
+{"id": "test-idood__pdf3_documentcloud_00066_handwritten", "label": "none of these", "predicted": "news article", "score": 0.891571581363678}
+{"id": "test-idood__pdf2_documentcloud_00615_handwritten", "label": "none of these", "predicted": "news article", "score": 0.9030143618583679}
+{"id": "test-idood__pdf3_documentcloud_00129_handwritten", "label": "none of these", "predicted": "letter", "score": 0.37371209263801575}
+{"id": "test-idood__pdf3_documentcloud_00142_handwritten", "label": "none of these", "predicted": "news article", "score": 0.5944640040397644}
+{"id": "test-idood__pdf3_documentcloud_00090_handwritten", "label": "none of these", "predicted": "news article", "score": 0.8287700414657593}
+{"id": "test-idood__pdf3_documentcloud_00086_handwritten", "label": "none of these", "predicted": "news article", "score": 0.9511914849281311}
+{"id": "test-idood__pdf3_documentcloud_00080_handwritten", "label": "none of these", "predicted": "news article", "score": 0.9611352682113647}
+{"id": "test-idood__pdf3_documentcloud_00106_handwritten", "label": "none of these", "predicted": "news article", "score": 0.7565482258796692}
+{"id": "test-idood__pdf3_documentcloud_00052_handwritten", "label": "none of these", "predicted": "letter", "score": 0.4638913869857788}
+{"id": "test-idood__pdf3_documentcloud_00091_handwritten", "label": "none of these", "predicted": "news article", "score": 0.7493112087249756}
+{"id": "test-idood__pdf3_documentcloud_00072_handwritten", "label": "none of these", "predicted": "news article", "score": 0.8584133982658386}
+{"id": "test-idood__pdf3_documentcloud_00127_handwritten", "label": "none of these", "predicted": "news article", "score": 0.7039631009101868}
+{"id": "test-idood__pdf3_documentcloud_00112_handwritten", "label": "none of these", "predicted": "news article", "score": 0.7584409713745117}
+{"id": "test-idood__pdf3_documentcloud_00093_handwritten", "label": "none of these", "predicted": "news article", "score": 0.6199507117271423}
+{"id": "test-idood__pdf3_documentcloud_00046_handwritten", "label": "none of these", "predicted": "news article", "score": 0.7956241369247437}
+{"id": "test-idood__pdf3_documentcloud_00096_handwritten", "label": "none of these", "predicted": "form", "score": 0.5464890599250793}
+{"id": "test-idood__pdf3_documentcloud_00140_handwritten", "label": "none of these", "predicted": "news article", "score": 0.6234850287437439}
+{"id": "test-idood__pdf3_documentcloud_00067_handwritten", "label": "none of these", "predicted": "news article", "score": 0.4425153136253357}
+{"id": "test-idood__pdf3_documentcloud_00121_handwritten", "label": "none of these", "predicted": "news article", "score": 0.4295743703842163}
+{"id": "test-idood__pdf2_documentcloud_00527_handwritten", "label": "none of these", "predicted": "news article", "score": 0.905967652797699}
+{"id": "test-idood__pdf3_documentcloud_00049_handwritten", "label": "none of these", "predicted": "news article", "score": 0.6915692090988159}
+{"id": "test-idood__pdf3_documentcloud_00085_handwritten", "label": "none of these", "predicted": "news article", "score": 0.7532176971435547}
+{"id": "test-idood__pdf3_documentcloud_00003_handwritten", "label": "none of these", "predicted": "news article", "score": 0.9030143618583679}
+{"id": "test-idood__pdf3_documentcloud_00144_handwritten", "label": "none of these", "predicted": "news article", "score": 0.9405638575553894}
+{"id": "test-idood__pdf3_documentcloud_00004_handwritten", "label": "none of these", "predicted": "news article", "score": 0.5254535675048828}
+{"id": "test-websearch_6__pdf3_websearch_00017_specification", "label": "none of these", "predicted": "invoice", "score": 0.2407190203666687}
+{"id": "test-websearch_6__pdf3_websearch_00040_specification", "label": "none of these", "predicted": "form", "score": 0.26203542947769165}
+{"id": "test-websearch_6__pdf3_websearch_00018_specification", "label": "none of these", "predicted": "memo", "score": 0.3903757333755493}
+{"id": "test-websearch_6__pdf3_websearch_00024_specification", "label": "none of these", "predicted": "form", "score": 0.3653915226459503}
+{"id": "test-websearch_6__pdf3_websearch_00041_specification", "label": "none of these", "predicted": "memo", "score": 0.2486908733844757}
+{"id": "test-websearch_6__pdf3_websearch_00054_specification", "label": "none of these", "predicted": "budget", "score": 0.23757661879062653}
+{"id": "test-websearch_6__pdf3_websearch_00026_specification", "label": "none of these", "predicted": "budget", "score": 0.22006279230117798}
+{"id": "test-websearch_6__pdf3_websearch_00038_specification", "label": "none of these", "predicted": "news article", "score": 0.5433237552642822}
+{"id": "test-websearch_6__pdf3_websearch_00008_specification", "label": "none of these", "predicted": "news article", "score": 0.39321693778038025}
+{"id": "test-websearch_6__pdf3_websearch_00011_specification", "label": "none of these", "predicted": "news article", "score": 0.6464788913726807}
+{"id": "test-websearch_6__pdf3_websearch_00003_specification", "label": "none of these", "predicted": "letter", "score": 0.5583216547966003}
+{"id": "test-websearch_6__pdf3_websearch_00044_specification", "label": "none of these", "predicted": "scientific publication", "score": 0.30013519525527954}
+{"id": "test-websearch_6__pdf3_websearch_00047_specification", "label": "none of these", "predicted": "questionnaire", "score": 0.29330170154571533}
+{"id": "test-websearch_6__pdf3_websearch_00029_specification", "label": "none of these", "predicted": "invoice", "score": 0.2521817982196808}
+{"id": "test-websearch_6__pdf3_websearch_00034_specification", "label": "none of these", "predicted": "form", "score": 0.5616927742958069}
+{"id": "test-websearch_6__pdf3_websearch_00021_specification", "label": "none of these", "predicted": "news article", "score": 0.26120972633361816}
+{"id": "test-websearch_6__pdf3_websearch_00015_specification", "label": "none of these", "predicted": "news article", "score": 0.2506280243396759}
+{"id": "test-websearch_6__pdf3_websearch_00043_specification", "label": "none of these", "predicted": "scientific publication", "score": 0.263135701417923}
+{"id": "test-websearch_6__pdf3_websearch_00023_specification", "label": "none of these", "predicted": "news article", "score": 0.2477387934923172}
+{"id": "test-websearch_6__pdf3_websearch_00001_specification", "label": "none of these", "predicted": "invoice", "score": 0.23780949413776398}
+{"id": "test-websearch_6__pdf3_websearch_00036_specification", "label": "none of these", "predicted": "memo", "score": 0.5397196412086487}
+{"id": "test-websearch_6__pdf3_websearch_00009_specification", "label": "none of these", "predicted": "news article", "score": 0.548109233379364}
+{"id": "test-idood__pdf2_documentcloud_00835_specification", "label": "none of these", "predicted": "scientific publication", "score": 0.34318459033966064}
+{"id": "test-websearch_6__pdf3_websearch_00006_specification", "label": "none of these", "predicted": "scientific publication", "score": 0.3362814486026764}
+{"id": "test-websearch_6__pdf3_websearch_00012_specification", "label": "none of these", "predicted": "form", "score": 0.5769985318183899}
+{"id": "test-websearch_6__pdf3_websearch_00020_specification", "label": "none of these", "predicted": "letter", "score": 0.20567066967487335}
+{"id": "test-websearch_6__pdf3_websearch_00050_specification", "label": "none of these", "predicted": "scientific publication", "score": 0.7517428994178772}
+{"id": "test-websearch_6__pdf3_websearch_00033_specification", "label": "none of these", "predicted": "scientific publication", "score": 0.3296678066253662}
+{"id": "test-websearch_6__pdf3_websearch_00049_specification", "label": "none of these", "predicted": "memo", "score": 0.3774736821651459}
+{"id": "test-websearch_6__pdf3_websearch_00031_specification", "label": "none of these", "predicted": "scientific publication", "score": 0.298075795173645}
+{"id": "test-websearch_6__pdf3_websearch_00016_specification", "label": "none of these", "predicted": "form", "score": 0.3291812539100647}
+{"id": "test-websearch_6__pdf3_websearch_00007_specification", "label": "none of these", "predicted": "scientific publication", "score": 0.429828017950058}
+{"id": "test-websearch_6__pdf3_websearch_00002_specification", "label": "none of these", "predicted": "budget", "score": 0.47689637541770935}
+{"id": "test-idood__pdf2_documentcloud_00758_resume", "label": "none of these", "predicted": "scientific publication", "score": 0.5186071991920471}
+{"id": "test-idood__pdf2_documentcloud_00652_resume", "label": "none of these", "predicted": "letter", "score": 0.5511134266853333}
+{"id": "test-idood__pdf2_documentcloud_00735_resume", "label": "none of these", "predicted": "budget", "score": 0.4351707994937897}
+{"id": "test-idood__pdf2_documentcloud_00704_resume", "label": "none of these", "predicted": "letter", "score": 0.2375544160604477}
+{"id": "test-idood__pdf2_documentcloud_00680_resume", "label": "none of these", "predicted": "budget", "score": 0.29513269662857056}
+{"id": "test-idood__pdf2_documentcloud_00631_resume", "label": "none of these", "predicted": "letter", "score": 0.6396682858467102}
+{"id": "test-idood__pdf2_documentcloud_00723_resume", "label": "none of these", "predicted": "memo", "score": 0.32925331592559814}
+{"id": "test-idood__pdf2_documentcloud_00502_resume", "label": "none of these", "predicted": "news article", "score": 0.3763112723827362}
+{"id": "test-idood__pdf2_documentcloud_00797_resume", "label": "none of these", "predicted": "form", "score": 0.7564124464988708}
+{"id": "test-idood__pdf2_documentcloud_00737_resume", "label": "none of these", "predicted": "letter", "score": 0.7452277541160583}
+{"id": "test-idood__pdf2_documentcloud_00501_resume", "label": "none of these", "predicted": "letter", "score": 0.3489673435688019}
+{"id": "test-idood__pdf2_documentcloud_00794_resume", "label": "none of these", "predicted": "memo", "score": 0.4918991029262543}
+{"id": "test-idood__pdf2_documentcloud_00685_resume", "label": "none of these", "predicted": "memo", "score": 0.35635215044021606}
+{"id": "test-idood__pdf2_documentcloud_00693_resume", "label": "none of these", "predicted": "letter", "score": 0.6395321488380432}
+{"id": "test-idood__pdf2_documentcloud_00729_resume", "label": "none of these", "predicted": "scientific publication", "score": 0.7524477243423462}
+{"id": "test-idood__pdf2_documentcloud_00720_resume", "label": "none of these", "predicted": "memo", "score": 0.28892138600349426}
+{"id": "test-idood__pdf2_documentcloud_00690_resume", "label": "none of these", "predicted": "budget", "score": 0.35859307646751404}
+{"id": "test-idood__pdf2_documentcloud_00795_resume", "label": "none of these", "predicted": "scientific publication", "score": 0.4811996519565582}
+{"id": "test-idood__pdf2_documentcloud_00793_resume", "label": "none of these", "predicted": "scientific publication", "score": 0.28562191128730774}
+{"id": "test-idood__pdf2_documentcloud_00759_resume", "label": "none of these", "predicted": "memo", "score": 0.3492562174797058}
+{"id": "test-idood__pdf2_documentcloud_00782_resume", "label": "none of these", "predicted": "scientific publication", "score": 0.39984822273254395}
+{"id": "test-idood__pdf2_documentcloud_00499_resume", "label": "none of these", "predicted": "scientific publication", "score": 0.7070536017417908}
+{"id": "test-idood__pdf2_documentcloud_00716_resume", "label": "none of these", "predicted": "scientific publication", "score": 0.26694655418395996}
+{"id": "test-idood__pdf2_documentcloud_00706_resume", "label": "none of these", "predicted": "budget", "score": 0.4773190915584564}
+{"id": "test-idood__pdf2_documentcloud_00785_resume", "label": "none of these", "predicted": "letter", "score": 0.5004269480705261}
+{"id": "test-idood__pdf2_documentcloud_00792_resume", "label": "none of these", "predicted": "scientific publication", "score": 0.646363377571106}
+{"id": "test-idood__pdf2_documentcloud_00484_resume", "label": "none of these", "predicted": "budget", "score": 0.3298160433769226}
+{"id": "test-idood__pdf2_documentcloud_00637_resume", "label": "none of these", "predicted": "scientific publication", "score": 0.41859957575798035}
+{"id": "test-idood__pdf2_documentcloud_00490_resume", "label": "none of these", "predicted": "scientific publication", "score": 0.31675925850868225}
+{"id": "test-idood__pdf2_documentcloud_00713_resume", "label": "none of these", "predicted": "letter", "score": 0.4258612394332886}
+{"id": "test-idood__pdf2_documentcloud_00486_resume", "label": "none of these", "predicted": "letter", "score": 0.46221521496772766}
+{"id": "test-idood__pdf2_documentcloud_00487_resume", "label": "none of these", "predicted": "letter", "score": 0.3612663447856903}
+{"id": "test-idood__pdf2_documentcloud_00628_resume", "label": "none of these", "predicted": "scientific publication", "score": 0.8569926023483276}

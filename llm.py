@@ -3,15 +3,22 @@ nothing else: no OCR text and no hand-labelled page. `PROMPT` and `REJECT_PROMPT
 instructions, built from the CLASSES definitions in classes.py, and `classify` sends them with one
 page image at a time and gets back one type name. The reply is restricted to the type names by
 Ollama's structured output, so there is no probability and no score to set a cut-off on. Adapted
-from synth-classify's llm.py."""
+from synth-classify's llm.py.
 
+`label_split` writes `classify`'s answer for every page of a split to data/llm-labels/<split>.jsonl,
+so train.py's `--labels llm` can fit on them in place of the hand labels: `uv run python llm.py
+--split train`."""
+
+import argparse
 import base64
 import json
 import os
+import sys
 import time
 import urllib.request
 
 from classes import CLASSES, REJECT_LABEL
+from train import manifest
 
 MODEL = "gemma4:e4b"
 
@@ -24,6 +31,8 @@ PROMPT = INTRO + "\n\nTypes:\n" + "\n".join(f"- {n}: {d}" for n, d in CLASSES.it
 
 # REJECT_PROMPT is PROMPT with REJECT_LABEL as one more answer, for a page of none of the types.
 REJECT_PROMPT = PROMPT + f'\n\nIf the page is none of these types, answer "{REJECT_LABEL}".'
+
+LABELS_DIR = os.path.join("data", "llm-labels")
 
 # score.py's `--llm` names, each mapped to `classify`'s `allow_reject`.
 NAMES = {"gemma4-image": False, "gemma4-image-reject": True}
@@ -66,3 +75,28 @@ def classify(image_path, allow_reject, url="http://localhost:11434"):
         raise ValueError(f"{MODEL} answered {label!r} for {os.path.basename(image_path)}")
     return label, seconds
 
+
+def label_split(split):
+    """label_split runs `classify` without reject on every page of `split`, in manifest order, and
+    writes one row per page, `id`, `label` and `seconds`, to LABELS_DIR/<split>.jsonl. The file is
+    written once every page has an answer, so an interrupted run leaves no partial file."""
+    rows = [r for r in manifest() if r["split"] == split]
+    if not rows:
+        sys.exit(f"no {split} pages in the manifest")
+    out = []
+    for i, r in enumerate(rows):
+        label, seconds = classify(os.path.join("data", split, r["id"] + ".png"), False)
+        out.append({"id": r["id"], "label": label, "seconds": round(seconds, 4)})
+        print(f"{i + 1}/{len(rows)} {r['id']}: {label} ({seconds:.2f} s)", file=sys.stderr)
+    path = os.path.join(LABELS_DIR, split + ".jsonl")
+    os.makedirs(LABELS_DIR, exist_ok=True)
+    with open(path, "w") as f:
+        for row in out:
+            f.write(json.dumps(row) + "\n")
+    print(f"wrote {len(out)} rows to {path}", file=sys.stderr)
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--split", choices=["train", "dev", "test"], required=True)
+    label_split(ap.parse_args().split)

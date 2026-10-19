@@ -221,6 +221,8 @@ __marimo__/
 
 # Page images are rebuilt by data.py from data/selection.json; the manifest and selection are tracked.
 data/*/
+# gemma4:e4b's labels are training input that costs an Ollama run to rebuild, so they are tracked.
+!data/llm-labels/
 
 # Trained classifiers; train.py rebuilds them.
 models/

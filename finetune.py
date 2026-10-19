@@ -159,7 +159,7 @@ def main():
 
     name = f"layoutlmv3-{args.train}"
     out = os.path.join("models", name)
-    ids, labels = training_pages(args.train)
+    ids, labels, _ = training_pages(args.train, "hand")
     dev_ids, dev_gold = dev_pages()
     os.makedirs(out, exist_ok=True)
     start = time.perf_counter()

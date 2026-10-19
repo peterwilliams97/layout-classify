@@ -4,7 +4,9 @@ fits logistic regression on frozen `EMBED_BASE` embeddings of the page text with
 before it. `--dit` reads the page image instead of the text: logistic regression on frozen
 `DIT_BASE` embeddings of data/<split>/<id>.png. `--train real` is every train page; `--train
 small` is `SMALL_PER_CLASS` of them per class, drawn with SEED and recorded in data/selection.json
-under "small". Neither holds a reject page: train has none.
+under "small". Neither holds a reject page: train has none. `--labels llm` fits on the labels
+llm.py's `label_split` wrote to data/llm-labels/train.jsonl instead of the hand labels, and the
+model name takes the suffix `-llm`; dev keeps its hand labels, so C is still chosen on them.
 
 Adapted from synth-classify's train.py. For `--embed` and `--dit`, the logistic regression's C is
 chosen from C_GRID on dev, never test: each C is fitted on train, and the one whose top probability
@@ -27,6 +29,7 @@ MANIFEST = "data/manifest.jsonl"
 SELECTION = "data/selection.json"
 SEED = 0
 SMALL_PER_CLASS = 10
+LLM_LABELS = "data/llm-labels/train.jsonl"
 # The logistic regression C values `choose_c` tries for the frozen embeddings, smallest first.
 C_GRID = [0.01, 0.1, 1, 10]
 
@@ -85,8 +88,45 @@ def small_ids(train_rows):
     return set(ids)
 
 
-def training_pages(which):
-    """The (page ids, label indices in CLASSES) of the `which` training set, in manifest order."""
+def llm_labels(rows):
+    """llm_labels returns gemma4:e4b's label for each of `rows` from LLM_LABELS, in order. Every
+    page must have one, and every label must be in CLASSES."""
+    with open(LLM_LABELS) as f:
+        by_id = {r["id"]: r["label"] for r in map(json.loads, f) if r}
+    missing = [r["id"] for r in rows if r["id"] not in by_id]
+    if missing:
+        sys.exit(f"{LLM_LABELS}: no label for {len(missing)} train pages, first {missing[0]}")
+    labels = [by_id[r["id"]] for r in rows]
+    unknown = sorted(set(labels) - set(CLASSES))
+    if unknown:
+        sys.exit(f"{LLM_LABELS}: labels not in CLASSES: {unknown}")
+    return labels
+
+
+def agreement(hand, llm):
+    """agreement returns the results/train/ lines comparing the `llm` labels a model was fitted on
+    with the `hand` labels of the same pages, both label indices in CLASSES: the share equal and the
+    confusion matrix, rows hand and columns llm."""
+    from sklearn.metrics import confusion_matrix
+
+    names = list(CLASSES)
+    width = max(len(name) for name in names)
+    same = sum(h == l for h, l in zip(hand, llm))
+    lines = [
+        f"agreement {same / len(hand):.4f} ({same} of {len(hand)} llm labels equal the hand label)",
+        "confusion (row: hand label, column: llm label, numbered as the rows are)",
+        f"  {'':<{width + 3}}" + "".join(f"{i:>4}" for i in range(len(names))),
+    ]
+    matrix = confusion_matrix(hand, llm, labels=range(len(names)))
+    for i, (name, row) in enumerate(zip(names, matrix)):
+        lines.append(f"  {i:>2} {name:<{width}}" + "".join(f"{n:>4}" for n in row))
+    return lines
+
+
+def training_pages(which, source):
+    """The (page ids, label indices in CLASSES) of the `which` training set, in manifest order, and
+    the "agreement" lines for results/train/. The labels are the hand labels, or with `source`
+    "llm" those in LLM_LABELS, and the lines are then `agreement`'s; with "hand" there are none."""
     rows = [r for r in manifest() if r["split"] == "train"]
     if not rows:
         sys.exit(f"{MANIFEST}: no train pages")
@@ -97,7 +137,11 @@ def training_pages(which):
     if which == "small":
         keep = small_ids(rows)
         rows = [r for r in rows if r["id"] in keep]
-    return [r["id"] for r in rows], [names.index(r["label"]) for r in rows]
+    hand = [names.index(r["label"]) for r in rows]
+    if source == "hand":
+        return [r["id"] for r in rows], hand, []
+    llm = [names.index(label) for label in llm_labels(rows)]
+    return [r["id"] for r in rows], llm, agreement(hand, llm)
 
 
 def dev_pages():
@@ -135,13 +179,14 @@ def choose_c(make, x, labels, dev_x, dev_gold):
     return best[0], best[1], lines
 
 
-def write_seconds(name, which, pages, seconds, scope, grid):
+def write_seconds(name, which, source, pages, seconds, scope, grid):
     """write_seconds records how long a training run took, base model load included, in
-    results/train/<name>.txt, followed by `choose_c`'s `grid` lines. `scope` says what the seconds
-    cover."""
+    results/train/<name>.txt, followed by `grid`: `choose_c`'s lines and any of `agreement`'s.
+    `scope` says what the seconds cover."""
+    labels = "" if source == "hand" else f", labels from {LLM_LABELS}"
     text = (
         f"model     models/{name}\n"
-        f"train     {which} ({pages} pages)\n"
+        f"train     {which} ({pages} pages{labels})\n"
         f"pages     {pages}\n"
         f"seconds   {seconds:.2f} ({scope})\n"
     ) + "".join(line + "\n" for line in grid)
@@ -281,6 +326,7 @@ def train_dit(ids, labels, dev_ids, dev_gold, out, batch_size):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--train", choices=["real", "small"], required=True)
+    ap.add_argument("--labels", choices=["hand", "llm"], default="hand", help=f"llm: {LLM_LABELS}")
     ap.add_argument("--tfidf", action="store_true")
     ap.add_argument("--embed", action="store_true", help=f"frozen {EMBED_BASE} + logistic regression")
     ap.add_argument("--dit", action="store_true", help=f"frozen {DIT_BASE} + logistic regression")
@@ -290,9 +336,9 @@ def main():
         ap.error("give one of --tfidf, --embed and --dit")
 
     kind = "tfidf" if args.tfidf else "ultrabert-embed" if args.embed else "dit"
-    name = f"{kind}-{args.train}"
+    name = f"{kind}-{args.train}" + ("-llm" if args.labels == "llm" else "")
     out = os.path.join("models", name)
-    ids, labels = training_pages(args.train)
+    ids, labels, agree = training_pages(args.train, args.labels)
     os.makedirs(out, exist_ok=True)
     grid = []
     if args.dit:
@@ -312,7 +358,8 @@ def main():
             start = time.perf_counter()
             grid = train_embed(texts, labels, dev_texts, dev_gold, out, args.batch_size)
             scope = "base model load to save; dev embedding and C grid included; OCR excluded"
-    write_seconds(name, args.train, len(ids), time.perf_counter() - start, scope, grid)
+    seconds = time.perf_counter() - start
+    write_seconds(name, args.train, args.labels, len(ids), seconds, scope, grid + agree)
 
 
 if __name__ == "__main__":

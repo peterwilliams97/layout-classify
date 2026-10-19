@@ -4,7 +4,8 @@
 This repo asks the same questions of document pages, using 9 types from
 RVL-CDIP-N, modern pages labelled with RVL-CDIP's types, plus pages that fit none of them.
 So far it holds the data, the OCR cache, two classifiers on the OCR text, one on the page image,
-one fine-tuned on both, and a local vision LLM given the page image and no hand labels.
+one fine-tuned on both, and a local vision LLM given the page image and no hand labels, whose
+labels also train the two text classifiers in place of the hand labels.
 
 ## Aim
 
@@ -84,7 +85,11 @@ same seeded order. None failed.
   `microsoft/dit-base` embeddings, at a pinned revision, each the mean of the last hidden state over
   the 196 patches of the page resized to 224 × 224, standardised by a `StandardScaler` fitted on
   the train embeddings. Names are `tfidf-real`, `tfidf-small`,
-  `ultrabert-embed-real`, `ultrabert-embed-small`, `dit-real` and `dit-small`.
+  `ultrabert-embed-real`, `ultrabert-embed-small`, `dit-real` and `dit-small`. `--labels llm` fits
+  on the labels in `data/llm-labels/train.jsonl` instead of the hand labels and adds `-llm` to the
+  name, as in `tfidf-real-llm` and `ultrabert-embed-real-llm`; dev keeps its hand labels, so C is
+  still chosen on them. Its `results/train/<name>.txt` adds the share of train pages whose llm
+  label equals the hand label, and the confusion matrix, rows hand and columns llm.
 - `finetune.py` — fine-tunes every weight of `microsoft/layoutlmv3-base`, at a pinned revision, with
   a new head over `CLASSES`, and saves it to `models/<name>/`. A page's input is its OCR words and
   boxes from `ocr/<id>.json`, the boxes scaled to 0–1000 of the page, and `data/<split>/<id>.png`;
@@ -107,7 +112,10 @@ same seeded order. None failed.
   type, and the enum holds it too. `score.py --llm gemma4-image` or `--llm gemma4-image-reject`
   scores it; its seconds are the Ollama request, the image read excluded. It gives no probability,
   so there is no `--dump` and no cut-off. The report of `gemma4-image-reject` adds the share of
-  reject pages it labelled `none of these` and the share of in-class pages it did.
+  reject pages it labelled `none of these` and the share of in-class pages it did. `label_split`
+  runs `classify` without reject on every page of a split and writes `data/llm-labels/<split>.jsonl`,
+  one row per page with `id`, `label` and `seconds`: `uv run python llm.py --split train`. That
+  file is tracked.
 - `confidence.py` — adapted from synth-classify's. It picks the cut-offs on every dev page, then
   reports on test, at each cut-off, coverage and error on in-class pages, the reject leak, and
   coverage and error for a stream with 10% reject pages and for all test pages.
@@ -142,6 +150,8 @@ done
 uv run python confidence.py --model tfidf-real
 ollama serve &   # gemma4:e4b pulled
 uv run python score.py --llm gemma4-image --split test   # also gemma4-image-reject; dev
+uv run python llm.py --split train                       # gemma4:e4b labels train, about 4 min
+uv run python train.py --tfidf --train real --labels llm # also --embed
 ```
 
 `--embed`, `--dit` and `finetune.py` training and scoring fetch the model from Hugging Face on
@@ -171,8 +181,13 @@ accepted reject pages plus the accepted in-class errors, over that coverage.
 | `dit-real`              | 288         | 0.0000              | -                | 0.0000      | 0.0000                 | -                   |
 | `layoutlmv3-small`      | 90          | 0.0055              | 0.0000           | 0.0000      | 0.0050                 | 0.0000              |
 | `layoutlmv3-real`       | 288         | 0.1105              | 0.0000           | 0.0500      | 0.1044                 | 0.0479              |
+| `tfidf-real-llm`        | 0 (train)   | 0.3646              | 0.0000           | 0.0100      | 0.3292                 | 0.0030              |
+| `ultrabert-embed-real-llm` | 0 (train) | 0.1989             | 0.0000           | 0.0100      | 0.1800                 | 0.0056              |
 
 `gemma4-image` and `gemma4-image-reject` have no rows: the LLM gives no score, so it has no cut-off.
+*Hand labels* counts hand-labelled train pages. The `-llm` models have 0: they are trained on
+gemma4:e4b's labels of the 288 train pages. For every model, the `-llm` ones included, the cut-off
+uses the 172 hand-labelled dev pages.
 
 From `results/confidence/<model>.txt`, cut-off `tau` under `alpha 0.05` in the test section. That
 file also gives coverage and error over all 281 test pages, whose mix is 100 reject to 181
@@ -193,6 +208,8 @@ accept no page.
 | `dit-real`              | 288         | 0.4306 | 0.6685               | 0.0132           |
 | `layoutlmv3-small`      | 90          | 0.2954 | 0.4586               | 0.0435           |
 | `layoutlmv3-real`       | 288         | 0.5552 | 0.8619               | 0.0528           |
+| `tfidf-real-llm`        | 0 (train)   | 0.4698 | 0.7293               | 0.000267         |
+| `ultrabert-embed-real-llm` | 0 (train) | 0.5694 | 0.8840              | 0.0352           |
 | `gemma4-image`          | 0           | 0.6014 | 0.9337               | 0.848            |
 | `gemma4-image-reject`   | 0           | 0.8256 | 0.8674               | 0.934            |
 
@@ -205,6 +222,7 @@ label is in `CLASSES` (line `accuracy … without reject pages`). All from `resu
 | Hand labels | Model                  | Dev coverage | Coverage at 10% reject | Error at 10% reject |
 |-------------|------------------------|--------------|------------------------|---------------------|
 | 0           | `gemma4-image`         | no cut-off   | no cut-off; test accuracy 0.6014, in-class 0.9337 | - |
+| 0 (train)   | `tfidf-real-llm`       | 0.2733       | 0.3292                 | 0.0030              |
 | 90          | `tfidf-small`          | 0.2965       | 0.3998                 | 0.0174              |
 | 90          | `dit-small`            | 0.0000       | 0.0000                 | -                   |
 | 90          | `layoutlmv3-small`     | 0.0174       | 0.0050                 | 0.0000              |
@@ -225,15 +243,21 @@ together; test was not used to choose any.
   unchanged. The `StandardScaler` in `--dit` was added after the unscaled run saturated at
   probability 1.0 (`results/unscaled/`).
 - C chosen on dev from `C_GRID`: `ultrabert-embed-small` 0.01, `ultrabert-embed-real` 10,
-  `dit-small` 10, `dit-real` 10 (`results/train/<model>.txt`; C = 1 results in `results/c1/`).
+  `dit-small` 10, `dit-real` 10, `ultrabert-embed-real-llm` 0.01 (`results/train/<model>.txt`;
+  C = 1 results in `results/c1/`).
+- gemma4:e4b's label equals the hand label on 0.9514 of train pages, 274 of 288; 6 of the 14
+  others are hand-labelled email (`results/train/tfidf-real-llm.txt`).
+- Trained on gemma4:e4b's labels, `tfidf-real-llm` covers 0.3292 of the 10% reject stream at the 5%
+  cut-off, against 0.3182 for `tfidf-real` on hand labels, a difference under the 5-point noise.
 - AUROC of score against correctness on all dev pages: `tfidf-small` 0.8552, `tfidf-real` 0.8349,
   `ultrabert-embed-small` 0.8549, `ultrabert-embed-real` 0.8872. The `ultrabert-embed-` and
   `dit-` values are those that chose C, so they are not held out.
 - UltraBERT-Embed has the higher in-class accuracy at both sizes, 0.8729 for
   `ultrabert-embed-real`. At the 5% cut-off `ultrabert-embed-real` covers 0.2854 of the 10% reject
   stream, against 0.3182 for `tfidf-real`; `ultrabert-embed-small` covers 0.0199.
-- Question 2: OCR text wins. Coverage at 10% reject at the 5% cut-off is 0.3182 for `tfidf-real`,
-  against 0.1044 for `layoutlmv3-real` and 0.0000 for `dit-real`. With the scaler, `dit-real` still gives a
+- Question 2: on coverage at 5% error OCR text wins (`tfidf-real` 0.3182, `layoutlmv3-real`
+  0.1044, `dit-real` 0.0000); on accuracy the page image wins when the reader is gemma4:e4b (0.9337
+  in-class against 0.8729 for `ultrabert-embed-real`). With the scaler, `dit-real` still gives a
   wrong dev page a score of 1.0, so no cut-off reaches 5% dev error.
 - Every test page `layoutlmv3-real` accepts at the 5% cut-off is predicted news article: 20 news
   articles and 5 reject pages (`results/confidence/dumps/layoutlmv3-real-test.jsonl`).
