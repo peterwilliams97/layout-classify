@@ -30,10 +30,13 @@ uv run python train.py --tfidf --train real     # or --embed, --dit; or --train 
 uv run python finetune.py --layoutlmv3 --train real   # or --train small; ~11 min real, ~4 small
 uv run python score.py --model tfidf-real --split dev --dump   # also test
 uv run python confidence.py --model tfidf-real  # needs the dev and test dumps
+uv run python score.py --llm gemma4-image --split dev   # or gemma4-image-reject; needs ollama serve
 ```
 
 Model names are `tfidf-real`, `tfidf-small`, `ultrabert-embed-real`, `ultrabert-embed-small`,
-`dit-real`, `dit-small`, `layoutlmv3-real`, `layoutlmv3-small`. An `--embed` training run is about
+`dit-real`, `dit-small`, `layoutlmv3-real`, `layoutlmv3-small`; `score.py --llm` takes
+`gemma4-image` and `gemma4-image-reject`, gemma4:e4b on Ollama given the page image (`llm.py`), with
+no score and so no `--dump`. An `--embed` training run is about
 13 s for 288 pages on MPS; scoring is about 0.035 s per page. A `--dit` run is about 10 s; scoring
 about 0.014 s per page. `dit-` models read `data/<split>/<id>.png`, not `ocr/`.
 

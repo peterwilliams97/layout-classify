@@ -9,7 +9,13 @@ the classifier's alone. ocr.py's time is in results/ocr-time.txt. A `dit-` model
 image, data/<split>/<id>.png, and its seconds are embedding and logistic regression, the image read
 excluded. A `layoutlmv3-` model, from finetune.py, reads both the OCR words and boxes and the image;
 its seconds are the forward pass alone, the page read and the processor excluded, and its score is
-the softmax's top probability. Adapted from synth-classify's score.py."""
+the softmax's top probability. Adapted from synth-classify's score.py.
+
+`--llm` scores one of llm.py's `NAMES` instead of a saved model: gemma4:e4b on Ollama, given the
+page image, with no hand labels. It gives no probability, so `--dump` is refused. The
+`gemma4-image-reject` variant may answer REJECT_LABEL, which is right on a reject page, and its
+report adds the share of reject pages it gave REJECT_LABEL and the share of in-class pages it
+did."""
 
 import argparse
 import json
@@ -21,6 +27,7 @@ import time
 from sklearn.metrics import confusion_matrix
 
 from classes import CLASSES, REJECT_LABEL
+from llm import MODEL, NAMES, classify
 from train import manifest, page_image, page_text
 
 SPLITS = ["dev", "test"]
@@ -87,20 +94,24 @@ def predict(model_dir, ids):
     return preds, scores, seconds
 
 
-def report(model, split, gold, preds, seconds, names):
+def report(model, split, gold, preds, seconds, names, can_reject=False):
     """report formats the scores. `gold` and `preds` index `names`, which is CLASSES then
-    REJECT_LABEL."""
+    REJECT_LABEL. `can_reject` is for a model that may predict REJECT_LABEL, and adds its two
+    reject shares."""
     ids = range(len(names))
     width = max(len(name) for name in names)
     reject = names.index(REJECT_LABEL)
-    excluded = {"dit": "image read", "layoutlmv3": "page read and processor"}.get(
-        os.path.basename(model).split("-")[0], "OCR"
-    )
+    excluded = {
+        "dit": "image read",
+        "gemma4": "image read",
+        "layoutlmv3": "page read and processor",
+    }.get(os.path.basename(model).split("-")[0], "OCR")
     wrong = sum(g != p for g, p in zip(gold, preds))
     kept = [(g, p) for g, p in zip(gold, preds) if g != reject]
     lines = [
         f"model     {model}",
-        f"{split + ' pages':<9} {len(gold)} ({len(gold) - len(kept)} reject pages, always wrong)",
+        f"{split + ' pages':<9} {len(gold)} ({len(gold) - len(kept)} reject pages"
+        + (")" if can_reject else ", always wrong)"),
         f"accuracy  {1 - wrong / len(gold):.4f}",
         f"wrong     {wrong}",
         f"accuracy  {sum(g == p for g, p in kept) / len(kept):.4f} without reject pages",
@@ -111,15 +122,27 @@ def report(model, split, gold, preds, seconds, names):
     ]
     for i, (name, row) in enumerate(zip(names, confusion_matrix(gold, preds, labels=ids))):
         lines.append(f"  {i:>2} {name:<{width}}" + "".join(f"{n:>4}" for n in row))
+    if can_reject:
+        rejects = [p for g, p in zip(gold, preds) if g == reject]
+        lines += [
+            f"reject    {sum(p == reject for p in rejects) / len(rejects):.4f} of reject pages"
+            f" labelled {REJECT_LABEL}",
+            f"reject    {sum(p == reject for _, p in kept) / len(kept):.4f} of in-class pages"
+            f" labelled {REJECT_LABEL}",
+        ]
     return "\n".join(lines) + "\n"
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", required=True, help="name of a directory under models/")
+    which = ap.add_mutually_exclusive_group(required=True)
+    which.add_argument("--model", help="name of a directory under models/")
+    which.add_argument("--llm", choices=list(NAMES), help="gemma4:e4b on the page image")
     ap.add_argument("--split", choices=SPLITS, required=True)
     ap.add_argument("--dump", action="store_true", help="write results/confidence/dumps/")
     args = ap.parse_args()
+    if args.llm and args.dump:
+        sys.exit("--llm gives no score, so there is nothing to --dump")
 
     names = list(CLASSES) + [REJECT_LABEL]
     rows = [r for r in manifest() if r["split"] == args.split]
@@ -130,12 +153,24 @@ def main():
         sys.exit(f"{args.split}: labels not in CLASSES or REJECT_LABEL: {unknown}")
     gold = [names.index(r["label"]) for r in rows]
 
-    model_dir = os.path.join("models", args.model)
-    preds, scores, seconds = predict(model_dir, [r["id"] for r in rows])
+    if args.llm:
+        preds, seconds = [], []
+        for i, r in enumerate(rows):
+            path = os.path.join("data", args.split, r["id"] + ".png")
+            label, s = classify(path, NAMES[args.llm])
+            preds.append(names.index(label))
+            seconds.append(s)
+            print(f"{i + 1}/{len(rows)} {r['id']}: {label} ({s:.2f} s)", file=sys.stderr)
+        name, model = args.llm, f"{args.llm} ({MODEL} on Ollama)"
+    else:
+        name = args.model
+        model = os.path.join("models", args.model)
+        preds, scores, seconds = predict(model, [r["id"] for r in rows])
 
-    text = report(model_dir, args.split, gold, preds, seconds, names)
+    can_reject = bool(args.llm and NAMES[args.llm])
+    text = report(model, args.split, gold, preds, seconds, names, can_reject)
     sys.stdout.write(text)
-    out = os.path.join("results", args.split, args.model + ".txt")
+    out = os.path.join("results", args.split, name + ".txt")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w") as f:
         f.write(text)

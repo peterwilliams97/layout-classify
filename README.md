@@ -3,8 +3,8 @@
 [synth-classify](../synth-classify/README.md) measured local text classifiers on short messages.
 This repo asks the same questions of document pages, using 9 types from
 RVL-CDIP-N, modern pages labelled with RVL-CDIP's types, plus pages that fit none of them.
-So far it holds the data, the OCR cache, two classifiers on the OCR text, one on the page image
-and one fine-tuned on both.
+So far it holds the data, the OCR cache, two classifiers on the OCR text, one on the page image,
+one fine-tuned on both, and a local vision LLM given the page image and no hand labels.
 
 ## Aim
 
@@ -100,6 +100,14 @@ same seeded order. None failed.
   its seconds leave out the image read. A `layoutlmv3-` model reads the OCR words and boxes and the
   image; its seconds are the forward pass, the page read and the processor excluded. `--dump` writes
   each page's prediction and top probability for `confidence.py`.
+- `llm.py` — `classify` sends one page image, `data/<split>/<id>.png`, to `gemma4:e4b` on Ollama
+  with `PROMPT`: the 9 `CLASSES` names and their definitions. The reply is restricted by Ollama's
+  structured output to an enum of those names, at temperature 0 with thinking off. With
+  `allow_reject` the prompt is `REJECT_PROMPT`, which adds `none of these` for a page that fits no
+  type, and the enum holds it too. `score.py --llm gemma4-image` or `--llm gemma4-image-reject`
+  scores it; its seconds are the Ollama request, the image read excluded. It gives no probability,
+  so there is no `--dump` and no cut-off. The report of `gemma4-image-reject` adds the share of
+  reject pages it labelled `none of these` and the share of in-class pages it did.
 - `confidence.py` — adapted from synth-classify's. It picks the cut-offs on every dev page, then
   reports on test, at each cut-off, coverage and error on in-class pages, the reject leak, and
   coverage and error for a stream with 10% reject pages and for all test pages.
@@ -132,6 +140,8 @@ for split in dev test; do
   uv run python score.py --model tfidf-real --split $split --dump
 done
 uv run python confidence.py --model tfidf-real
+ollama serve &   # gemma4:e4b pulled
+uv run python score.py --llm gemma4-image --split test   # also gemma4-image-reject; dev
 ```
 
 `--embed`, `--dit` and `finetune.py` training and scoring fetch the model from Hugging Face on
@@ -162,6 +172,8 @@ accepted reject pages plus the accepted in-class errors, over that coverage.
 | `layoutlmv3-small`      | 90          | 0.0055              | 0.0000           | 0.0000      | 0.0050                 | 0.0000              |
 | `layoutlmv3-real`       | 288         | 0.1105              | 0.0000           | 0.0500      | 0.1044                 | 0.0479              |
 
+`gemma4-image` and `gemma4-image-reject` have no rows: the LLM gives no score, so it has no cut-off.
+
 From `results/confidence/<model>.txt`, cut-off `tau` under `alpha 0.05` in the test section. That
 file also gives coverage and error over all 281 test pages, whose mix is 100 reject to 181
 in-class. With the dev error replaced by its one-sided 90% Clopper-Pearson upper bound (`tau_cp`),
@@ -181,14 +193,18 @@ accept no page.
 | `dit-real`              | 288         | 0.4306 | 0.6685               | 0.0132           |
 | `layoutlmv3-small`      | 90          | 0.2954 | 0.4586               | 0.0435           |
 | `layoutlmv3-real`       | 288         | 0.5552 | 0.8619               | 0.0528           |
+| `gemma4-image`          | 0           | 0.6014 | 0.9337               | 0.848            |
+| `gemma4-image-reject`   | 0           | 0.8256 | 0.8674               | 0.934            |
 
 Test is over all 281 pages, reject pages included. The in-class column is over the 181 pages whose
 label is in `CLASSES` (line `accuracy … without reject pages`). All from `results/test/<model>.txt`.
+`gemma4-image-reject` may answer `none of these`, so its reject pages count as right when it does.
 
 ### Hand labels against coverage
 
 | Hand labels | Model                  | Dev coverage | Coverage at 10% reject | Error at 10% reject |
 |-------------|------------------------|--------------|------------------------|---------------------|
+| 0           | `gemma4-image`         | no cut-off   | no cut-off; test accuracy 0.6014, in-class 0.9337 | - |
 | 90          | `tfidf-small`          | 0.2965       | 0.3998                 | 0.0174              |
 | 90          | `dit-small`            | 0.0000       | 0.0000                 | -                   |
 | 90          | `layoutlmv3-small`     | 0.0174       | 0.0050                 | 0.0000              |
@@ -216,8 +232,8 @@ together; test was not used to choose any.
 - UltraBERT-Embed has the higher in-class accuracy at both sizes, 0.8729 for
   `ultrabert-embed-real`. At the 5% cut-off `ultrabert-embed-real` covers 0.2854 of the 10% reject
   stream, against 0.3182 for `tfidf-real`; `ultrabert-embed-small` covers 0.0199.
-- Question 2, coverage at 10% reject at the 5% cut-off: `tfidf-real` 0.3182, `ultrabert-embed-real`
-  0.2854, `dit-real` 0.0000, `layoutlmv3-real` 0.1044. With the scaler, `dit-real` still gives a
+- Question 2: OCR text wins. Coverage at 10% reject at the 5% cut-off is 0.3182 for `tfidf-real`,
+  against 0.1044 for `layoutlmv3-real` and 0.0000 for `dit-real`. With the scaler, `dit-real` still gives a
   wrong dev page a score of 1.0, so no cut-off reaches 5% dev error.
 - Every test page `layoutlmv3-real` accepts at the 5% cut-off is predicted news article: 20 news
   articles and 5 reject pages (`results/confidence/dumps/layoutlmv3-real-test.jsonl`).
@@ -228,8 +244,10 @@ together; test was not used to choose any.
   included (`results/train/<model>.txt`).
 - At the 5% cut-off `layoutlmv3-real` lets through 5 of the 100 test reject pages; no other model
   more than 2.
+- `gemma4-image-reject` labels 0.7500 of test reject pages `none of these`, and 0.0829 of in-class
+  pages (`results/test/gemma4-image-reject.txt`).
 - Seconds per page on test: TF-IDF about 0.0003, UltraBERT-Embed about 0.04, DiT about 0.013,
-  LayoutLMv3 about 0.05.
+  LayoutLMv3 about 0.05, gemma4:e4b about 0.9.
 
 ### Limits
 
@@ -346,4 +364,5 @@ Document Library, and is for research use. Its terms are at
 Attribution 3.0 Unported, per the `LICENSE.txt` it ships with. `microsoft/dit-base` is MIT, per
 its model card. `microsoft/layoutlmv3-base` is under Creative Commons
 Attribution-NonCommercial-ShareAlike 4.0 (CC BY-NC-SA 4.0), per its model card, so the
-`layoutlmv3-` models are for non-commercial use only.
+`layoutlmv3-` models are for non-commercial use only. `gemma4:e4b` is under the Apache License 2.0,
+per the licence Ollama ships with it (`ollama show gemma4:e4b --license`).
