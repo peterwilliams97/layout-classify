@@ -1,9 +1,0 @@
-model     models/dit-small
-train     small (90 pages)
-pages     90
-seconds   11.45 (base model load to save; dev embedding, C grid and page image reads included)
-C 0.01  dev AUROC 0.6611
-C 0.1   dev AUROC 0.6646
-C 1     dev AUROC 0.6926
-C 10    dev AUROC 0.7285
-chosen    C 10 (highest dev AUROC; a tie goes to the smaller C)

@@ -49,8 +49,8 @@ ALPHAS = [0.02, 0.05, 0.10]
 ECE_BINS = 10
 # One-sided confidence level of the Clopper-Pearson upper bound on dev error behind `tau_cp`.
 CP_LEVEL = 0.90
-# Share of reject pages in the stream the deployed numbers are reported for. Test's own share,
-# 100 of 281, is set by RVL-CDIP-N's counts, not by any expected input.
+# Share of reject pages in the stream the deployed numbers are reported for. Test's own share is
+# set by the corpus's counts, not by any expected input.
 REJECT_SHARE = 0.10
 DUMPS = "results/confidence/dumps"
 

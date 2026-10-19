@@ -1,4 +1,0 @@
-model     models/ultrabert-embed-real
-train     real (288 pages)
-pages     288
-seconds   13.07 (base model load to save; OCR excluded)

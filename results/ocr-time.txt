@@ -1,8 +1,0 @@
-run 2026-10-18, splits run: train, dev, test
-tesseract 5.5.3, pytesseract defaults, one page per call
-pages in manifest      741
-pages run              741
-pages skipped          0 (ocr/<id>.json already present)
-pages with no words    7
-total seconds          290.0 (wall 290.4)
-seconds per page       mean 0.391  median 0.366  max 1.248

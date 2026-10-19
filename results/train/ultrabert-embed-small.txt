@@ -1,9 +1,0 @@
-model     models/ultrabert-embed-small
-train     small (90 pages)
-pages     90
-seconds   23.30 (base model load to save; dev embedding and C grid included; OCR excluded)
-C 0.01  dev AUROC 0.8549
-C 0.1   dev AUROC 0.8451
-C 1     dev AUROC 0.8315
-C 10    dev AUROC 0.8165
-chosen    C 0.01 (highest dev AUROC; a tie goes to the smaller C)

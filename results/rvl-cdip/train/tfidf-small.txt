@@ -1,4 +1,0 @@
-model     models/tfidf-small
-train     small (200 pages)
-pages     200
-seconds   1.06 (base model load to save; OCR excluded)

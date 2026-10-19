@@ -1,4 +1,0 @@
-model     models/dit-small
-train     small (90 pages)
-pages     90
-seconds   4.60 (base model load to save; page image reads included)

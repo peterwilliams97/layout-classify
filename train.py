@@ -12,9 +12,8 @@ Adapted from synth-classify's train.py. For `--embed` and `--dit`, the logistic 
 chosen from C_GRID on dev, never test: each C is fitted on train, and the one whose top probability
 best ranks dev pages right over wrong, by AUROC, is kept (`choose_c`). Everything else — TF-IDF's
 C, n-grams, the token limit — is fixed, not tuned. Every classifier weights classes
-inversely to their train counts (`class_weight="balanced"`): train runs from 16 email pages to 76
-letter pages, and without weights `tfidf-real` predicts no test page as memo
-(results/unweighted/test/tfidf-real.txt)."""
+inversely to their train counts (`class_weight="balanced"`), so a class with few train pages is
+not crowded out by one with many."""
 
 import argparse
 import json
@@ -72,8 +71,8 @@ def page_image(page_id):
 
 def small_ids(train_rows):
     """small_ids draws SMALL_PER_CLASS train pages per class, each class with its own seeded
-    generator as in data.py's `main`, and records the ids in data/selection.json under "small".
-    The draw is deterministic, so rewriting the entry after a data.py run restores it."""
+    generator, and records the ids in data/selection.json under "small". The draw is
+    deterministic, so rewriting the entry restores it."""
     ids = []
     for label in CLASSES:
         pool = [r["id"] for r in train_rows if r["label"] == label]
@@ -297,9 +296,8 @@ def embed_images(images, processor, model, device):
 def train_dit(ids, labels, dev_ids, dev_gold, out, batch_size):
     """train_dit fits logistic regression on frozen DiT embeddings, as `train_embed` does on text
     embeddings: encoder not updated, C chosen on dev by `choose_c`, balanced class weights. A
-    StandardScaler fitted on the train embeddings comes first; results/unscaled/ holds the fit
-    without it. Images are read one batch at a time, so the read is inside the training seconds.
-    Returns `choose_c`'s lines."""
+    StandardScaler fitted on the train embeddings comes first. Images are read one batch at a time,
+    so the read is inside the training seconds. Returns `choose_c`'s lines."""
     import joblib
     import numpy as np
     from sklearn.linear_model import LogisticRegression

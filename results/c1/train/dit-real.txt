@@ -1,4 +1,0 @@
-model     models/dit-real
-train     real (288 pages)
-pages     288
-seconds   9.13 (base model load to save; page image reads included)

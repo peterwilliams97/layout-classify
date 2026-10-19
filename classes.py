@@ -4,8 +4,8 @@ include three near-pairs: `letter` / `memo`, `form` / `questionnaire` and `budge
 
 REJECT_CLASSES are the other 7 RVL-CDIP types. Their pages appear in dev and test only, labelled
 REJECT_LABEL, as documents that fit none of CLASSES. Only handwritten, specification and resume
-have pages in RVL-CDIP-N, the source data.py reads. Names are RVL-CDIP's own label names, as in
-the `label` feature of `aharley/rvl_cdip`; test_classes.py checks that the two lists cover them."""
+have pages in RVL-CDIP-N. Names are RVL-CDIP's own label names, as in the `label` feature of
+`aharley/rvl_cdip`; test_classes.py checks that the two lists cover them."""
 
 CLASSES = {
     "letter":                 "A letter from one person or organisation to another, with a salutation, body and signature, usually on letterhead.",
