@@ -226,3 +226,7 @@ data/*/
 
 # Trained classifiers; train.py rebuilds them.
 models/
+# Source PDFs are refetched by fetch.py; their manifest, image-hash cache and quality file are tracked.
+!data/pdf/
+data/pdf/*.pdf
+data/pdf/*.part

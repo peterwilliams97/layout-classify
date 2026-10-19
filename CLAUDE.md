@@ -23,6 +23,8 @@ saying why the file exists, as in synth-classify.
 
 ```sh
 uv sync
+uv run python fetch.py                          # source PDFs to data/pdf/ and its manifest; resumable
+uv run python quality.py                        # quality gate on each PDF's labelled page
 uv run pytest                                   # the one test: classes.py vs aharley/rvl_cdip labels
 uv run pytest test_classes.py::test_classes_cover_rvl_cdip_labels
 uv run python ocr.py                            # Tesseract on every manifest page; resumable
