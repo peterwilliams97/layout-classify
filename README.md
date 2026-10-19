@@ -176,6 +176,19 @@ are in the manifest but no classifier trains on them.
   labelled `none` and the share of in-class pages it did. `label_split` runs `classify` without
   reject on every page of a split and writes `data/llm-labels/<split>.jsonl`, one row per page with
   `id`, `label` and `seconds`: `uv run python llm.py --split train`. That file is tracked.
+- `d3.py` — `vllm-sr/d3-flash`, a Decision 3.0 model from vLLM Semantic Router, run locally on MPS
+  in bfloat16 at a pinned revision and asked one `choice` question per page; it answers with a
+  probability for every type. Copied from synth-classify's. The question's options are the 12
+  `CLASSES` and its criteria their definitions; with `--prompt fewshot` each definition is followed
+  by the OCR text of that type's 3 `data/fewshot.txt` pages, each cut to its first 300 words. The
+  state is the page's OCR text cut to its first 1,500 words. Every answer is cached in
+  `results/d3/cache.jsonl`, so a rerun of `score.py --d3` rebuilds its report without the model.
+  `score.py --d3 vllm-sr/d3-flash` scores it; with `fewshot`, a `data/fewshot.txt` page in the split
+  would be left out, and as those are train pages none is. Its score is the chosen type's
+  probability, and its seconds are the `system_one` call. It needs transformers 5.17.0, so it runs
+  in `.venv-d3`, built from `requirements-d3.txt`, with `HF_HOME` at `data/hf`, a symlink to
+  synth-classify's `data/hf`, which holds the model's 16 GB. Names are `d3-flash-definitions` and
+  `d3-flash-fewshot`.
 - `confidence.py` — adapted from synth-classify's. For α 0.02, 0.05 and 0.10 it picks two cut-offs
   on every validation page: `tau`, the lowest score whose accepted validation error is at most α,
   and `tau_cp`, the same with that error's one-sided 90% Clopper-Pearson upper bound. A reject page
@@ -216,6 +229,16 @@ ollama serve &   # gemma4:e4b pulled
 uv run python score.py --llm gemma4-image --split test   # also gemma4-image-reject; validation
 uv run python llm.py --split train                       # gemma4:e4b labels train
 uv run python train.py --tfidf --train real --labels llm # also --embed
+
+# d3-flash: its own venv, and synth-classify's Hugging Face cache, where the model already is
+ln -s ../../synth-classify/data/hf data/hf
+uv venv --python 3.13 .venv-d3
+uv pip install --python .venv-d3/bin/python -r requirements-d3.txt
+export HF_HOME=$PWD/data/hf HF_HUB_OFFLINE=1
+for split in validation test; do      # also --prompt fewshot
+  .venv-d3/bin/python score.py --d3 vllm-sr/d3-flash --prompt definitions --split $split --dump
+done
+.venv-d3/bin/python confidence.py --model d3-flash-definitions
 ```
 
 `--embed`, `--dit` and `finetune.py` training and scoring fetch the model from Hugging Face on

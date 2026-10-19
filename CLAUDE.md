@@ -39,13 +39,18 @@ uv run python confidence.py --model tfidf-real --dev-size 130 --dev-seed 0   # 1
 uv run python score.py --llm gemma4-image --split validation   # or gemma4-image-reject; needs ollama serve
 uv run python llm.py --split train              # gemma4:e4b labels to data/llm-labels/; ~4 min
 uv run python train.py --tfidf --train real --labels llm   # or --embed; name gets -llm
+HF_HOME=$PWD/data/hf HF_HUB_OFFLINE=1 .venv-d3/bin/python score.py --d3 vllm-sr/d3-flash --prompt definitions --split validation --dump   # or fewshot; test
 ```
 
 Model names are `tfidf-real`, `tfidf-small`, `ultrabert-embed-real`, `ultrabert-embed-small`,
 `dit-real`, `dit-small`, `layoutlmv3-real`, `layoutlmv3-small`, and with `--labels llm`
 `tfidf-real-llm` and `ultrabert-embed-real-llm`; `score.py --llm` takes
 `gemma4-image` and `gemma4-image-reject`, gemma4:e4b on Ollama given the page image (`llm.py`), with
-no score and so no `--dump`. `dit-` models read `data/<split>/<id>.png`, not `ocr/`.
+no score and so no `--dump`. `score.py --d3 vllm-sr/d3-flash --prompt definitions` or
+`fewshot` writes `d3-flash-definitions` or `d3-flash-fewshot`: d3.py, on the OCR text, in
+`.venv-d3` (transformers 5.17.0, from `requirements-d3.txt`). `data/hf` is a symlink to
+synth-classify's Hugging Face cache, which holds d3-flash; run with `HF_HOME=$PWD/data/hf` and
+`HF_HUB_OFFLINE=1` so nothing is fetched into it. d3 needs MPS, which the sandbox hides. `dit-` models read `data/<split>/<id>.png`, not `ocr/`.
 
 Tesseract comes from Homebrew (`brew install tesseract`). Anything that reaches Hugging Face fails
 inside the Claude Code sandbox with `OSStatus -26276`. That is macOS TLS trust lookup through

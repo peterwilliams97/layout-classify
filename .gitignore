@@ -230,3 +230,7 @@ models/
 !data/pdf/
 data/pdf/*.pdf
 data/pdf/*.part
+# Hugging Face cache for .venv-d3 runs: a symlink to synth-classify's data/hf, which holds
+# vllm-sr/d3-flash, so its 16.8 GB is not fetched twice. `data/*/` does not match a symlink.
+data/hf
+.venv-d3/

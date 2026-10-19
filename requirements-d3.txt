@@ -1,0 +1,15 @@
+# requirements-d3.txt is the venv d3.py runs in, apart from .venv because vllm-sr/d3-flash's code
+# needs transformers 5.17.0. Copied from synth-classify's, less its datasets and peft:
+#   uv venv --python 3.13 .venv-d3
+#   uv pip install --python .venv-d3/bin/python -r requirements-d3.txt
+# score.py and confidence.py run in it too, so it carries their imports.
+torch
+transformers==5.17.0
+accelerate
+safetensors
+huggingface-hub
+# The model's code imports PIL, and transformers refuses to load it without.
+pillow
+scikit-learn
+scipy
+joblib

@@ -15,7 +15,12 @@ the softmax's top probability. Adapted from synth-classify's score.py.
 page image, with no hand labels. It gives no probability, so `--dump` is refused. The
 `gemma4-image-reject` variant may answer REJECT_LABEL, which is right on a reject page, and its
 report adds the share of reject pages it gave REJECT_LABEL and the share of in-class pages it
-did."""
+did.
+
+`--d3 MODEL` scores a Decision 3.0 model run locally by d3.py, `vllm-sr/d3-flash`, on the OCR text,
+with `--prompt definitions` (the default) or `fewshot`; the report name is <model basename>-<prompt>.
+Its score is the chosen option's probability. It runs in `.venv-d3`. With `fewshot`, any
+data/fewshot.txt page in the split is left out, so no page is scored with itself as an example."""
 
 import argparse
 import json
@@ -27,6 +32,7 @@ import time
 from sklearn.metrics import confusion_matrix
 
 from classes import CLASSES, REJECT_LABEL
+from d3 import D3_PROMPTS, classify_d3, fewshot_ids
 from llm import MODEL, NAMES, classify
 from train import manifest, page_image, page_text
 
@@ -138,11 +144,16 @@ def main():
     which = ap.add_mutually_exclusive_group(required=True)
     which.add_argument("--model", help="name of a directory under models/")
     which.add_argument("--llm", choices=list(NAMES), help="gemma4:e4b on the page image")
+    which.add_argument("--d3", metavar="MODEL", help="Decision 3.0 model on the OCR text, d3.py")
+    ap.add_argument("--prompt", choices=D3_PROMPTS, help="with --d3; default definitions")
     ap.add_argument("--split", choices=SPLITS, required=True)
     ap.add_argument("--dump", action="store_true", help="write results/confidence/dumps/")
     args = ap.parse_args()
     if args.llm and args.dump:
         sys.exit("--llm gives no score, so there is nothing to --dump")
+    if args.prompt and not args.d3:
+        ap.error("--prompt goes with --d3")
+    prompt = args.prompt or "definitions"
 
     names = list(CLASSES) + [REJECT_LABEL]
     rows = [r for r in manifest() if r["split"] == args.split]
@@ -151,6 +162,12 @@ def main():
     unknown = sorted({r["label"] for r in rows} - set(names))
     if unknown:
         sys.exit(f"{args.split}: labels not in CLASSES or REJECT_LABEL: {unknown}")
+    left_out = 0
+    if args.d3 and prompt == "fewshot":
+        shots = {page_id for ids in fewshot_ids().values() for page_id in ids}
+        left_out = sum(r["id"] in shots for r in rows)
+        rows = [r for r in rows if r["id"] not in shots]
+        print(f"{left_out} data/fewshot.txt pages left out of {args.split}", file=sys.stderr)
     gold = [names.index(r["label"]) for r in rows]
 
     if args.llm:
@@ -162,6 +179,15 @@ def main():
             seconds.append(s)
             print(f"{i + 1}/{len(rows)} {r['id']}: {label} ({s:.2f} s)", file=sys.stderr)
         name, model = args.llm, f"{args.llm} ({MODEL} on Ollama)"
+    elif args.d3:
+        name = f"{os.path.basename(os.path.normpath(args.d3))}-{prompt}"
+        model = f"{args.d3} prompt {prompt}"
+        if prompt == "fewshot":
+            model += f", {left_out} data/fewshot.txt pages left out"
+        answers = classify_d3([r["id"] for r in rows], prompt, args.d3)
+        preds = [names.index(label) for label, _, _ in answers]
+        scores = [v[p] for (_, v, _), p in zip(answers, preds)]
+        seconds = [s for _, _, s in answers]
     else:
         name = args.model
         model = os.path.join("models", args.model)
@@ -176,7 +202,7 @@ def main():
         f.write(text)
     print(f"wrote {out}", file=sys.stderr)
     if args.dump:
-        dump = os.path.join("results", "confidence", "dumps", f"{args.model}-{args.split}.jsonl")
+        dump = os.path.join("results", "confidence", "dumps", f"{name}-{args.split}.jsonl")
         os.makedirs(os.path.dirname(dump), exist_ok=True)
         with open(dump, "w") as f:
             for r, pred, score in zip(rows, preds, scores):
