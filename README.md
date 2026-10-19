@@ -175,9 +175,15 @@ are in the manifest but no classifier trains on them.
   labelled `none` and the share of in-class pages it did. `label_split` runs `classify` without
   reject on every page of a split and writes `data/llm-labels/<split>.jsonl`, one row per page with
   `id`, `label` and `seconds`: `uv run python llm.py --split train`. That file is tracked.
-- `confidence.py` — adapted from synth-classify's. It picks the cut-offs on every validation page,
-  then reports on test, at each cut-off, coverage and error on in-class pages, the reject leak, and
-  coverage and error for a stream with 10% reject pages and for all test pages.
+- `confidence.py` — adapted from synth-classify's. For α 0.02, 0.05 and 0.10 it picks two cut-offs
+  on every validation page: `tau`, the lowest score whose accepted validation error is at most α,
+  and `tau_cp`, the same with that error's one-sided 90% Clopper-Pearson upper bound. A reject page
+  scoring at or above a cut-off is an accepted error. It then reports on test, at each cut-off,
+  coverage and error on in-class pages, the reject leak (the share of reject pages at or above it),
+  and coverage and error for a stream with 10% reject pages and for all test pages. `--dev-size N
+  --dev-seed S` fits on N validation pages, N / 13 from each class and from the reject pages, and
+  writes `results/confidence/<name>-dev<N>-seed<S>.txt`. `test_confidence.py` checks it on a
+  hand-made 12-row dump.
 - `data/` — the manifest and the selection are tracked. The page images are ignored by git.
 - `ocr/` — the OCR cache, one JSON file per page.
 - `models/` — trained classifiers, ignored by git and rebuilt by `train.py` and `finetune.py`.
@@ -196,7 +202,7 @@ uv run python fetch.py      # source PDFs to data/pdf/; resumable
 uv run python quality.py
 uv run python split.py
 uv run python render.py
-uv run pytest               # checks classes.py against data/pdf/manifest.jsonl's labels
+uv run pytest               # classes.py against data/pdf/manifest.jsonl; confidence.py on a hand-made dump
 uv run python ocr.py
 
 uv run python train.py --tfidf --train real          # also --train small; --embed for UltraBERT, --dit for DiT

@@ -28,13 +28,14 @@ uv run python fetch.py                          # source PDFs to data/pdf/ and i
 uv run python quality.py                        # quality gate on each PDF's labelled page
 uv run python split.py                          # data/manifest.jsonl and data/fewshot.txt
 uv run python render.py                         # labelled pages at 200 dpi to data/<split>/
-uv run pytest                                   # the one test: classes.py vs data/pdf/manifest.jsonl labels
+uv run pytest                                   # classes.py vs manifest labels; confidence.py on a 12-row dump
 uv run pytest test_classes.py::test_classes_match_manifest_labels
 uv run python ocr.py                            # Tesseract on every manifest page; resumable
 uv run python train.py --tfidf --train real     # or --embed, --dit; or --train small
 uv run python finetune.py --layoutlmv3 --train real   # or --train small; ~11 min real, ~4 small
 uv run python score.py --model tfidf-real --split validation --dump   # also test
 uv run python confidence.py --model tfidf-real  # needs the validation and test dumps
+uv run python confidence.py --model tfidf-real --dev-size 130 --dev-seed 0   # 10 per class and reject
 uv run python score.py --llm gemma4-image --split validation   # or gemma4-image-reject; needs ollama serve
 uv run python llm.py --split train              # gemma4:e4b labels to data/llm-labels/; ~4 min
 uv run python train.py --tfidf --train real --labels llm   # or --embed; name gets -llm

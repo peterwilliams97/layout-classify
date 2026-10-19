@@ -28,7 +28,13 @@ Computed:
     with r = REJECT_SHARE; and coverage and error over all test pages, at
     test's own mix of reject pages.
 
-Output: the report, printed and written to results/confidence/<model>.txt.
+Output: the report, printed and written to results/confidence/<model>.txt, or with --dev-size to
+results/confidence/<model>-dev<N>-seed<S>.txt.
+
+With --dev-size N, the cut-offs and the calibration are fitted on N validation pages drawn by
+`draw`, N / 13 from each class of CLASSES and from the reject pages, so the cut-off's dependence on
+validation size can be measured; a class with fewer pages gives them all. --dev-seed seeds the
+draw.
 
 Nothing is fitted or chosen on test. Adapted from synth-classify's confidence.py.
 """
@@ -36,6 +42,7 @@ Nothing is fitted or chosen on test. Adapted from synth-classify's confidence.py
 import argparse
 import json
 import os
+import random
 import sys
 
 import numpy as np
@@ -68,6 +75,19 @@ def read_dump(path, names):
     correct = np.array([r["predicted"] == r["label"] for r in rows], dtype=float)
     label = np.array([names.index(r["label"]) for r in rows])
     return score, correct, label
+
+
+def draw(label, size, seed, classes):
+    """draw returns the indices of `size` // `classes` rows of each class in `label`, each class's
+    rows shuffled in class order by one random.Random(`seed`); a class with fewer rows gives all of
+    them."""
+    rng = random.Random(seed)
+    picked = []
+    for i in range(classes):
+        rows = [j for j in range(len(label)) if label[j] == i]
+        rng.shuffle(rows)
+        picked += rows[: size // classes]
+    return np.array(sorted(picked), dtype=int)
 
 
 def ece(conf, correct, raw):
@@ -109,16 +129,23 @@ def fmt(x, spec=".4f"):
     return "-" if x is None else format(x, spec)
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--model", required=True, help="model name, as given to score.py")
-    args = ap.parse_args()
+def report(model, validation_path, test_path, dev_size=None, dev_seed=0):
+    """report returns the text of the routing report for `model` from its validation and test
+    dumps. With `dev_size`, the cut-offs and the calibration are fitted on `draw`'s rows of the
+    validation dump."""
     names = list(CLASSES) + [REJECT_LABEL]
     reject = names.index(REJECT_LABEL)
     width = max(len(name) for name in names)
-    path = lambda split: os.path.join(DUMPS, f"{args.model}-{split}.jsonl")
 
-    validation_s, validation_c, validation_y = read_dump(path("validation"), names)
+    validation_s, validation_c, validation_y = read_dump(validation_path, names)
+    validation_desc = f"{len(validation_s)} pages"
+    if dev_size is not None:
+        keep = draw(validation_y, dev_size, dev_seed, len(names))
+        validation_desc = f"{len(keep)} of {len(validation_s)} pages, drawn with seed {dev_seed}"
+        validation_s, validation_c, validation_y = (
+            validation_s[keep], validation_c[keep], validation_y[keep]
+        )
+
     iso = IsotonicRegression(increasing=True, y_min=0, y_max=1, out_of_bounds="clip")
     iso.fit(validation_s, validation_c)
     cuts = {
@@ -131,14 +158,14 @@ def main():
     validation_reject = validation_y == reject
 
     lines = [
-        f"model     {args.model}",
-        f"validation {path('validation')} ({len(validation_s)} pages,"
+        f"model     {model}",
+        f"validation {validation_path} ({validation_desc},"
         f" {int(validation_reject.sum())} reject; accuracy {validation_c.mean():.4f})",
         "score     top probability over CLASSES; a REJECT_LABEL page is always wrong",
         "validation AUROC of score against correctness, all pages  "
         f"{roc_auc_score(validation_c, validation_s):.4f}",
-        "routing: accept a page when its score is at least the cut-off, chosen on every"
-        " validation page",
+        "routing: accept a page when its score is at least the cut-off, chosen on the validation"
+        " pages above",
         "  tau     lowest validation score whose accepted validation error is at most alpha",
         f"  tau_cp  the same with the validation error's one-sided {CP_LEVEL:.0%} Clopper-Pearson"
         " upper bound",
@@ -154,17 +181,17 @@ def main():
                 f"validation coverage {cov:.4f} error {fmt(err)} reject_leak {leak:.4f}"
             )
 
-    all_s, all_c, all_y = read_dump(path("test"), names)
+    all_s, all_c, all_y = read_dump(test_path, names)
     test_reject = all_y == reject
     if not test_reject.any():
-        sys.exit(f"{path('test')}: no reject pages, so reject_leak is undefined")
+        sys.exit(f"{test_path}: no reject pages, so reject_leak is undefined")
     s, c, y = all_s[~test_reject], all_c[~test_reject], all_y[~test_reject]
     if c.all() or not c.any():
-        sys.exit(f"{path('test')}, in-class: every prediction is {'right' if c.all() else 'wrong'}")
+        sys.exit(f"{test_path}, in-class: every prediction is {'right' if c.all() else 'wrong'}")
     n_rej = int(test_reject.sum())
     lines += [
         "",
-        f"test: {path('test')} ({len(all_s)} pages, {n_rej} reject)",
+        f"test: {test_path} ({len(all_s)} pages, {n_rej} reject)",
         f"  in-class pages {len(s)}, accuracy {c.mean():.4f}",
         f"  AUROC of score against correctness, in-class  {roc_auc_score(c, s):.4f}",
         f"  mean score, right predictions       {s[c == 1].mean():.4f} ({int(c.sum())})",
@@ -203,9 +230,25 @@ def main():
             recall = c[kept & mine].mean() if n else None
             lines.append(f"      {name:<{width}} {fmt(recall)} ({n} of {int(mine.sum())})")
 
-    text = "\n".join(lines) + "\n"
+    return "\n".join(lines) + "\n"
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--model", required=True, help="model name, as given to score.py")
+    ap.add_argument("--dev-size", type=int, metavar="N", help="fit on N validation pages, stratified")
+    ap.add_argument("--dev-seed", type=int, default=0, metavar="S", help="seed of the --dev-size draw")
+    args = ap.parse_args()
+    classes = len(CLASSES) + 1
+    if args.dev_size is not None and (args.dev_size <= 0 or args.dev_size % classes):
+        ap.error(f"--dev-size must be a positive multiple of {classes}, CLASSES and REJECT_LABEL")
+    path = lambda split: os.path.join(DUMPS, f"{args.model}-{split}.jsonl")
+    text = report(args.model, path("validation"), path("test"), args.dev_size, args.dev_seed)
     sys.stdout.write(text)
-    out = os.path.join("results", "confidence", args.model + ".txt")
+    name = args.model
+    if args.dev_size is not None:
+        name += f"-dev{args.dev_size}-seed{args.dev_seed}"
+    out = os.path.join("results", "confidence", name + ".txt")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w") as f:
         f.write(text)
