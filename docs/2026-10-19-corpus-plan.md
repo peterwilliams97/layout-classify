@@ -25,30 +25,31 @@ Checked 2026-10-19. The corpus is the PDFs RVL-CDIP-N's page images were made fr
 
 ## Splits
 
-Stratified per class, seed 0, split by PDF. Test 40%, validation 30%, train 30%, each class
-rounded by largest remainder, a tie going to test, then validation, then train.
+Stratified per class, seed 0, split by PDF, over the 816 N PDFs that are not aliases and pass
+`quality.py`'s gate. Test 40%, validation 30%, train 30%, each class rounded by largest remainder, a
+tie going to test, then validation, then train. `split.py` draws it and writes `data/manifest.jsonl`.
 
 | Class                  | Train | Validation | Test | Total |
 |------------------------|-------|------------|------|-------|
-| budget                 | 17    | 18         | 23   | 58    |
-| email                  | 10    | 10         | 13   | 33    |
-| form                   | 21    | 21         | 28   | 70    |
-| handwritten            | 53    | 53         | 70   | 176   |
-| invoice                | 17    | 17         | 23   | 57    |
-| letter                 | 45    | 46         | 61   | 152   |
-| memo                   | 14    | 14         | 19   | 47    |
-| news_article           | 26    | 26         | 34   | 86    |
+| budget                 | 15    | 15         | 20   | 50    |
+| email                  | 9     | 9          | 12   | 30    |
+| form                   | 19    | 19         | 26   | 64    |
+| handwritten            | 39    | 39         | 53   | 131   |
+| invoice                | 13    | 14         | 18   | 45    |
+| letter                 | 37    | 37         | 49   | 123   |
+| memo                   | 12    | 13         | 17   | 42    |
+| news_article           | 18    | 19         | 25   | 62    |
 | questionnaire          | 12    | 12         | 15   | 39    |
-| resume                 | 55    | 55         | 74   | 184   |
+| resume                 | 39    | 39         | 53   | 131   |
 | scientific_publication | 12    | 12         | 15   | 39    |
-| specification          | 18    | 18         | 25   | 61    |
-| **In-class**           | 300   | 302        | 400  | 1002  |
-| reject (RVL-CDIP-O)    | 33    | 34         | 44   | 111   |
-| **Split total**        | 333   | 336        | 444  | 1113  |
+| specification          | 18    | 18         | 24   | 60    |
+| **In-class**           | 243   | 246        | 327  | 816   |
+| reject (RVL-CDIP-O)    | 27    | 27         | 36   | 90    |
+| **Split total**        | 270   | 273        | 363  | 906   |
 
-Reject is round(in-class / 9) per split, so 10% of the split: 9.91%, 10.12%, 9.91%. The 111 are
-drawn with seed 0 from the 254 named O PDFs. Few-shot examples are 3 per class from train, 36
-pages, a subset of train and not a fourth split.
+Reject is round(in-class / 9) per split, so 10% of the split: 10.00%, 9.89%, 9.92%. The 90 are
+drawn with seed 0 from the 229 kept O PDFs. Few-shot examples are 3 per class from train, 36
+pages, a subset of train and not a fourth split (`data/fewshot.txt`).
 
 ## Open before the download
 
