@@ -31,9 +31,9 @@ from them have been removed. The scripts read `data/manifest.jsonl`, one row per
 
 ## Files
 
-- `classes.py` — `CLASSES`, the 9 types with a one-sentence definition each; `REJECT_CLASSES`, the
-  other 7 RVL-CDIP types; `REJECT_LABEL`, `"none of these"`. `test_classes.py` checks that `CLASSES`
-  and `REJECT_CLASSES` together are the 16 label names of `aharley/rvl_cdip`.
+- `classes.py` — `CLASSES`, the 12 RVL-CDIP-N types with a one-sentence definition each, saying
+  what separates the type from its near pair; `REJECT_LABEL`, `"none"`. `test_classes.py` checks
+  that `CLASSES` are the labels of the N rows of `data/pdf/manifest.jsonl`.
 - `ocr.py` — runs Tesseract once on every page in the manifest. It writes `ocr/<id>.json`:
   `{"text", "words": [{"text", "x0", "y0", "x1", "y1", "conf"}]}`, with boxes in pixels of the
   page image. It skips pages already cached. Each run that OCRs a page appends a block to
@@ -73,13 +73,13 @@ from them have been removed. The scripts read `data/manifest.jsonl`, one row per
   image; its seconds are the forward pass, the page read and the processor excluded. `--dump` writes
   each page's prediction and top probability for `confidence.py`.
 - `llm.py` — `classify` sends one page image, `data/<split>/<id>.png`, to `gemma4:e4b` on Ollama
-  with `PROMPT`: the 9 `CLASSES` names and their definitions. The reply is restricted by Ollama's
+  with `PROMPT`: the 12 `CLASSES` names and their definitions. The reply is restricted by Ollama's
   structured output to an enum of those names, at temperature 0 with thinking off. With
-  `allow_reject` the prompt is `REJECT_PROMPT`, which adds `none of these` for a page that fits no
+  `allow_reject` the prompt is `REJECT_PROMPT`, which adds `none` for a page that fits no
   type, and the enum holds it too. `score.py --llm gemma4-image` or `--llm gemma4-image-reject`
   scores it; its seconds are the Ollama request, the image read excluded. It gives no probability,
   so there is no `--dump` and no cut-off. The report of `gemma4-image-reject` adds the share of
-  reject pages it labelled `none of these` and the share of in-class pages it did. `label_split`
+  reject pages it labelled `none` and the share of in-class pages it did. `label_split`
   runs `classify` without reject on every page of a split and writes `data/llm-labels/<split>.jsonl`,
   one row per page with `id`, `label` and `seconds`: `uv run python llm.py --split train`. That
   file is tracked.
@@ -100,7 +100,7 @@ Tesseract must be installed (`brew install tesseract`).
 
 ```sh
 uv sync
-uv run pytest           # checks classes.py against aharley/rvl_cdip's label names
+uv run pytest           # checks classes.py against data/pdf/manifest.jsonl's labels
 uv run python ocr.py
 
 uv run python train.py --tfidf --train real          # also --train small; --embed for UltraBERT, --dit for DiT

@@ -25,8 +25,8 @@ saying why the file exists, as in synth-classify.
 uv sync
 uv run python fetch.py                          # source PDFs to data/pdf/ and its manifest; resumable
 uv run python quality.py                        # quality gate on each PDF's labelled page
-uv run pytest                                   # the one test: classes.py vs aharley/rvl_cdip labels
-uv run pytest test_classes.py::test_classes_cover_rvl_cdip_labels
+uv run pytest                                   # the one test: classes.py vs data/pdf/manifest.jsonl labels
+uv run pytest test_classes.py::test_classes_match_manifest_labels
 uv run python ocr.py                            # Tesseract on every manifest page; resumable
 uv run python train.py --tfidf --train real     # or --embed, --dit; or --train small
 uv run python finetune.py --layoutlmv3 --train real   # or --train small; ~11 min real, ~4 small
@@ -52,16 +52,13 @@ run.
 
 ## How the pieces connect
 
-- **`classes.py` is the single source of the label space.** `CLASSES` holds the 9 types and their
-  one-sentence definitions. The definitions are the only type description a prompt-based classifier
-  gets. `REJECT_CLASSES` holds the other 7 RVL-CDIP types, of which RVL-CDIP-N has handwritten,
-  specification and resume. `REJECT_LABEL = "none of these"`. Names are RVL-CDIP's own label
-  strings, with spaces (`scientific report`), not identifiers.
+- **`classes.py` is the single source of the label space.** `CLASSES` holds the 12 RVL-CDIP-N
+  types and their one-sentence definitions. The definitions are the only type description a
+  prompt-based classifier gets. `REJECT_LABEL = "none"`; reject pages are RVL-CDIP-O PDFs. Names
+  are the N labels of `data/pdf/manifest.jsonl`, with underscores (`news_article`).
 - **No data builder yet.** The scripts read `data/manifest.jsonl`, one row per page with `id`,
   `split` and `label`; `id` starts with its split and names both `data/<split>/<id>.png` and
-  `ocr/<id>.json`. Splits are disjoint. The scripts still call the middle split `dev`.
-  `test_classes.py` still checks `classes.py` against `aharley/rvl_cdip`'s 16 names. Git ignores the
-  page images (`data/*/`); the manifest and selection are tracked.
+  `ocr/<id>.json`. Splits are disjoint. The scripts still call the middle split `dev`. Git ignores the page images (`data/*/`); the manifest and selection are tracked.
 - **`ocr.py` is the only OCR path.** It reads the manifest, writes `ocr/<id>.json` (`text` plus
   word boxes in page pixels) and skips files already present. Every text classifier reads this
   cache and never re-OCRs. `results/ocr-time.txt` is the one OCR timing, reported apart from
