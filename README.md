@@ -134,6 +134,7 @@ type, 9 for email.
 | UltraBERT-Embed-150M + LR, train            | 243    | 0.5592         | 0.0099      | 0.0278 (1 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
 | UltraBERT-Embed-150M + LR, small            | 119    | 0.4298         | 0.0064      | 0.0278 (1 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
 | d3-flash, `definitions`                     | 0      | 0.6915         | 0.0080      | 0.0556 (2 of 36)  | 0.4408         | 0.0000      | 0.0000 (0 of 36)  |
+| d3-flash, `fewshot`                         | 36     | 0.4160         | 0.0066      | 0.0278 (1 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
 
 From `results/confidence/<name>.txt`, `tau_cp` lines, "all pages". Validation is 246 in-class
 pages, with 27 reject pages beside them. In synth-classify, at 200 validation rows the certified
@@ -151,10 +152,16 @@ accepts any page; only d3-flash's ranking gives that.
 | UltraBERT-Embed-150M + LR, train | 0.9480                            | 0.0347                   | 0.0316                 |
 | UltraBERT-Embed-150M + LR, small | 0.8991                            | 0.0346                   | 0.0315                 |
 | d3-flash, `definitions`          | 0.9511                            | 2.36                     | 2.71                   |
+| d3-flash, `fewshot`              | 0.7615                            | 51.8                     | 53.8                   |
 
 From `results/test/<name>.txt`. Seconds are the classifier alone, one page per call, on MPS for
 UltraBERT and d3-flash; OCR is not in them. Tesseract takes 0.622 s a page median and 0.724 mean
 (`results/ocr-time.txt`), the same for every classifier here.
+
+The 36 examples make d3-flash worse, not better. With `fewshot` it puts all 15 scientific
+publications under news_article and 37 of 53 resumes under handwritten
+(`results/test/d3-flash-fewshot.txt`), where with `definitions` it is 95% accurate. Each page's
+prompt grows from about 400 words of question to about 7,800, and each page takes 20 times as long.
 
 ## Files
 
