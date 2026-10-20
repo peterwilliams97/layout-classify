@@ -163,6 +163,28 @@ publications under news_article and 37 of 53 resumes under handwritten
 (`results/test/d3-flash-fewshot.txt`), where with `definitions` it is 95% accurate. Each page's
 prompt grows from about 400 words of question to about 7,800, and each page takes 20 times as long.
 
+**What the question and state lengths do**
+
+| Prompt        | State words | Example words | Accuracy, 327 in-class test pages | Coverage at 5% | Reject leak at 5% | Coverage at 2% | Reject leak at 2% | Seconds per page, median |
+|---------------|-------------|---------------|-----------------------------------|----------------|-------------------|----------------|-------------------|--------------------------|
+| `definitions` | 1500        | —             | 0.9511                            | 0.6915         | 0.0556 (2 of 36)  | 0.4408         | 0.0000 (0 of 36)  | 2.36                     |
+| `definitions` | 500         | —             | 0.9480                            | 0.6915         | 0.0556 (2 of 36)  | 0.4601         | 0.0000 (0 of 36)  | 2.3                      |
+| `definitions` | 150         | —             | 0.9419                            | 0.6804         | 0.0278 (1 of 36)  | 0.5152         | 0.0278 (1 of 36)  | 1.75                     |
+| `fewshot`     | 1500        | 300           | 0.7615                            | 0.4160         | 0.0278 (1 of 36)  | 0.0000         | 0.0000 (0 of 36)  | 51.8                     |
+| `fewshot`     | 150         | 50            | 0.9144                            | 0.6198         | 0.0833 (3 of 36)  | 0.4380         | 0.0000 (0 of 36)  | 11.2                     |
+
+d3-flash, `score.py --d3 --state-words N --example-words N`: the page's OCR text is cut to its
+first N state words, and each `fewshot` example to its first N example words. Accuracy and seconds
+from `results/test/<name>.txt`; coverage and reject leak from the `tau_cp` lines, "all pages", of
+`results/confidence/<name>.txt`. Names are `d3-flash-definitions`, `d3-flash-definitions-s500`,
+`d3-flash-definitions-s150`, `d3-flash-fewshot` and `d3-flash-fewshot-s150-e50`.
+
+Cutting the page costs little: from 1,500 words to 150, in-class accuracy falls from 0.9511 to
+0.9419, and the median page goes from 2.36 s to 1.75 s. The examples are what hurt
+`fewshot`: cut to 50 words, its accuracy rises from 0.7615 to 0.9144 and its median page falls from 51.8 s
+to 11.2 s, but it is still below `definitions` at the same 150-word state, and it lets 3 reject pages
+through at 5%. Every difference in coverage here is a few pages on one validation draw of 273.
+
 ## Files
 
 - `classes.py` — `CLASSES`, the 12 RVL-CDIP-N types with a one-sentence definition each, saying
@@ -229,7 +251,8 @@ prompt grows from about 400 words of question to about 7,800, and each page take
   probability for every type. Copied from synth-classify's. The question's options are the 12
   `CLASSES` and its criteria their definitions; with `--prompt fewshot` each definition is followed
   by the OCR text of that type's 3 `data/fewshot.txt` pages, each cut to its first 300 words. The
-  state is the page's OCR text cut to its first 1,500 words. Every answer is cached in
+  state is the page's OCR text cut to its first 1,500 words. `--state-words N` and, with
+  `fewshot`, `--example-words N` change those cuts and add `-s<N>` and `-e<N>` to the name. Every answer is cached in
   `results/d3/cache.jsonl`, so a rerun of `score.py --d3` rebuilds its report without the model.
   `score.py --d3 vllm-sr/d3-flash` scores it; with `fewshot`, a `data/fewshot.txt` page in the split
   would be left out, and as those are train pages none is. Its score is the chosen type's
