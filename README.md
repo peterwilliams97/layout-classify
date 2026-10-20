@@ -6,7 +6,7 @@ them, rendered here at 200 dpi, plus pages that fit none of the types. It holds 
 trained on the OCR text, a local decision model asked about the OCR text with no training, one
 classifier on the page image, one fine-tuned on both, and a local vision LLM given the page image
 and no hand labels. It holds the corpus manifest, the page split, the OCR cache and the results of
-the classifiers on the OCR text.
+every one of those classifiers.
 
 ## Aim
 
@@ -118,12 +118,12 @@ are in the manifest but no classifier trains on them.
 
 ## Results
 
-On the OCR text. A page is accepted when its score is at least the cut-off `tau_cp`, chosen on
-validation so that the one-sided 90% Clopper-Pearson upper bound on the accepted validation error
-is at most 5%, or 2% (`confidence.py`). Coverage is the share of all 363 test pages accepted, the
-36 reject pages included; error is the share of accepted pages whose type is wrong, a reject page
-always wrong; reject leak is the share of the 36 reject pages accepted. Small is 10 train pages per
-type, 9 for email.
+On the OCR text, the page image, or both. A page is accepted when its score is at least the cut-off
+`tau_cp`, chosen on validation so that the one-sided 90% Clopper-Pearson upper bound on the accepted
+validation error is at most 5%, or 2% (`confidence.py`). Coverage is the share of all 363 test pages
+accepted, the 36 reject pages included; error is the share of accepted pages whose type is wrong, a
+reject page always wrong; reject leak is the share of the 36 reject pages accepted. Small is 10
+train pages per type, 9 for email.
 
 **Coverage certified under 5% and under 2% error, all test pages**
 
@@ -135,13 +135,21 @@ type, 9 for email.
 | UltraBERT-Embed-150M + LR, small            | 119    | 0.4298         | 0.0064      | 0.0278 (1 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
 | d3-flash, `definitions`                     | 0      | 0.6915         | 0.0080      | 0.0556 (2 of 36)  | 0.4408         | 0.0000      | 0.0000 (0 of 36)  |
 | d3-flash, `fewshot`                         | 36     | 0.4160         | 0.0066      | 0.0278 (1 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
+| DiT + LR, train, image                      | 243    | 0.0000         | —           | 0.0000 (0 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
+| DiT + LR, small, image                      | 119    | 0.0000         | —           | 0.0000 (0 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
+| LayoutLMv3, train, image and OCR words      | 243    | 0.1763         | 0.0000      | 0.0000 (0 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
+| LayoutLMv3, small, image and OCR words      | 119    | 0.0000         | —           | 0.0000 (0 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
+| gemma4:e4b, image                           | 0      | —              | —           | —                 | —              | —           | —                 |
+| gemma4:e4b, image + `none`                  | 0      | —              | —           | —                 | —              | —           | —                 |
 
 From `results/confidence/<name>.txt`, `tau_cp` lines, "all pages". Validation is 246 in-class
 pages, with 27 reject pages beside them. In synth-classify, at 200 validation rows the certified
 coverage at 5% ranged from 0 to 0.95 between draws for UltraBERT-Embed-150M + LR, and at 400 from
 0.72 to 0.93 (synth-classify `README.md` @ `6368e3b`), so one draw of 246 pages here is not a
 stable figure. At 2% the bound needs the top 114 validation pages right with no error before it
-accepts any page; only d3-flash's ranking gives that.
+accepts any page; only d3-flash's ranking gives that. gemma4:e4b's rows are "—" because it
+answers with a type name and no probability (`llm.py`, Ollama's structured output), so there is no
+score to set a cut-off on and `confidence.py` has nothing to route.
 
 **Accuracy and seconds per page, test**
 
@@ -153,10 +161,23 @@ accepts any page; only d3-flash's ranking gives that.
 | UltraBERT-Embed-150M + LR, small | 0.8991                            | 0.0346                   | 0.0315                 |
 | d3-flash, `definitions`          | 0.9511                            | 2.36                     | 2.71                   |
 | d3-flash, `fewshot`              | 0.7615                            | 51.8                     | 53.8                   |
+| DiT + LR, train                  | 0.6422                            | 0.0189                   | 0.0196                 |
+| DiT + LR, small                  | 0.5229                            | 0.019                    | 0.0195                 |
+| LayoutLMv3, train                | 0.8502                            | 0.0467                   | 0.0422                 |
+| LayoutLMv3, small                | 0.4220                            | 0.0454                   | 0.0413                 |
+| gemma4:e4b, image                | 0.9083                            | 0.973                    | 0.996                  |
+| gemma4:e4b, image + `none`       | 0.9113                            | 0.984                    | 0.996                  |
 
-From `results/test/<name>.txt`. Seconds are the classifier alone, one page per call, on MPS for
-UltraBERT and d3-flash; OCR is not in them. Tesseract takes 0.622 s a page median and 0.724 mean
-(`results/ocr-time.txt`), the same for every classifier here.
+From `results/test/<name>.txt`; names are `dit-real`, `dit-small`, `layoutlmv3-real`,
+`layoutlmv3-small`, `gemma4-image` and `gemma4-image-reject`. Seconds are the classifier alone, one
+page per call, on MPS for UltraBERT, DiT, LayoutLMv3 and d3-flash and through Ollama for gemma4:e4b;
+OCR and the image read are not in them. Tesseract takes 0.622 s a page median and 0.724 mean
+(`results/ocr-time.txt`), to be added for every classifier that reads the OCR text, LayoutLMv3
+included; DiT and gemma4:e4b read only the image. Fine-tuning LayoutLMv3 took 9.5 minutes on train
+and 6.2 on small, and the epoch kept was 10 of 10 and 9 of 10; on train its validation accuracy was
+still rising at epoch 10, 0.7363 to 0.7656 (`results/train/layoutlmv3-real.txt`,
+`results/train/layoutlmv3-small.txt`). DiT + LR trained in 20.54 s and 15.48 s
+(`results/train/dit-real.txt`, `results/train/dit-small.txt`).
 
 The 36 examples make d3-flash worse, not better. With `fewshot` it puts all 15 scientific
 publications under news_article and 37 of 53 resumes under handwritten
@@ -184,6 +205,24 @@ Cutting the page costs little: from 1,500 words to 150, in-class accuracy falls 
 `fewshot`: cut to 50 words, its accuracy rises from 0.7615 to 0.9144 and its median page falls from 51.8 s
 to 11.2 s, but it is still below `definitions` at the same 150-word state, and it lets 3 reject pages
 through at 5%. Every difference in coverage here is a few pages on one validation draw of 273.
+
+With `none` allowed, gemma4:e4b labels 15 of the 36 reject pages `none` (0.4167) and 6 of the 327
+in-class pages (0.0183), 5 of them specifications (`results/test/gemma4-image-reject.txt`). The
+other 21 reject pages get a type, as all 36 do without `none`. Over all 363 test pages, where a
+`none` on a reject page is right, its accuracy is 0.8623 against 0.8182 without `none`.
+
+**Does the page image beat OCR text?** Not here. Against UltraBERT-Embed-150M + LR on train's OCR
+text, 0.5592 coverage at 5% and 0.9480 accuracy, and d3-flash `definitions` on the first 150 words,
+0.6804 and 0.9419, every image row is lower on both, or has no coverage at all. DiT + LR on the
+image alone reaches 0.6422 accuracy and certifies no coverage; LayoutLMv3, which reads the image and
+the OCR words and boxes together, reaches 0.8502 and 0.1763 coverage at 5%, about a third of
+UltraBERT's. gemma4:e4b on the image comes closest in accuracy, 0.9083, 4 points under UltraBERT,
+and needs no OCR, but it has no score, so none of its pages can be passed without a person; 18 of
+its 30 errors on in-class pages are handwritten pages labelled letter, memo or questionnaire
+(`results/test/gemma4-image.txt`). On seconds, gemma4:e4b's 0.973 s median is above Tesseract's
+0.622 s plus UltraBERT's 0.0347 s, and under d3-flash's 1.75 s plus OCR. Trained on small, both
+image models fall further behind the text ones: 0.5229 and 0.4220 accuracy, no coverage, against
+0.8991 and 0.4298 for UltraBERT small.
 
 ## Files
 
