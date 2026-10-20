@@ -1,0 +1,21 @@
+model     vllm-sr/d3-flash prompt fewshot, state 150 words, examples 50 words, 0 data/fewshot.txt pages left out
+test pages 363 (36 reject pages, always wrong)
+accuracy  0.8237
+wrong     64
+accuracy  0.9144 without reject pages
+seconds   11.2 median, 11.2 mean per page, one page per call, OCR excluded
+confusion (row: true class, column: predicted class, numbered as the rows are)
+                              0   1   2   3   4   5   6   7   8   9  10  11  12
+   0 letter                  49   0   0   0   0   0   0   0   0   0   0   0   0
+   1 memo                     0  17   0   0   0   0   0   0   0   0   0   0   0
+   2 form                     0   0  26   0   0   0   0   0   0   0   0   0   0
+   3 questionnaire            0   0   0  15   0   0   0   0   0   0   0   0   0
+   4 budget                   0   2   0   0  18   0   0   0   0   0   0   0   0
+   5 invoice                  0   0   0   0   0  18   0   0   0   0   0   0   0
+   6 email                    0   0   0   0   0   0  12   0   0   0   0   0   0
+   7 news_article             0   0   0   0   0   0   0  25   0   0   0   0   0
+   8 scientific_publication   0   0   0   0   0   0   0   1  14   0   0   0   0
+   9 specification            1   0   0   0   0   0   0   3   0  20   0   0   0
+  10 resume                   1   0   0   0   0   0   0   0   0   0  46   6   0
+  11 handwritten              8   4   1   0   0   0   0   1   0   0   0  39   0
+  12 none                     6  11   5   0   0   0   2  10   2   0   0   0   0
