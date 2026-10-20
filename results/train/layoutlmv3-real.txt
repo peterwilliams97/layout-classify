@@ -1,0 +1,16 @@
+model     models/layoutlmv3-real
+train     real (243 pages)
+pages     243
+epochs    10
+minutes   9.5 (base model load to last save; encoding and validation scoring included)
+best      epoch 10 (highest validation accuracy, all 273 validation pages, reject pages wrong; a tie keeps the earlier epoch)
+epoch 1   validation accuracy 0.1722
+epoch 2   validation accuracy 0.2637
+epoch 3   validation accuracy 0.4066
+epoch 4   validation accuracy 0.4286
+epoch 5   validation accuracy 0.4872
+epoch 6   validation accuracy 0.5751
+epoch 7   validation accuracy 0.6813
+epoch 8   validation accuracy 0.7106
+epoch 9   validation accuracy 0.7363
+epoch 10  validation accuracy 0.7656

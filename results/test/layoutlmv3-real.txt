@@ -1,0 +1,21 @@
+model     models/layoutlmv3-real
+test pages 363 (36 reject pages, always wrong)
+accuracy  0.7658
+wrong     85
+accuracy  0.8502 without reject pages
+seconds   0.0467 median, 0.0422 mean per page, one page per call, page read and processor excluded
+confusion (row: true class, column: predicted class, numbered as the rows are)
+                              0   1   2   3   4   5   6   7   8   9  10  11  12
+   0 letter                  47   2   0   0   0   0   0   0   0   0   0   0   0
+   1 memo                     8   7   0   0   0   0   1   1   0   0   0   0   0
+   2 form                     1   1  18   2   0   0   4   0   0   0   0   0   0
+   3 questionnaire            0   0   0  13   0   1   0   1   0   0   0   0   0
+   4 budget                   1   0   0   0  19   0   0   0   0   0   0   0   0
+   5 invoice                  0   0   0   0   5  13   0   0   0   0   0   0   0
+   6 email                    1   1   0   0   0   2   6   1   0   0   1   0   0
+   7 news_article             0   0   0   0   0   0   0  25   0   0   0   0   0
+   8 scientific_publication   0   0   0   0   0   0   0   0  14   0   1   0   0
+   9 specification            0   0   0   0   0   0   0   1   0  22   0   1   0
+  10 resume                   3   1   0   0   1   0   0   2   2   0  44   0   0
+  11 handwritten              0   0   0   0   0   0   0   3   0   0   0  50   0
+  12 none                     9   2   3   1   8   2   1   0   1   1   7   1   0
