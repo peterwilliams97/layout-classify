@@ -19,7 +19,9 @@ did.
 
 `--d3 MODEL` scores a Decision 3.0 model run locally by d3.py, `vllm-sr/d3-flash`, on the OCR text,
 with `--prompt definitions` (the default) or `fewshot`; the report name is <model basename>-<prompt>.
-Its score is the chosen option's probability. It runs in `.venv-d3`. With `fewshot`, any
+`--state-words N` and, with `fewshot`, `--example-words N` cut the page and each example to their
+first N words; a value other than d3.py's STATE_WORDS or EXAMPLE_WORDS adds -s<N> or -e<N> to the
+name. Its score is the chosen option's probability. It runs in `.venv-d3`. With `fewshot`, any
 data/fewshot.txt page in the split is left out, so no page is scored with itself as an example."""
 
 import argparse
@@ -32,7 +34,7 @@ import time
 from sklearn.metrics import confusion_matrix
 
 from classes import CLASSES, REJECT_LABEL
-from d3 import D3_PROMPTS, classify_d3, fewshot_ids
+from d3 import D3_PROMPTS, EXAMPLE_WORDS, STATE_WORDS, classify_d3, fewshot_ids
 from llm import MODEL, NAMES, classify
 from train import manifest, page_image, page_text
 
@@ -146,6 +148,8 @@ def main():
     which.add_argument("--llm", choices=list(NAMES), help="gemma4:e4b on the page image")
     which.add_argument("--d3", metavar="MODEL", help="Decision 3.0 model on the OCR text, d3.py")
     ap.add_argument("--prompt", choices=D3_PROMPTS, help="with --d3; default definitions")
+    ap.add_argument("--state-words", type=int, help=f"with --d3; default {STATE_WORDS}")
+    ap.add_argument("--example-words", type=int, help=f"with --prompt fewshot; default {EXAMPLE_WORDS}")
     ap.add_argument("--split", choices=SPLITS, required=True)
     ap.add_argument("--dump", action="store_true", help="write results/confidence/dumps/")
     args = ap.parse_args()
@@ -154,6 +158,12 @@ def main():
     if args.prompt and not args.d3:
         ap.error("--prompt goes with --d3")
     prompt = args.prompt or "definitions"
+    if args.state_words is not None and not args.d3:
+        ap.error("--state-words goes with --d3")
+    if args.example_words is not None and prompt != "fewshot":
+        ap.error("--example-words goes with --prompt fewshot")
+    state_words = args.state_words or STATE_WORDS
+    example_words = args.example_words or EXAMPLE_WORDS
 
     names = list(CLASSES) + [REJECT_LABEL]
     rows = [r for r in manifest() if r["split"] == args.split]
@@ -181,10 +191,16 @@ def main():
         name, model = args.llm, f"{args.llm} ({MODEL} on Ollama)"
     elif args.d3:
         name = f"{os.path.basename(os.path.normpath(args.d3))}-{prompt}"
-        model = f"{args.d3} prompt {prompt}"
+        model = f"{args.d3} prompt {prompt}, state {state_words} words"
+        if state_words != STATE_WORDS:
+            name += f"-s{state_words}"
+        if prompt == "fewshot":
+            model += f", examples {example_words} words"
+        if example_words != EXAMPLE_WORDS:
+            name += f"-e{example_words}"
         if prompt == "fewshot":
             model += f", {left_out} data/fewshot.txt pages left out"
-        answers = classify_d3([r["id"] for r in rows], prompt, args.d3)
+        answers = classify_d3([r["id"] for r in rows], prompt, args.d3, state_words, example_words)
         preds = [names.index(label) for label, _, _ in answers]
         scores = [v[p] for (_, v, _), p in zip(answers, preds)]
         seconds = [s for _, _, s in answers]

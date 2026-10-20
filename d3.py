@@ -8,8 +8,8 @@ synth-classify's d3.py, with the question and the state built here instead of by
 The model's code runs with `trust_remote_code` and needs transformers 5.17.0, which is not the
 version in pyproject.toml, so it runs in its own venv, `.venv-d3`, made from requirements-d3.txt.
 
-Every response is cached in results/d3/cache.jsonl under the page's id, the prompt and the model
-id, so a re-run of score.py reproduces its report, `seconds` line included, without loading the
+Every response is cached in results/d3/cache.jsonl under the page's id, the prompt, the model id
+and the two word limits, so a re-run of score.py reproduces its report, `seconds` line included, without loading the
 model."""
 
 import hashlib
@@ -29,8 +29,9 @@ D3_PROMPTS = ["definitions", "fewshot"]
 REVISIONS = {"vllm-sr/d3-flash": "13dc1cc8ef23caefa765907e1d764751e5629f7d"}
 CACHE = "results/d3/cache.jsonl"
 FEWSHOT = "data/fewshot.txt"
-# A page's OCR text is cut to its first STATE_WORDS words as the state, and a fewshot example's to
-# its first EXAMPLE_WORDS, so the 36 examples and the page fit one prompt. Fixed, not tuned.
+# The defaults of score.py's --state-words and --example-words: a page's OCR text is cut to its
+# first STATE_WORDS words as the state, and a fewshot example's to its first EXAMPLE_WORDS, so the
+# 36 examples and the page fit one prompt.
 STATE_WORDS = 1500
 EXAMPLE_WORDS = 300
 
@@ -55,17 +56,17 @@ def fewshot_ids():
     return shots
 
 
-def d3_question(prompt):
+def d3_question(prompt, example_words):
     """d3_question is the `choice` question the model is asked about each page: the CLASSES names as
     options with their definitions as criteria, and for `fewshot` each definition followed by the
-    first EXAMPLE_WORDS words of the OCR text of each of that class's data/fewshot.txt pages."""
+    first `example_words` words of the OCR text of each of that class's data/fewshot.txt pages."""
     criteria = dict(CLASSES)
     if prompt == "fewshot":
         shots = fewshot_ids()
         criteria = {
             name: definition
             + "".join(
-                f"\nexample: {first_words(page_text(page_id), EXAMPLE_WORDS)}"
+                f"\nexample: {first_words(page_text(page_id), example_words)}"
                 for page_id in shots[name]
             )
             for name, definition in CLASSES.items()
@@ -78,33 +79,43 @@ def d3_question(prompt):
 
 
 def read_cache(path):
-    """read_cache returns {(page id, prompt, model id): cached row}; a later row for a key replaces
-    an earlier one."""
+    """read_cache returns {(page id, prompt, model id, state words, example words): cached row}; a
+    later row for a key replaces an earlier one. A row without the word limits was asked with
+    STATE_WORDS and EXAMPLE_WORDS."""
     if not os.path.exists(path):
         return {}
     with open(path) as f:
         rows = [json.loads(line) for line in f if line.strip()]
-    return {(r["id"], r["prompt"], r["model"]): r for r in rows}
+    return {
+        (
+            r["id"],
+            r["prompt"],
+            r["model"],
+            r.get("state_words", STATE_WORDS),
+            r.get("example_words", EXAMPLE_WORDS),
+        ): r
+        for r in rows
+    }
 
 
-def classify_d3(ids, prompt, model_id):
+def classify_d3(ids, prompt, model_id, state_words, example_words):
     """classify_d3 returns a (class name, probabilities, seconds) tuple for each page of `ids`: the
     option the model chose, every option's probability as a list in CLASSES order, and the wall time
-    of that page's `system_one` call. The state is the page's OCR text cut to STATE_WORDS words.
-    `prompt` is a D3_PROMPTS key. A cached row is used when it was asked of the same revision, the
+    of that page's `system_one` call. The state is the page's OCR text cut to `state_words` words.
+    `prompt` is a D3_PROMPTS key; `example_words` is passed to `d3_question`. A cached row is used when it was asked of the same revision, the
     same question and the same state; the model is loaded, on MPS in bfloat16, only if some page is
     not cached."""
     names = list(CLASSES)
-    question = d3_question(prompt)
+    question = d3_question(prompt, example_words)
     revision = REVISIONS.get(model_id)
     cache = read_cache(CACHE)
     os.makedirs(os.path.dirname(CACHE), exist_ok=True)
     model = None
     out = []
     for i, page_id in enumerate(ids):
-        state = first_words(page_text(page_id), STATE_WORDS)
+        state = first_words(page_text(page_id), state_words)
         digest = hashlib.sha256(state.encode()).hexdigest()
-        row = cache.get((page_id, prompt, model_id))
+        row = cache.get((page_id, prompt, model_id, state_words, example_words))
         if (
             row is None
             or row["revision"] != revision
@@ -120,6 +131,8 @@ def classify_d3(ids, prompt, model_id):
                 "id": page_id,
                 "prompt": prompt,
                 "model": model_id,
+                "state_words": state_words,
+                "example_words": example_words,
                 "revision": revision,
                 "question": question,
                 "state_sha256": digest,

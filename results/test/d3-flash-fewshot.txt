@@ -1,4 +1,4 @@
-model     vllm-sr/d3-flash prompt fewshot, 0 data/fewshot.txt pages left out
+model     vllm-sr/d3-flash prompt fewshot, state 1500 words, examples 300 words, 0 data/fewshot.txt pages left out
 test pages 363 (36 reject pages, always wrong)
 accuracy  0.6860
 wrong     114

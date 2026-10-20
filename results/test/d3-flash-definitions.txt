@@ -1,4 +1,4 @@
-model     vllm-sr/d3-flash prompt definitions
+model     vllm-sr/d3-flash prompt definitions, state 1500 words
 test pages 363 (36 reject pages, always wrong)
 accuracy  0.8567
 wrong     52
