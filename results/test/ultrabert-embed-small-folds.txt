@@ -1,0 +1,10 @@
+model     models/ultrabert-embed-small/fold0 to fold4, 5 fold models
+test pages 304 (30 reject pages, always wrong)
+fold0     accuracy 0.8059, 0.8942 without reject pages (results/test/ultrabert-embed-small-fold0.txt)
+fold1     accuracy 0.8191, 0.9088 without reject pages (results/test/ultrabert-embed-small-fold1.txt)
+fold2     accuracy 0.8059, 0.8942 without reject pages (results/test/ultrabert-embed-small-fold2.txt)
+fold3     accuracy 0.7763, 0.8613 without reject pages (results/test/ultrabert-embed-small-fold3.txt)
+fold4     accuracy 0.7928, 0.8796 without reject pages (results/test/ultrabert-embed-small-fold4.txt)
+accuracy  0.8000 mean, 0.7763–0.8191
+accuracy  0.8876 mean, 0.8613–0.9088 without reject pages
+seconds   0.0349 median, 0.033 mean per page over all 1520 page scorings of the 5 folds, one page per call

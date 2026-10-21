@@ -5,10 +5,8 @@ fold 1    held out 82 in-class and 10 reject pages; trained on 329
 fold 2    held out 82 in-class and 9 reject pages; trained on 329
 fold 3    held out 82 in-class and 9 reject pages; trained on 329
 fold 4    held out 82 in-class and 9 reject pages; trained on 329
-final     trained on 411 in-class pages
-seconds   15.66 encoding the pool (base model load, page image reads and pool embedding included)
+seconds   17.74 encoding the pool (base model load, page image reads and pool embedding included)
 seconds   0.47 fitting and scoring 5 folds for each of 4 C
-seconds   0.03 fitting the final model
 C 0.01  out-of-fold AUROC 0.7505, all 457 pool pages
 C 0.1   out-of-fold AUROC 0.7319, all 457 pool pages
 C 1     out-of-fold AUROC 0.7343, all 457 pool pages

@@ -5,22 +5,20 @@ fold 1    held out 82 in-class and 10 reject pages; trained on 329
 fold 2    held out 82 in-class and 9 reject pages; trained on 329
 fold 3    held out 82 in-class and 9 reject pages; trained on 329
 fold 4    held out 82 in-class and 9 reject pages; trained on 329
-final     trained on 411 in-class pages
 epochs    10
-minutes   9.9 fold 0 (base model load to the last epoch's scoring; encoding included)
-minutes   10.0 fold 1 (base model load to the last epoch's scoring; encoding included)
-minutes   10.0 fold 2 (base model load to the last epoch's scoring; encoding included)
-minutes   10.0 fold 3 (base model load to the last epoch's scoring; encoding included)
-minutes   10.0 fold 4 (base model load to the last epoch's scoring; encoding included)
-minutes   11.4 final model, to epoch 10 (base model load to save; encoding included)
-best      epoch 10 (highest pooled out-of-fold accuracy, all 457 pool pages, reject pages wrong; a tie keeps the earlier epoch)
-epoch 1   out-of-fold accuracy 0.2188
-epoch 2   out-of-fold accuracy 0.3304
-epoch 3   out-of-fold accuracy 0.5186
-epoch 4   out-of-fold accuracy 0.6586
-epoch 5   out-of-fold accuracy 0.7877
-epoch 6   out-of-fold accuracy 0.8228
-epoch 7   out-of-fold accuracy 0.8621
-epoch 8   out-of-fold accuracy 0.8600
-epoch 9   out-of-fold accuracy 0.8665
-epoch 10  out-of-fold accuracy 0.8709
+minutes   10.1 fold 0 (base model load to the last epoch's save; encoding and every epoch's save included)
+minutes   10.1 fold 1 (base model load to the last epoch's save; encoding and every epoch's save included)
+minutes   9.9 fold 2 (base model load to the last epoch's save; encoding and every epoch's save included)
+minutes   10.0 fold 3 (base model load to the last epoch's save; encoding and every epoch's save included)
+minutes   10.0 fold 4 (base model load to the last epoch's save; encoding and every epoch's save included)
+best      epoch 9 (highest pooled out-of-fold accuracy, all 457 pool pages, reject pages wrong; a tie keeps the earlier epoch)
+epoch 1   out-of-fold accuracy 0.2276
+epoch 2   out-of-fold accuracy 0.3457
+epoch 3   out-of-fold accuracy 0.4792
+epoch 4   out-of-fold accuracy 0.6980
+epoch 5   out-of-fold accuracy 0.8009
+epoch 6   out-of-fold accuracy 0.8271
+epoch 7   out-of-fold accuracy 0.8534
+epoch 8   out-of-fold accuracy 0.8556
+epoch 9   out-of-fold accuracy 0.8600
+epoch 10  out-of-fold accuracy 0.8600

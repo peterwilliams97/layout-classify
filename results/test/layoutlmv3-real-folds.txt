@@ -1,0 +1,10 @@
+model     models/layoutlmv3-real/fold0 to fold4, 5 fold models
+test pages 304 (30 reject pages, always wrong)
+fold0     accuracy 0.8816, 0.9781 without reject pages (results/test/layoutlmv3-real-fold0.txt)
+fold1     accuracy 0.8783, 0.9745 without reject pages (results/test/layoutlmv3-real-fold1.txt)
+fold2     accuracy 0.8750, 0.9708 without reject pages (results/test/layoutlmv3-real-fold2.txt)
+fold3     accuracy 0.8717, 0.9672 without reject pages (results/test/layoutlmv3-real-fold3.txt)
+fold4     accuracy 0.8750, 0.9708 without reject pages (results/test/layoutlmv3-real-fold4.txt)
+accuracy  0.8763 mean, 0.8717–0.8816
+accuracy  0.9723 mean, 0.9672–0.9781 without reject pages
+seconds   0.0488 median, 0.043 mean per page over all 1520 page scorings of the 5 folds, one page per call

@@ -1,0 +1,20 @@
+model     models/tfidf-small/fold3
+test pages 304 (30 reject pages, always wrong)
+accuracy  0.7862
+wrong     65
+accuracy  0.8723 without reject pages
+seconds   0.000272 median, 0.000287 mean per page, one page per call, OCR excluded
+confusion (row: true class, column: predicted class, numbered as the rows are)
+                              0   1   2   3   4   5   6   7   8   9  10  11
+   0 letter                  38   5   1   1   0   0   0   2   0   0   2   0
+   1 memo                     3   9   0   1   0   0   0   3   0   0   1   0
+   2 form                     4   0  22   0   0   0   0   0   0   0   0   0
+   3 questionnaire            0   0   0  15   0   0   0   0   0   0   0   0
+   4 budget                   0   1   0   0  19   0   0   0   0   0   0   0
+   5 invoice                  0   0   0   0   1  17   0   0   0   0   0   0
+   6 email                    2   0   0   0   0   0   8   2   0   0   0   0
+   7 news_article             0   0   0   0   0   0   0  24   0   1   0   0
+   8 scientific_publication   0   0   0   0   0   0   0   0  15   0   0   0
+   9 specification            1   0   0   0   0   0   0   3   0  20   0   0
+  10 resume                   0   0   0   0   0   0   0   1   0   0  52   0
+  11 none                     2   8   5   3   3   0   2   3   0   0   4   0

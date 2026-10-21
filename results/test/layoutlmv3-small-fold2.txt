@@ -1,0 +1,20 @@
+model     models/layoutlmv3-small/fold2
+test pages 304 (30 reject pages, always wrong)
+accuracy  0.3553
+wrong     196
+accuracy  0.3942 without reject pages
+seconds   0.0484 median, 0.0424 mean per page, one page per call, OCR excluded
+confusion (row: true class, column: predicted class, numbered as the rows are)
+                              0   1   2   3   4   5   6   7   8   9  10  11
+   0 letter                  11  22   0   1   0   7   3   0   1   0   4   0
+   1 memo                     3   5   0   1   1   1   2   1   2   0   1   0
+   2 form                     1   1  14   2   0   7   0   0   0   1   0   0
+   3 questionnaire            0   1   2   5   2   2   0   0   0   0   3   0
+   4 budget                   1   0   5   1   4   7   0   0   1   0   1   0
+   5 invoice                  1   0   2   1   2   6   2   3   0   1   0   0
+   6 email                    2   1   0   1   0   0   7   0   0   1   0   0
+   7 news_article             0   0   0   0   1   4   1  19   0   0   0   0
+   8 scientific_publication   3   0   0   0   0   0   0   0   9   0   3   0
+   9 specification            0   0   4   0   3   5   2   1   2   6   1   0
+  10 resume                   8   2   4   3   1   4   3   3   2   1  22   0
+  11 none                     3   5   1   1   4   3   1   4   3   1   4   0
