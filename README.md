@@ -141,15 +141,16 @@ d3-flash, scores the 457 pages as they are (`score.py --split pool`); `fewshot` 
 example pages, so its cut-off is fitted on 424. A trained classifier's 457 scores are out of fold
 (`train.py --folds 5 --fold-seed 0`, `finetune.py --folds 5 --fold-seed 0`): the 411 in-class pages
 are split 5 ways within each class and the 46 reject pages 5 ways apart from them, and each fold is
-scored by a model trained on the other 4 folds' in-class pages. No reject page is trained on, and
-every classifier stays 11-class. The model scored on test is then trained once on all 411 in-class
-pages, or for small on 10 per type drawn from them, with the same fixed settings; C for
+scored by a model trained on the other 4 folds' in-class pages, 328 or 329 of them, or for small 10
+per type drawn from those. No reject page is trained on, and every classifier stays 11-class. C for
 UltraBERT-Embed-150M and DiT, and LayoutLMv3's epoch, are chosen on the 457 out-of-fold scores
-(`results/train/<name>-pool.txt`). The caveat: the cut-off is fitted on models trained on 4/5 of
-the in-class pool and applied to one trained on all of it, which can score higher than they did.
-LayoutLMv3 on all 411 does: its 2% cut-off accepts 25% of the pool pages and 95% of in-class test
-pages, and 8 of the 30 reject pages pass it (below). The same figures with cut-offs fitted on the
-230 validation pages alone, and models trained on train alone, are in
+(`results/train/<name>-pool.txt`). There is no final model: the 5 fold models whose scores set the
+cut-off are the ones scored on test (`score.py --split test --folds`), each applies the cut-off to
+its own test scores, and a trained row's test figure is the mean over the 5, with the lowest and
+highest in brackets. At `70f648e` test was scored instead by one model trained on all 411 pages,
+which scored higher than the fold models had: LayoutLMv3 reached 0.9781 accuracy and 0.0337 error
+at 2%, 8 of 30 reject pages passing a cut-off no pool reject page had passed. The same figures with
+cut-offs fitted on the 230 validation pages alone, and models trained on train alone, are in
 [docs/history/2026-10-21-validation-230.md](docs/history/2026-10-21-validation-230.md).
 
 ### Hardware.
@@ -160,63 +161,69 @@ gemma4:e4b runs through Ollama; TF-IDF and Tesseract run on the CPU. Nothing els
 
 **Coverage certified under 5% and under 2% error, all test pages**
 
-| Classifier                                  | Labels     | Coverage at 5% | Error at 5% | Reject leak at 5% | Coverage at 2% | Error at 2% | Reject leak at 2% |
-|---------------------------------------------|------------|----------------|-------------|-------------------|----------------|-------------|-------------------|
-| TF-IDF + LR, real                           | 411        | 0.7270         | 0.0543      | 0.1333 (4 of 30)  | 0.4803         | 0.0137      | 0.0000 (0 of 30)  |
-| TF-IDF + LR, small                          | 110 of 411 | 0.6184         | 0.0319      | 0.0667 (2 of 30)  | 0.0000         | —           | 0.0000 (0 of 30)  |
-| UltraBERT-Embed-150M + LR, real             | 411        | 0.7829         | 0.0336      | 0.1000 (3 of 30)  | 0.6875         | 0.0144      | 0.0333 (1 of 30)  |
-| UltraBERT-Embed-150M + LR, small            | 110 of 411 | 0.5987         | 0.0275      | 0.0333 (1 of 30)  | 0.4770         | 0.0138      | 0.0000 (0 of 30)  |
-| d3-flash, `definitions`, 150 words          | 0          | 0.8421         | 0.0352      | 0.3000 (9 of 30)  | 0.7862         | 0.0251      | 0.2000 (6 of 30)  |
-| d3-flash, `fewshot`, 150 / 50 words         | 33         | 0.7303         | 0.0405      | 0.2333 (7 of 30)  | 0.6645         | 0.0198      | 0.1000 (3 of 30)  |
-| DiT + LR, real, image                       | 411        | 0.0000         | —           | 0.0000 (0 of 30)  | 0.0000         | —           | 0.0000 (0 of 30)  |
-| DiT + LR, small, image                      | 110 of 411 | 0.0000         | —           | 0.0000 (0 of 30)  | 0.0000         | —           | 0.0000 (0 of 30)  |
-| LayoutLMv3, real, image and OCR words       | 411        | 0.8816         | 0.0336      | 0.2667 (8 of 30)  | 0.8783         | 0.0337      | 0.2667 (8 of 30)  |
-| LayoutLMv3, small, image and OCR words      | 110 of 411 | 0.0000         | —           | 0.0000 (0 of 30)  | 0.0000         | —           | 0.0000 (0 of 30)  |
-| gemma4:e4b, image                           | 0          | —              | —           | —                 | —              | —           | —                 |
-| gemma4:e4b, image + `none`                  | 0          | —              | —           | —                 | —              | —           | —                 |
+| Classifier                             | Labels                     | Coverage at 5%         | Error at 5%            | Reject leak at 5%      | Coverage at 2%         | Error at 2%            | Reject leak at 2%      |
+|----------------------------------------|----------------------------|------------------------|------------------------|------------------------|------------------------|------------------------|------------------------|
+| TF-IDF + LR, real                      | 411 (328–329 per model)    | 0.6757 (0.6612–0.6908) | 0.0448 (0.0345–0.0524) | 0.0600 (0.0333–0.1000) | 0.3954 (0.3816–0.4145) | 0.0067 (0.0000–0.0172) | 0.0000 (0.0000–0.0000) |
+| TF-IDF + LR, small                     | 254 of 411 (110 per model) | 0.6066 (0.5822–0.6217) | 0.0467 (0.0372–0.0601) | 0.0933 (0.0333–0.1333) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
+| UltraBERT-Embed-150M + LR, real        | 411 (328–329 per model)    | 0.7592 (0.7500–0.7664) | 0.0320 (0.0259–0.0388) | 0.0733 (0.0333–0.1000) | 0.6408 (0.6250–0.6513) | 0.0174 (0.0152–0.0205) | 0.0333 (0.0333–0.0333) |
+| UltraBERT-Embed-150M + LR, small       | 254 of 411 (110 per model) | 0.5875 (0.5428–0.6612) | 0.0287 (0.0121–0.0393) | 0.0533 (0.0000–0.1000) | 0.4980 (0.4638–0.5559) | 0.0221 (0.0071–0.0392) | 0.0333 (0.0000–0.0667) |
+| d3-flash, `definitions`, 150 words     | 0                          | 0.8421                 | 0.0352                 | 0.3000 (9 of 30)       | 0.7862                 | 0.0251                 | 0.2000 (6 of 30)       |
+| d3-flash, `fewshot`, 150 / 50 words    | 33                         | 0.7303                 | 0.0405                 | 0.2333 (7 of 30)       | 0.6645                 | 0.0198                 | 0.1000 (3 of 30)       |
+| DiT + LR, real, image                  | 411 (328–329 per model)    | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
+| DiT + LR, small, image                 | 254 of 411 (110 per model) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
+| LayoutLMv3, real, image and OCR words  | 411 (328–329 per model)    | 0.2487 (0.0921–0.5033) | 0.0073 (0.0000–0.0213) | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
+| LayoutLMv3, small, image and OCR words | 254 of 411 (110 per model) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
+| gemma4:e4b, image                      | 0                          | —                      | —                      | —                      | —                      | —                      | —                      |
+| gemma4:e4b, image + `none`             | 0                          | —                      | —                      | —                      | —                      | —                      | —                      |
 
-From `results/confidence/<name>-pool.txt`, `tau_cp` lines, "all pages". Real is all 411 in-class
-pool pages; small is 10 per type drawn from them, 110 pages, since email has 18 pool pages where it
-had 9 train pages. The bound holds on the pool, not on test. Four entries land above their level on
-all test pages, each from the reject pages it accepts: TF-IDF + LR real at 5%, 0.0543, with an
-in-class error of 0.0369; d3-flash `definitions` at 2%, 0.0251, with no in-class error at all;
-and LayoutLMv3 real at both levels, 0.0336 and 0.0337, with in-class errors of 0.0038 and 0.0039.
-LayoutLMv3's cut-offs, 0.959988 at 5% and 0.964028 at 2%, accepted 37% and 25% of the pool's
-out-of-fold scores, but the final model puts 95% of in-class test pages and 8 of 30 reject pages
-above them; that is the caveat above, measured. DiT and LayoutLMv3 small certify nothing at either
-level. gemma4:e4b's rows are "—" because it answers with a type name and no probability (`llm.py`,
-Ollama's structured output), so there is no score to set a cut-off on and `confidence.py` has
-nothing to route.
+From `results/confidence/<name>-pool.txt`, `tau_cp` lines, "all pages"; a trained row is the mean
+over its 5 fold models (min–max), from the summary at the head of that file. Real fold models are
+trained on 328 or 329 of the 411 in-class pool pages; small ones on 10 per type drawn from those,
+110 pages, 254 distinct pages over the 5. An error's mean is over the fold models that accept a
+page; at these cut-offs every trained row accepts pages on all 5 fold models or on none. The bound
+holds on the pool, not on test. On the mean, d3-flash `definitions` at 2%, 0.0251, and
+UltraBERT-Embed-150M + LR small at 2%, 0.0221, land above their level on all test pages; d3-flash's
+in-class error is 0, so its excess is the 6 reject pages it accepts. Single fold models land above
+too: TF-IDF + LR real at 5% up to 0.0524 and small up to 0.0601, and UltraBERT-Embed-150M + LR real
+at 2% up to 0.0205. LayoutLMv3 real certifies nothing at 2%, and at 5% its cut-off, 0.966747,
+accepts 9% to 50% of all test pages depending on the fold model, a mean of 0.2487, with no reject
+page through. Its fold models were retrained here, and on MPS the run is not bit-for-bit repeatable:
+this run's pooled out-of-fold accuracy peaks at 0.8600, at epoch 9, against 0.8709 at epoch 10 at
+`70f648e`, and its pool scores certify nothing at 2% where those certified 25% of the pool. DiT and
+LayoutLMv3 small certify nothing at either level. gemma4:e4b's rows are "—" because it answers with
+a type name and no probability (`llm.py`, Ollama's structured output), so there is no score to set a
+cut-off on and `confidence.py` has nothing to route.
 
 **Accuracy and seconds per page, test**
 
 | Classifier                       | Accuracy, 274 in-class test pages | Seconds per page, median | Seconds per page, mean |
 |----------------------------------|-----------------------------------|--------------------------|------------------------|
-| TF-IDF + LR, real                | 0.8796                            | 0.000336                 | 0.000394               |
-| TF-IDF + LR, small               | 0.9270                            | 0.000284                 | 0.000309               |
-| UltraBERT-Embed-150M + LR, real  | 0.9453                            | 0.0361                   | 0.0355                 |
-| UltraBERT-Embed-150M + LR, small | 0.9124                            | 0.0358                   | 0.035                  |
+| TF-IDF + LR, real                | 0.8693 (0.8613–0.8759)            | 0.000299                 | 0.000322               |
+| TF-IDF + LR, small               | 0.8869 (0.8686–0.8978)            | 0.000276                 | 0.000295               |
+| UltraBERT-Embed-150M + LR, real  | 0.9358 (0.9270–0.9453)            | 0.0349                   | 0.0332                 |
+| UltraBERT-Embed-150M + LR, small | 0.8876 (0.8613–0.9088)            | 0.0349                   | 0.033                  |
 | d3-flash, `definitions`          | 0.9818                            | 1.68                     | 1.71                   |
 | d3-flash, `fewshot`              | 0.9197                            | 11.4                     | 11.4                   |
-| DiT + LR, real                   | 0.6058                            | 0.0194                   | 0.0201                 |
-| DiT + LR, small                  | 0.4416                            | 0.0189                   | 0.0193                 |
-| LayoutLMv3, real                 | 0.9781                            | 0.051                    | 0.0455                 |
-| LayoutLMv3, small                | 0.3759                            | 0.0515                   | 0.0456                 |
+| DiT + LR, real                   | 0.5978 (0.5839–0.6168)            | 0.0186                   | 0.0189                 |
+| DiT + LR, small                  | 0.4781 (0.4416–0.4964)            | 0.0185                   | 0.0189                 |
+| LayoutLMv3, real                 | 0.9723 (0.9672–0.9781)            | 0.0488                   | 0.043                  |
+| LayoutLMv3, small                | 0.3745 (0.3102–0.4015)            | 0.0485                   | 0.0426                 |
 | gemma4:e4b, image                | 0.9489                            | 0.985                    | 1.01                   |
 | gemma4:e4b, image + `none`       | 0.9307                            | 0.97                     | 0.98                   |
 
-From `results/test/<name>.txt`; names are `tfidf-real`, `tfidf-small`, `ultrabert-embed-real`,
-`ultrabert-embed-small`, `dit-real`, `dit-small`, `layoutlmv3-real`, `layoutlmv3-small`,
-`gemma4-image` and `gemma4-image-reject`, and the d3-flash rows are `d3-flash-definitions-s150` and
-`d3-flash-fewshot-s150-e50`. The trained rows are the models trained on the 411 pool pages, or 110
-for small. Seconds are the classifier alone, one page per call, on MPS for UltraBERT, DiT,
-LayoutLMv3 and d3-flash and through Ollama for gemma4:e4b; OCR and the image read are not in them.
-Tesseract takes 0.673 s a page median and 0.795 mean (`results/ocr-time.txt`), to be added for every
-classifier that reads the OCR text, LayoutLMv3 included; DiT and gemma4:e4b read only the image.
-Fine-tuning LayoutLMv3 took 9.9 to 10.0 minutes a fold and 11.4 for the final model on 411 pages,
-and 3.9 to 4.3 a fold and 3.2 for the final model on small; the epoch kept was 10 of 10 for both
-(`results/train/layoutlmv3-real-pool.txt`, `results/train/layoutlmv3-small-pool.txt`). DiT
-embedded the 457 pool pages in 15.66 s, base model load included, and every fold and C after that
+The trained rows are from `results/test/<name>-folds.txt`: the mean accuracy over the 5 fold models
+(min–max), each fold's report in `results/test/<name>-fold<f>.txt`, and the seconds median and mean
+over all 5 × 304 page scorings. Names are `tfidf-real`, `tfidf-small`, `ultrabert-embed-real`,
+`ultrabert-embed-small`, `dit-real`, `dit-small`, `layoutlmv3-real` and `layoutlmv3-small`. The
+other rows are from `results/test/<name>.txt`, names `gemma4-image`, `gemma4-image-reject`,
+`d3-flash-definitions-s150` and `d3-flash-fewshot-s150-e50`. Seconds are the classifier alone, one
+page per call, on MPS for UltraBERT, DiT, LayoutLMv3 and d3-flash and through Ollama for
+gemma4:e4b; OCR and the image read are not in them. Tesseract takes 0.673 s a page median and 0.795
+mean (`results/ocr-time.txt`), to be added for every classifier that reads the OCR text, LayoutLMv3
+included; DiT and gemma4:e4b read only the image. Fine-tuning LayoutLMv3 took 9.9 to 10.1 minutes a
+fold on real and 4.0 a fold on small, every epoch's checkpoint saved; the epoch kept was 9 of 10 for
+both (`results/train/layoutlmv3-real-pool.txt`, `results/train/layoutlmv3-small-pool.txt`). DiT
+embedded the 457 pool pages in 17.74 s, base model load included, and every fold and C after that
 took under half a second (`results/train/dit-real-pool.txt`).
 
 d3-flash's 5 in-class test errors with `definitions` are a budget and a news article taken for
@@ -231,7 +238,7 @@ right (`results/test/d3-flash-fewshot-s150-e50.txt`).
 |------------------------------------|-------------------------------|--------|--------|-------------------------------|--------|--------|----------------------------------|--------|--------|
 | d3-flash, `definitions`, 150 words | 0.7928–0.8487                 | 0.8487 | 0.8421 | 0.0000–0.0000                 | 0.6711 | 0.7862 | 0.2000–0.3000                    | 0.3000 | 0.3000 |
 | d3-flash, `definitions` + `none`   | 0.8980–0.9013                 | 0.9013 | 0.9079 | 0.0000–0.8684                 | 0.8684 | 0.8914 | 0.2667–0.2667                    | 0.2667 | 0.3333 |
-| UltraBERT-Embed-150M + LR, real    | 0.3651–0.7632                 | 0.7632 | 0.7829 | 0.0000–0.0000                 | 0.0000 | 0.6875 | 0.0000–0.1667                    | 0.1667 | 0.1000 |
+| UltraBERT-Embed-150M + LR, real    | 0.3651–0.7632                 | 0.7632 | 0.7592 | 0.0000–0.0000                 | 0.0000 | 0.6408 | 0.0000–0.1667                    | 0.1667 | 0.0733 |
 
 All on the 304 test pages, the `tau_cp` lines, "all pages". 141: `confidence.py --dev-size 144
 --dev-seed S`, S = 0, 1, 2, 12 validation pages per type and 12 reject pages, 141 because email has
@@ -239,7 +246,8 @@ All on the 304 test pages, the `tau_cp` lines, "all pages". 141: `confidence.py 
 `results/confidence/<name>.txt`. 457: the pool, `results/confidence/<name>-pool.txt`. Names are
 `d3-flash-definitions-s150`, `d3-flash-definitions-s150-reject` and `ultrabert-embed-real`. The
 141 and 230 columns of the UltraBERT row are the model trained on the 204 train pages; its 457
-column is the model trained on all 411, so that column moves with the model as well as the cut-off.
+column is the mean over the 5 fold models, so that column moves with the model as well as the
+cut-off.
 
 d3-flash's figures at 5% barely move with size, 0.7928 to 0.8487 at 141 pages, 0.8487 at 230 and
 0.8421 at 457. At 2% size decides whether anything is certified: 141 pages certify nothing for
@@ -247,25 +255,27 @@ d3-flash's figures at 5% barely move with size, 0.7928 to 0.8487 at 141 pages, 0
 lets 6 of 30 reject pages through, for an error of 0.0251, above the 2% it was set for. With `none`
 as a 12th option, 457 pages certify 0.8914 at 2%, error 0.0295 with 8 of 30 reject pages through
 (`results/confidence/d3-flash-definitions-s150-reject-pool.txt`). UltraBERT-Embed-150M + LR
-certifies 0.6875 at 2% on the pool where 230 validation pages certified nothing.
+certifies 0.6408 at 2% on the pool where 230 validation pages certified nothing.
 
 With `none` allowed, gemma4:e4b labels 16 of the 30 reject pages `none` (0.5333) and 5 of the 274
 in-class pages (0.0182), all 5 specifications (`results/test/gemma4-image-reject.txt`). The other
 14 reject pages get a type, as all 30 do without `none`. Over all 304 test pages, where a `none` on
 a reject page is right, its accuracy is 0.8914 against 0.8553 without `none`.
 
-**Does the page image beat OCR text?** The image alone does not; the image with the OCR words does,
-on 411 pages. DiT + LR on the image alone reaches 0.6058 accuracy and certifies no coverage.
-LayoutLMv3, which reads the image and the OCR words and boxes together, reaches 0.9781, above
-UltraBERT-Embed-150M + LR's 0.9453 on the text and just under d3-flash `definitions`' 0.9818, and
-certifies the most at 5%, 0.8816 against 0.8421 and 0.7829; but its certificate does not hold on
-test at either level: no pool reject page passed its 2% cut-off out of fold, and 8 of 30 test
-reject pages pass it. gemma4:e4b on the image is 0.9489 accurate and needs no OCR, but it has no
-score, so none of its pages can be passed without a person; 6 of its 14 errors on in-class pages
-are letters and emails labelled memo (`results/test/gemma4-image.txt`). On seconds, gemma4:e4b's
-0.985 s median is above Tesseract's 0.673 s plus UltraBERT's 0.0361 s, and under d3-flash's 1.68 s
-plus OCR. Trained on small, both image models fall further behind the text ones: 0.4416 and 0.3759
-accuracy, no coverage, against 0.9124 and 0.5987 for UltraBERT small.
+**Does the page image beat OCR text?** The image alone does not; the image with the OCR words does
+on accuracy, on 328 or 329 training pages, but not on coverage. DiT + LR on the image alone reaches
+0.5978 accuracy and certifies no coverage. LayoutLMv3, which reads the image and the OCR words and
+boxes together, reaches 0.9723, above UltraBERT-Embed-150M + LR's 0.9358 on the text and under
+d3-flash `definitions`' 0.9818, but certifies 0.2487 at 5%, from 0.0921 to 0.5033 by fold model,
+against 0.7592 for UltraBERT-Embed-150M + LR and 0.8421 for d3-flash, and nothing at 2%. Its 5%
+cut-off, 0.966747, is above every fold model's mean score on its right in-class test predictions,
+0.9363 to 0.9605, so small differences between the fold models move many pages across it. gemma4:e4b
+on the image is 0.9489 accurate and needs no OCR, but it has no score, so none of its pages can be
+passed without a person; 6 of its 14 errors on in-class pages are letters and emails labelled memo
+(`results/test/gemma4-image.txt`). On seconds, gemma4:e4b's 0.985 s median is above Tesseract's
+0.673 s plus UltraBERT's 0.0349 s, and under d3-flash's 1.68 s plus OCR. Trained on small, both
+image models fall further behind the text ones: 0.4781 and 0.3745 accuracy, no coverage, against
+0.8876 and 0.5875 for UltraBERT small.
 
 ## Files
 
@@ -290,15 +300,15 @@ accuracy, no coverage, against 0.9124 and 0.5987 for UltraBERT small.
   instruction before the page text and the first 512 tokens kept. `--train real` is every train
   page; `--train small` is 10 per class, drawn with seed 0, the ids in data/selection.json under
   `small`; email has 9 train pages and gives all 9, so small is 109 pages. Neither holds a reject
-  page: train's 23 are left out. Every classifier uses `class_weight="balanced"`. For
-  `--embed` and `--dit`, C is the value in `C_GRID` (0.01, 0.1, 1, 10), each fitted on train, with
-  the highest validation AUROC of top probability against correctness over all validation pages, a
-  tie going to the smaller C; `results/train/<name>.txt` gives each value's AUROC and the choice.
-  `--tfidf` keeps its fixed C of 10 on its sparse features, with no grid. `--folds 5 --fold-seed 0`
-  trains on the pool instead, every train and validation page (Results, How the cut-off is set):
-  out-of-fold scores to `results/confidence/dumps/<name>-pool.jsonl`, C chosen on their AUROC, the
-  final model on every in-class pool page, small's draws in `data/selection.json` under
-  `small-pool`, and `results/train/<name>-pool.txt`. `--dit` reads the page
+  page: train's 23 are left out. Every classifier uses `class_weight="balanced"`. For `--embed` and
+  `--dit`, C is the value in `C_GRID` (0.01, 0.1, 1, 10), each fitted on train, with the highest
+  validation AUROC of top probability against correctness over all validation pages, a tie going to
+  the smaller C; `results/train/<name>.txt` gives each value's AUROC and the choice. `--tfidf` keeps
+  its fixed C of 10 on its sparse features, with no grid. `--folds 5 --fold-seed 0` trains on the
+  pool instead, every train and validation page (Results, How the cut-off is set): out-of-fold
+  scores to `results/confidence/dumps/<name>-pool.jsonl`, C chosen on their AUROC, each fold's model
+  at that C in `models/<name>/fold<f>/`, small's draws in `data/selection.json` under `small-pool`,
+  and `results/train/<name>-pool.txt`. No model is fitted on the whole pool. `--dit` reads the page
   image instead: logistic regression on frozen `microsoft/dit-base` embeddings, at a pinned
   revision, each the mean of the last hidden state over the 196 patches of the page resized to 224 ×
   224, standardised by a `StandardScaler` fitted on the train embeddings. Names are `tfidf-real`,
@@ -318,13 +328,19 @@ accuracy, no coverage, against 0.9124 and 0.5987 for UltraBERT small.
   scored, a reject page as wrong, and the epoch with the highest validation accuracy is kept, a tie
   keeping the earlier; `results/train/<name>.txt` gives each epoch's accuracy and the minutes. Names
   are `layoutlmv3-real` and `layoutlmv3-small`. `--folds 5 --fold-seed 0` is `train.py`'s, the
-  epoch chosen on pooled out-of-fold accuracy.
+  epoch chosen on pooled out-of-fold accuracy: every fold saves a checkpoint after each epoch, and
+  once the epoch is chosen its checkpoint becomes `models/<name>/fold<f>/` and the rest are
+  deleted.
 - `score.py` — scores a model on every page of validation or test, reject pages included. A model
   predicts one of `CLASSES`, so a reject page is always wrong. A `dit-` model reads
   `data/<split>/<id>.png`; its seconds leave out the image read. A `layoutlmv3-` model reads the OCR
   words and boxes and the image; its seconds are the forward pass, the page read and the processor
   excluded. `--dump` writes each page's prediction and top probability for `confidence.py`.
-  `--split pool`, for `--d3` only, scores every train and validation page.
+  `--split pool`, for `--d3` only, scores every train and validation page. `--model <name> --split
+  test --folds` scores each fold model of `--folds` in `models/<name>/fold<f>/`, writing
+  `results/test/<name>-fold<f>.txt` and `results/confidence/dumps/<name>-fold<f>-test.jsonl`, and
+  `results/test/<name>-folds.txt`: the mean accuracy over the folds with its range, and seconds
+  over every fold's pages.
 - `llm.py` — `classify` sends one page image, `data/<split>/<id>.png`, to `gemma4:e4b` on Ollama
   with `PROMPT`: the 11 `CLASSES` names and their definitions. The reply is restricted by Ollama's
   structured output to an enum of those names, at temperature 0 with thinking off. With
@@ -368,12 +384,16 @@ accuracy, no coverage, against 0.9124 and 0.5987 for UltraBERT small.
   --dev-seed S` fits on N validation pages, N / 12 from each class and from the reject pages, and
   writes `results/confidence/<name>-dev<N>-seed<S>.txt`. `--calibration pool` fits on
   `<name>-pool.jsonl`, the 457 train and validation pages, and writes
-  `results/confidence/<name>-pool.txt`. `test_confidence.py` checks it on a hand-made 13-row dump.
+  `results/confidence/<name>-pool.txt`; when `score.py --folds` has written fold dumps, the pool
+  cut-offs are applied to each, and the file opens with the mean over the fold models of coverage,
+  error and reject leak at each cut-off, with min–max, then each fold's full report.
+  `test_confidence.py` checks it on hand-made dumps.
 - `data/` — the manifest and the selection are tracked. The page images are ignored by git.
 - `ocr/` — the OCR cache, one JSON file per page.
 - `models/` — trained classifiers, ignored by git and rebuilt by `train.py` and `finetune.py`.
 - `results/` — every reported number, in synth-classify's layout without its class-set level:
-  `results/<split>/<name>.txt` for score reports (`results/pool/` for `--split pool`),
+  `results/<split>/<name>.txt` for score reports (`results/pool/` for `--split pool`,
+  `results/test/<name>-fold<f>.txt` and `<name>-folds.txt` for `--folds`),
   `results/train/<name>.txt` and `results/train/<name>-pool.txt` for training time,
   `results/confidence/<name>.txt` and `<name>-pool.txt` for routing, with their inputs in
   `results/confidence/dumps/`, and `results/ocr-time.txt` for OCR time.
@@ -393,7 +413,7 @@ uv run python ocr.py
 
 uv run python train.py --tfidf --train real --folds 5 --fold-seed 0          # also --train small; --embed, --dit
 uv run python finetune.py --layoutlmv3 --train real --folds 5 --fold-seed 0  # also --train small
-uv run python score.py --model tfidf-real --split test --dump
+uv run python score.py --model tfidf-real --split test --folds   # the 5 fold models; dumps always written
 uv run python confidence.py --model tfidf-real --calibration pool
 ollama serve &   # gemma4:e4b pulled
 uv run python score.py --llm gemma4-image --split test   # also gemma4-image-reject; validation
