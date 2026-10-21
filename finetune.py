@@ -11,7 +11,15 @@ schedule with a 10% warm-up, cross-entropy weighted inversely to train counts as
 `class_weight="balanced"`. The one choice validation makes is the epoch: after each, every
 validation page is scored, a reject page as wrong, and the model is saved when its validation
 accuracy is the highest so far, a tie keeping the earlier epoch. So validation is not held out for
-confidence.py, as for train.py's C."""
+confidence.py, as for train.py's C.
+
+`--folds K --fold-seed S` is train.py's `--folds` for LayoutLMv3: the folds of `pool_folds`, the
+training sets of `fold_training_sets`, the held-out fold's in-class and reject pages scored after
+every epoch. The epoch is the one whose pooled out-of-fold accuracy over every pool page, a reject
+page wrong, is highest, a tie keeping the earlier, and its scores go to
+results/confidence/dumps/<name>-pool.jsonl. The final model is trained on every in-class pool page
+with the same settings and saved at that epoch. results/train/<name>-pool.txt records the folds,
+each epoch's pooled accuracy and the minutes."""
 
 import argparse
 import os
@@ -22,8 +30,18 @@ import time
 # MPS lacks some ops; fall back to CPU for them rather than failing.
 os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
 
-from classes import CLASSES
-from train import SEED, validation_pages, page_image, training_pages
+from classes import CLASSES, REJECT_LABEL
+from train import (
+    SEED,
+    fold_lines,
+    fold_training_sets,
+    page_image,
+    pool_folds,
+    pool_rows,
+    training_pages,
+    validation_pages,
+    write_pool_dump,
+)
 
 # CC BY-NC-SA 4.0. Pinned so the weights cannot move under the results.
 LAYOUTLMV3_BASE = "microsoft/layoutlmv3-base"
@@ -91,9 +109,12 @@ def load_model(path, revision=None):
     return model.to(device), device
 
 
-def finetune(ids, labels, validation_ids, validation_gold, out):
+def finetune(ids, labels, validation_ids, validation_gold, out, stop=None):
     """finetune trains for `EPOCHS` and saves the epoch with the best validation accuracy to `out`.
-    Returns the best epoch, from 1, and each epoch's validation accuracy."""
+    Returns the best epoch, from 1, each epoch's validation accuracy, and each epoch's
+    (predictions, top probabilities) on the validation pages. With `out` None nothing is saved;
+    with `stop`, training ends after epoch `stop`, which is saved, and `validation_ids` may be
+    empty."""
     import torch
     from transformers import get_linear_schedule_with_warmup
 
@@ -103,7 +124,7 @@ def finetune(ids, labels, validation_ids, validation_gold, out):
     # Encoded once, every page padded to MAX_TOKENS so a batch is rows of one tensor. Padding is
     # masked out of attention, so it changes the time and not the result.
     pages = encode(ids, processor, "max_length")
-    validation = encode(validation_ids, processor, "max_length")
+    validation = encode(validation_ids, processor, "max_length") if validation_ids else None
 
     counts = [labels.count(c) for c in range(len(CLASSES))]
     weight = torch.tensor([len(labels) / (len(CLASSES) * n) for n in counts], device=device)
@@ -114,7 +135,7 @@ def finetune(ids, labels, validation_ids, validation_gold, out):
 
     rng = random.Random(SEED)
     order = list(range(len(ids)))
-    best, accuracies = 0, []
+    best, accuracies, scored = 0, [], []
     for epoch in range(1, EPOCHS + 1):
         model.train()
         rng.shuffle(order)
@@ -131,12 +152,24 @@ def finetune(ids, labels, validation_ids, validation_gold, out):
             opt.zero_grad()
             total += loss.item() * len(idx)
 
+        if stop is not None and epoch == stop:
+            model.save_pretrained(out)
+            processor.save_pretrained(out)
+            print(f"epoch {epoch}/{EPOCHS} loss {total / len(order):.4f}", file=sys.stderr)
+            return stop, accuracies, scored
+        if validation is None:
+            print(f"epoch {epoch}/{EPOCHS} loss {total / len(order):.4f}", file=sys.stderr)
+            continue
+
         model.eval()
-        preds = []
+        preds, scores = [], []
         with torch.no_grad():
             for i in range(0, len(validation_ids), BATCH_SIZE):
                 batch = {k: v[i : i + BATCH_SIZE].to(device) for k, v in validation.items()}
-                preds += model(**batch).logits.argmax(dim=1).tolist()
+                top = model(**batch).logits.softmax(dim=1).max(dim=1)
+                preds += top.indices.tolist()
+                scores += top.values.tolist()
+        scored.append((preds, scores))
         accuracy = sum(p == g for p, g in zip(preds, validation_gold)) / len(validation_gold)
         accuracies.append(accuracy)
         print(
@@ -144,28 +177,97 @@ def finetune(ids, labels, validation_ids, validation_gold, out):
             f" validation accuracy {accuracy:.4f}",
             file=sys.stderr,
         )
-        if accuracy > max(accuracies[:-1], default=-1):
+        if out is not None and accuracy > max(accuracies[:-1], default=-1):
             best = epoch
             model.save_pretrained(out)
             processor.save_pretrained(out)
-    return best, accuracies
+    return best, accuracies, scored
+
+
+def finetune_folds(name, which, k, seed):
+    """finetune_folds is `--folds`: `finetune` on each fold's training pages, the held-out fold
+    scored after every epoch; the pool dump from the epoch with the best pooled out-of-fold
+    accuracy; and the final model, trained on every in-class pool page and saved at that epoch to
+    models/<name>/. Writes results/train/<name>-pool.txt."""
+    rows = pool_rows()
+    fold = pool_folds(rows, k, seed)
+    sets = fold_training_sets(rows, fold, k, which)
+    names = list(CLASSES)
+    gold = [names.index(r["label"]) if r["label"] != REJECT_LABEL else -1 for r in rows]
+    ids = [r["id"] for r in rows]
+
+    # pred[e][i] and score[e][i]: row i's out-of-fold prediction and top probability after epoch e.
+    pred = [[None] * len(rows) for _ in range(EPOCHS)]
+    score = [[None] * len(rows) for _ in range(EPOCHS)]
+    minutes = []
+    for f in range(k):
+        held = [i for i in range(len(rows)) if fold[i] == f]
+        start = time.perf_counter()
+        _, _, scored = finetune(
+            [ids[i] for i in sets[f]],
+            [gold[i] for i in sets[f]],
+            [ids[i] for i in held],
+            [gold[i] for i in held],
+            None,
+        )
+        minutes.append((time.perf_counter() - start) / 60)
+        for e, (preds, scores) in enumerate(scored):
+            for i, p, s in zip(held, preds, scores):
+                pred[e][i], score[e][i] = p, s
+    accuracies = [sum(p == g for p, g in zip(pred[e], gold)) / len(gold) for e in range(EPOCHS)]
+    best = accuracies.index(max(accuracies)) + 1
+    write_pool_dump(name, rows, pred[best - 1], score[best - 1])
+
+    out = os.path.join("models", name)
+    os.makedirs(out, exist_ok=True)
+    start = time.perf_counter()
+    finetune([ids[i] for i in sets[k]], [gold[i] for i in sets[k]], [], [], out, stop=best)
+    final = (time.perf_counter() - start) / 60
+
+    reject = sum(g < 0 for g in gold)
+    text = "\n".join([
+        f"model     models/{name}",
+        f"train     {which}, {k} folds, fold seed {seed}; pool {len(rows)} pages, train and"
+        f" validation, {reject} reject",
+        *fold_lines(rows, fold, k, sets),
+        f"epochs    {EPOCHS}",
+        *(f"minutes   {m:.1f} fold {f} (base model load to the last epoch's scoring; encoding"
+          " included)" for f, m in enumerate(minutes)),
+        f"minutes   {final:.1f} final model, to epoch {best} (base model load to save; encoding"
+        " included)",
+        f"best      epoch {best} (highest pooled out-of-fold accuracy, all {len(rows)} pool pages,"
+        " reject pages wrong; a tie keeps the earlier epoch)",
+        *(f"epoch {e:<3} out-of-fold accuracy {a:.4f}" for e, a in enumerate(accuracies, 1)),
+    ]) + "\n"
+    sys.stderr.write(text)
+    path = os.path.join("results", "train", name + "-pool.txt")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        f.write(text)
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--train", choices=["real", "small"], required=True)
     ap.add_argument("--layoutlmv3", action="store_true", help=f"fine-tune {LAYOUTLMV3_BASE}")
+    ap.add_argument("--folds", type=int, metavar="K", help="train on the pool, K folds out of fold")
+    ap.add_argument("--fold-seed", type=int, default=0, metavar="S", help="seed of --folds")
     args = ap.parse_args()
     if not args.layoutlmv3:
         ap.error("give --layoutlmv3")
+    if args.folds is not None and args.folds < 2:
+        ap.error("--folds needs K of at least 2")
 
     name = f"layoutlmv3-{args.train}"
+    if args.folds is not None:
+        finetune_folds(name, args.train, args.folds, args.fold_seed)
+        return
     out = os.path.join("models", name)
     ids, labels, _ = training_pages(args.train, "hand")
     validation_ids, validation_gold = validation_pages()
     os.makedirs(out, exist_ok=True)
     start = time.perf_counter()
-    best, accuracies = finetune(ids, labels, validation_ids, validation_gold, out)
+    best, accuracies, _ = finetune(ids, labels, validation_ids, validation_gold, out)
     minutes = (time.perf_counter() - start) / 60
 
     text = (

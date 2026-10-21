@@ -44,7 +44,9 @@ from d3 import CLASS_SETS, D3_PROMPTS, EXAMPLE_WORDS, STATE_WORDS, classify_d3, 
 from llm import MODEL, NAMES, classify
 from train import manifest, page_image, page_text
 
-SPLITS = ["validation", "test"]
+SPLITS = ["validation", "test", "pool"]
+# The manifest splits `--split pool` scores.
+POOL = ("train", "validation")
 
 
 def predict(model_dir, ids):
@@ -181,8 +183,12 @@ def main():
     state_words = args.state_words or STATE_WORDS
     example_words = args.example_words or EXAMPLE_WORDS
 
+    if args.split == "pool" and not args.d3:
+        ap.error("--split pool goes with --d3; a trained model's pool scores come from --folds")
+
     names = list(CLASSES) + [REJECT_LABEL]
-    rows = [r for r in manifest() if r["split"] == args.split]
+    splits = POOL if args.split == "pool" else (args.split,)
+    rows = [r for r in manifest() if r["split"] in splits]
     if not rows:
         sys.exit(f"no {args.split} pages in the manifest")
     unknown = sorted({r["label"] for r in rows} - set(names))

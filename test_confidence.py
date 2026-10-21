@@ -4,10 +4,11 @@ is given a type and scores above the alpha 0.10 cut-off, and so counts as an acc
 reject leak; one is predicted REJECT_LABEL with the top score, which is right and never accepted."""
 
 import json
+import sys
 
 import numpy as np
 
-from confidence import draw, read_dump, report, threshold
+from confidence import draw, main, read_dump, report, threshold
 from classes import CLASSES, REJECT_LABEL
 
 
@@ -55,6 +56,29 @@ def test_report_when_every_scored_in_class_page_is_right(tmp_path):
     assert "  AUROC of score against correctness, in-class  -\n" in text
     assert "  mean score, wrong predictions       - (0)\n" in text
     assert "1 of 11 in-class pages, 1 of 3 reject pages" in text
+
+
+def test_calibration_pool_fits_on_the_pool_dump(tmp_path, monkeypatch):
+    # The pool dump is the hand-made dump; the test dump is the same rows with the reject page at
+    # 0.91 predicted REJECT_LABEL, so only the pool dump puts a reject page above 0.70.
+    dumps = tmp_path / "results" / "confidence" / "dumps"
+    dumps.mkdir(parents=True)
+    write_dump(dumps / "hand-pool.jsonl")
+    test_rows = ROWS[:5] + [(0.91, REJECT_LABEL, REJECT_LABEL)] + ROWS[6:]
+    write_dump(dumps / "hand-test.jsonl", test_rows)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "argv", ["confidence.py", "--model", "hand", "--calibration", "pool"])
+    main()
+    text = (tmp_path / "results" / "confidence" / "hand-pool.txt").read_text()
+    assert text.startswith("model     hand\npool results/confidence/dumps/hand-pool.jsonl (13 pages,")
+    # The cut-offs are the pool dump's, as test_cut_offs_count_a_reject_page_as_wrong works out.
+    assert "    tau    0.700000  pool coverage 0.7692 error 0.1000 reject_leak 0.3333\n" in text
+    alpha_10 = text[text.index("\ntest: "):].split("  alpha 0.10\n")[1]
+    # On test no reject page is given a type, so none is accepted at tau 0.70: 9 of 13 pages, all
+    # in-class and right.
+    assert "    tau    0.700000\n" in alpha_10
+    assert "      reject_leak          0.0000 (0 of 3)\n" in alpha_10
+    assert "      all pages, 3 of 13 reject  coverage 0.6923 error 0.0000\n" in alpha_10
 
 
 def test_draw_takes_one_page_per_class_present(tmp_path):

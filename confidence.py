@@ -36,6 +36,12 @@ Computed:
 Output: the report, printed and written to results/confidence/<model>.txt, or with --dev-size to
 results/confidence/<model>-dev<N>-seed<S>.txt.
 
+With --calibration pool, the cut-offs and the calibration are fitted on <model>-pool.jsonl instead
+of the validation dump: every train and validation page, from score.py --split pool for a model
+with no training, or the out-of-fold scores of train.py's or finetune.py's --folds for a trained
+one. Test is read as without it. The report goes to results/confidence/<model>-pool.txt, and the
+word "validation" in its first part reads "pool".
+
 With --dev-size N, the cut-offs and the calibration are fitted on N validation pages drawn by
 `draw`, N / 12 from each class of CLASSES and from the reject pages, so the cut-off's dependence on
 validation size can be measured; a class with fewer pages gives them all. --dev-seed seeds the
@@ -134,10 +140,11 @@ def fmt(x, spec=".4f"):
     return "-" if x is None else format(x, spec)
 
 
-def report(model, validation_path, test_path, dev_size=None, dev_seed=0):
+def report(model, validation_path, test_path, dev_size=None, dev_seed=0, fit="validation"):
     """report returns the text of the routing report for `model` from its validation and test
     dumps. With `dev_size`, the cut-offs and the calibration are fitted on `draw`'s rows of the
-    validation dump."""
+    validation dump. `fit` names the pages of `validation_path` in the report: "validation", or
+    "pool" for --calibration pool."""
     names = list(CLASSES) + [REJECT_LABEL]
     reject = names.index(REJECT_LABEL)
     width = max(len(name) for name in names)
@@ -167,19 +174,19 @@ def report(model, validation_path, test_path, dev_size=None, dev_seed=0):
 
     lines = [
         f"model     {model}",
-        f"validation {validation_path} ({validation_desc},"
+        f"{fit} {validation_path} ({validation_desc},"
         f" {int(validation_reject.sum())} reject; accuracy {validation_c.mean():.4f})",
         "score     top probability over CLASSES; a REJECT_LABEL page is always wrong"
         if not held else
         f"score     top probability; a page predicted {REJECT_LABEL}, right only on a reject page,"
         " is never accepted",
-        f"validation AUROC of score against correctness, all pages"
+        f"{fit} AUROC of score against correctness, all pages"
         + (f" not predicted {REJECT_LABEL}" if held else "")
         + f"  {roc_auc_score(validation_c[scored], validation_s[scored]):.4f}",
-        "routing: accept a page when its score is at least the cut-off, chosen on the validation"
+        f"routing: accept a page when its score is at least the cut-off, chosen on the {fit}"
         " pages above",
-        "  tau     lowest validation score whose accepted validation error is at most alpha",
-        f"  tau_cp  the same with the validation error's one-sided {CP_LEVEL:.0%} Clopper-Pearson"
+        f"  tau     lowest {fit} score whose accepted {fit} error is at most alpha",
+        f"  tau_cp  the same with the {fit} error's one-sided {CP_LEVEL:.0%} Clopper-Pearson"
         " upper bound",
         "  reject_leak  share of reject pages scoring at least the cut-off",
     ]
@@ -190,7 +197,7 @@ def report(model, validation_path, test_path, dev_size=None, dev_seed=0):
             leak = (validation_s[validation_reject] >= t).mean()
             lines.append(
                 f"    {label} {fmt(None if np.isinf(t) else t, '.6f'):<8}  "
-                f"validation coverage {cov:.4f} error {fmt(err)} reject_leak {leak:.4f}"
+                f"{fit} coverage {cov:.4f} error {fmt(err)} reject_leak {leak:.4f}"
             )
 
     test_reject = all_y == reject
@@ -222,7 +229,7 @@ def report(model, validation_path, test_path, dev_size=None, dev_seed=0):
         f"  AUROC of score against correctness, in-class  {fmt(auroc)}",
         f"  mean score, right predictions       {fmt(right_mean)} ({int(fc.sum())})",
         f"  mean score, wrong predictions       {fmt(wrong_mean)} ({int(len(fc) - fc.sum())})",
-        f"  ECE, {ECE_BINS} equal-count bins, isotonic fitted on validation"
+        f"  ECE, {ECE_BINS} equal-count bins, isotonic fitted on {fit}"
         f"  before {ece(fs, fc, fs):.4f}  after {ece(iso.predict(fs), fc, fs):.4f}",
         f"  stream_10: {REJECT_SHARE:.0%} reject pages, {1 - REJECT_SHARE:.0%} in-class",
     ]
@@ -264,14 +271,27 @@ def main():
     ap.add_argument("--model", required=True, help="model name, as given to score.py")
     ap.add_argument("--dev-size", type=int, metavar="N", help="fit on N validation pages, stratified")
     ap.add_argument("--dev-seed", type=int, default=0, metavar="S", help="seed of the --dev-size draw")
+    ap.add_argument("--calibration", choices=["validation", "pool"], default="validation",
+                    help="pages the cut-offs are fitted on; pool is train and validation")
     args = ap.parse_args()
+    if args.calibration == "pool" and args.dev_size is not None:
+        ap.error("--dev-size draws from validation; it does not go with --calibration pool")
     classes = len(CLASSES) + 1
     if args.dev_size is not None and (args.dev_size <= 0 or args.dev_size % classes):
         ap.error(f"--dev-size must be a positive multiple of {classes}, CLASSES and REJECT_LABEL")
     path = lambda split: os.path.join(DUMPS, f"{args.model}-{split}.jsonl")
-    text = report(args.model, path("validation"), path("test"), args.dev_size, args.dev_seed)
+    text = report(
+        args.model,
+        path(args.calibration),
+        path("test"),
+        args.dev_size,
+        args.dev_seed,
+        args.calibration,
+    )
     sys.stdout.write(text)
     name = args.model
+    if args.calibration == "pool":
+        name += "-pool"
     if args.dev_size is not None:
         name += f"-dev{args.dev_size}-seed{args.dev_seed}"
     out = os.path.join("results", "confidence", name + ".txt")

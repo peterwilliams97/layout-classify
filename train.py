@@ -14,7 +14,20 @@ chosen from C_GRID on validation, never test: each C is fitted on train, and the
 probability best ranks validation pages right over wrong, by AUROC, is kept (`choose_c`). Everything
 else — TF-IDF's C, n-grams, the token limit — is fixed, not tuned. Every classifier weights classes
 inversely to their train counts (`class_weight="balanced"`), so a class with few train pages is not
-crowded out by one with many."""
+crowded out by one with many.
+
+`--folds K --fold-seed S` trains on the pool instead: every train and validation page, the pages
+confidence.py's `--calibration pool` sets its cut-offs on. `pool_folds` splits the pool's in-class
+pages K ways within each class and its reject pages K ways apart from them. For each fold the
+classifier is fitted on the other folds' in-class pages and scores the fold's in-class and reject
+pages, and the pooled out-of-fold scores go to results/confidence/dumps/<name>-pool.jsonl. Then it is
+fitted once on every in-class pool page and saved as models/<name>/, the model score.py scores on
+test. No reject page is trained on, in a fold or in the final model. With `--train small`, the
+SMALL_PER_CLASS draw is made from each fold's training pages, and for the final model from all the
+pool's in-class pages, all recorded in data/selection.json under "small-pool". For `--embed` and
+`--dit`, C is the C_GRID value whose pooled out-of-fold scores rank right over wrong best, by AUROC,
+every pool page counted and a reject page wrong. results/train/<name>-pool.txt records the folds,
+the C grid and the seconds."""
 
 import argparse
 import json
@@ -70,24 +83,35 @@ def page_image(page_id):
         return im.convert("RGB")
 
 
-def small_ids(train_rows):
-    """small_ids draws SMALL_PER_CLASS train pages per class, each class with its own seeded
-    generator, and records the ids in data/selection.json under "small". A class with fewer train
-    pages gives all of them: email has 9. The draw is deterministic, so rewriting the entry
-    restores it."""
+def draw_small(rows):
+    """draw_small returns the ids of SMALL_PER_CLASS of `rows` per class, each class with its own
+    generator seeded from SEED. A class with fewer rows gives all of them."""
     ids = []
     for label in CLASSES:
-        pool = [r["id"] for r in train_rows if r["label"] == label]
+        pool = [r["id"] for r in rows if r["label"] == label]
         rng = random.Random(f"{SEED}/small/{label}")
         ids += rng.sample(pool, min(SMALL_PER_CLASS, len(pool)))
+    return ids
+
+
+def record_selection(key, entry):
+    """record_selection writes `entry` to data/selection.json under `key`, keeping the other keys."""
     selection = {}
     if os.path.exists(SELECTION):
         with open(SELECTION) as f:
             selection = json.load(f)
-    selection["small"] = {"seed": SEED, "per_class": SMALL_PER_CLASS, "ids": ids}
+    selection[key] = entry
     with open(SELECTION, "w") as f:
         json.dump(selection, f, indent=1)
         f.write("\n")
+
+
+def small_ids(train_rows):
+    """small_ids draws the small training set from `train_rows` with `draw_small` and records the
+    ids in data/selection.json under "small". Email has 9 train pages and gives all 9. The draw is
+    deterministic, so rewriting the entry restores it."""
+    ids = draw_small(train_rows)
+    record_selection("small", {"seed": SEED, "per_class": SMALL_PER_CLASS, "ids": ids})
     return set(ids)
 
 
@@ -160,6 +184,184 @@ def validation_pages():
         sys.exit(f"{MANIFEST}: validation labels not in CLASSES or REJECT_LABEL: {unknown}")
     gold = [names.index(r["label"]) if r["label"] in names else -1 for r in rows]
     return [r["id"] for r in rows], gold
+
+
+def pool_rows():
+    """pool_rows returns the manifest rows of every train and validation page, reject pages
+    included, in manifest order. Exits if a label is not in CLASSES or REJECT_LABEL."""
+    rows = [r for r in manifest() if r["split"] in ("train", "validation")]
+    if not rows:
+        sys.exit(f"{MANIFEST}: no train or validation pages")
+    unknown = sorted({r["label"] for r in rows} - set(CLASSES) - {REJECT_LABEL})
+    if unknown:
+        sys.exit(f"{MANIFEST}: pool labels not in CLASSES or REJECT_LABEL: {unknown}")
+    return rows
+
+
+def pool_folds(rows, k, seed):
+    """pool_folds returns each row's fold, 0 to `k` - 1. The rows of each class of CLASSES, and the
+    REJECT_LABEL rows apart from them, are shuffled by a generator seeded from `seed` and the label,
+    and dealt to the folds in turn, each label's deal starting at the fold after the last one
+    dealt, so each fold holds a `k`th of each class, give or take one, and of the whole pool."""
+    fold, dealt = [None] * len(rows), 0
+    for label in list(CLASSES) + [REJECT_LABEL]:
+        mine = [i for i, r in enumerate(rows) if r["label"] == label]
+        random.Random(f"{seed}/folds/{label}").shuffle(mine)
+        for i in mine:
+            fold[i] = dealt % k
+            dealt += 1
+    return fold
+
+
+def fold_training_sets(rows, fold, k, which):
+    """fold_training_sets returns, as lists of row indices, each fold's training pages — the other
+    folds' in-class rows — and then the final model's, every in-class row. With `which` "small"
+    each is `draw_small`'s draw from those rows, and the draws are recorded in
+    data/selection.json under "small-pool"."""
+    inclass = [i for i, r in enumerate(rows) if r["label"] != REJECT_LABEL]
+    sets = [[i for i in inclass if fold[i] != f] for f in range(k)] + [inclass]
+    if which == "small":
+        drawn = [draw_small([rows[i] for i in s]) for s in sets]
+        record_selection(
+            "small-pool",
+            {"seed": SEED, "per_class": SMALL_PER_CLASS, "folds": drawn[:-1], "ids": drawn[-1]},
+        )
+        index = {r["id"]: i for i, r in enumerate(rows)}
+        sets = [sorted(index[page_id] for page_id in ids) for ids in drawn]
+    return sets
+
+
+def fold_lines(rows, fold, k, sets):
+    """fold_lines returns the results/train/<name>-pool.txt lines describing the folds: per fold,
+    its in-class and reject pages and its training pages."""
+    lines = []
+    for f in range(k):
+        held = [r for i, r in enumerate(rows) if fold[i] == f]
+        reject = sum(r["label"] == REJECT_LABEL for r in held)
+        lines.append(
+            f"fold {f}    held out {len(held) - reject} in-class and {reject} reject pages;"
+            f" trained on {len(sets[f])}"
+        )
+    lines.append(f"final     trained on {len(sets[k])} in-class pages")
+    return lines
+
+
+def write_pool_dump(name, rows, pred, score):
+    """write_pool_dump writes the out-of-fold `pred` (indices in CLASSES) and `score` of every pool
+    row to results/confidence/dumps/<name>-pool.jsonl, score.py's --dump format."""
+    names = list(CLASSES)
+    path = os.path.join("results", "confidence", "dumps", f"{name}-pool.jsonl")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        for r, p, s in zip(rows, pred, score):
+            row = {"id": r["id"], "label": r["label"], "predicted": names[p], "score": float(s)}
+            f.write(json.dumps(row) + "\n")
+    print(f"wrote {len(rows)} rows to {path}", file=sys.stderr)
+
+
+def out_of_fold(make, x, gold, fold, sets):
+    """out_of_fold returns the prediction, an index in CLASSES, and top probability of every row of
+    `x`, each from `make()` fitted on `sets[f]`, the training rows of the row's fold f. `x` and
+    `gold` are numpy arrays over the pool rows, a reject row's gold -1."""
+    import numpy as np
+
+    pred, score = np.zeros(len(gold), dtype=int), np.zeros(len(gold))
+    for f in range(len(sets) - 1):
+        clf = make().fit(x[sets[f]], gold[sets[f]])
+        held = np.flatnonzero(np.array(fold) == f)
+        proba = clf.predict_proba(x[held])
+        pred[held], score[held] = clf.classes_[proba.argmax(axis=1)], proba.max(axis=1)
+    return pred, score
+
+
+def train_folds(kind, name, which, k, seed, batch_size):
+    """train_folds is `--folds`: the out-of-fold pool dump, then the final model, fitted on
+    `fold_training_sets`' last set and saved to models/<name>/. A frozen encoder embeds every pool
+    page once, before the folds. Writes results/train/<name>-pool.txt."""
+    import joblib
+    import numpy as np
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import roc_auc_score
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import StandardScaler
+
+    rows = pool_rows()
+    fold = pool_folds(rows, k, seed)
+    sets = fold_training_sets(rows, fold, k, which)
+    names = list(CLASSES)
+    gold = np.array([names.index(r["label"]) if r["label"] in names else -1 for r in rows])
+    ids = [r["id"] for r in rows]
+    texts = [page_text(page_id) for page_id in ids] if kind != "dit" else None
+
+    start = time.perf_counter()
+    if kind == "tfidf":
+        from sklearn.feature_extraction.text import TfidfVectorizer
+
+        x = np.array(texts, dtype=object)
+        grid, file = [10], "tfidf.joblib"
+        make = lambda c: make_pipeline(
+            TfidfVectorizer(ngram_range=(1, 2), sublinear_tf=True),
+            LogisticRegression(C=c, max_iter=1000, class_weight="balanced"),
+        )
+        scope = "OCR read excluded"
+    elif kind == "ultrabert-embed":
+        tok, model, device = load_embedder()
+        x = np.concatenate([
+            embed(texts[i : i + batch_size], tok, model, device)
+            for i in range(0, len(texts), batch_size)
+        ])
+        grid, file = C_GRID, "embed.joblib"
+        make = lambda c: LogisticRegression(C=c, max_iter=1000, class_weight="balanced")
+        scope = "base model load and pool embedding included; OCR read excluded"
+    else:
+        processor, model, device = load_dit()
+        x = np.concatenate([
+            embed_images([page_image(p) for p in ids[i : i + batch_size]], processor, model, device)
+            for i in range(0, len(ids), batch_size)
+        ])
+        grid, file = C_GRID, "dit.joblib"
+        make = lambda c: make_pipeline(
+            StandardScaler(), LogisticRegression(C=c, max_iter=1000, class_weight="balanced")
+        )
+        scope = "base model load, page image reads and pool embedding included"
+    encoded = time.perf_counter() - start
+
+    best, lines = None, []
+    for c in grid:
+        pred, score = out_of_fold(lambda: make(c), x, gold, fold, sets)
+        auroc = roc_auc_score(pred == gold, score)
+        lines.append(f"C {c:<5} out-of-fold AUROC {auroc:.4f}, all {len(rows)} pool pages")
+        if best is None or auroc > best[1]:
+            best = (c, auroc, pred, score)
+    folded = time.perf_counter() - start - encoded
+    if len(grid) > 1:
+        lines.append(f"chosen    C {best[0]} (highest out-of-fold AUROC; a tie goes to the smaller C)")
+    else:
+        lines.append(f"fixed     C {best[0]}")
+    write_pool_dump(name, rows, best[2], best[3])
+
+    final = time.perf_counter()
+    clf = make(best[0]).fit(x[sets[k]], gold[sets[k]])
+    out = os.path.join("models", name)
+    os.makedirs(out, exist_ok=True)
+    joblib.dump(clf, os.path.join(out, file))
+    finaled = time.perf_counter() - final
+
+    text = "\n".join([
+        f"model     models/{name}",
+        f"train     {which}, {k} folds, fold seed {seed}; pool {len(rows)} pages, train and"
+        f" validation, {int((gold < 0).sum())} reject",
+        *fold_lines(rows, fold, k, sets),
+        f"seconds   {encoded:.2f} encoding the pool ({scope})",
+        f"seconds   {folded:.2f} fitting and scoring {k} folds for each of {len(grid)} C",
+        f"seconds   {finaled:.2f} fitting the final model",
+        *lines,
+    ]) + "\n"
+    sys.stderr.write(text)
+    path = os.path.join("results", "train", name + "-pool.txt")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        f.write(text)
 
 
 def choose_c(make, x, labels, validation_x, validation_gold):
@@ -335,12 +537,19 @@ def main():
     ap.add_argument("--embed", action="store_true", help=f"frozen {EMBED_BASE} + logistic regression")
     ap.add_argument("--dit", action="store_true", help=f"frozen {DIT_BASE} + logistic regression")
     ap.add_argument("--batch-size", type=int, default=16)
+    ap.add_argument("--folds", type=int, metavar="K", help="train on the pool, K folds out of fold")
+    ap.add_argument("--fold-seed", type=int, default=0, metavar="S", help="seed of --folds")
     args = ap.parse_args()
     if args.tfidf + args.embed + args.dit != 1:
         ap.error("give one of --tfidf, --embed and --dit")
+    if args.folds is not None and (args.folds < 2 or args.labels != "hand"):
+        ap.error("--folds needs K of at least 2 and hand labels")
 
     kind = "tfidf" if args.tfidf else "ultrabert-embed" if args.embed else "dit"
     name = f"{kind}-{args.train}" + ("-llm" if args.labels == "llm" else "")
+    if args.folds is not None:
+        train_folds(kind, name, args.train, args.folds, args.fold_seed, args.batch_size)
+        return
     out = os.path.join("models", name)
     ids, labels, agree = training_pages(args.train, args.labels)
     os.makedirs(out, exist_ok=True)
