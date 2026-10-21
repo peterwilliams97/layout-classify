@@ -194,20 +194,39 @@ prompt grows from about 400 words of question to about 7,800, and each page take
 | `fewshot`     | 12      | 1500        | 300           | 0.7615                            | 0.4160         | 0.0278 (1 of 36)  | 0.0000         | 0.0000 (0 of 36)  | 51.8                     |
 | `fewshot`     | 12      | 150         | 50            | 0.9144                            | 0.6198         | 0.0833 (3 of 36)  | 0.4380         | 0.0000 (0 of 36)  | 11.2                     |
 | `definitions` | 13      | 150         | —             | 0.9235                            | 0.7879         | 0.1111 (4 of 36)  | 0.5482         | 0.0000 (0 of 36)  | 1.74                     |
+| `definitions` | 12      | 150         | —             | 0.9261 (of 230)                   | 0.6053         | 0.0278 (1 of 36)  | 0.0000         | 0.0000 (0 of 36)  | 1.75                     |
+| `definitions` | 6       | 150         | —             | 0.9391 (of 230)                   | 0.4699         | 0.0000 (0 of 36)  | 0.0000         | 0.0000 (0 of 36)  | 1.24                     |
 
 d3-flash, `score.py --d3 --state-words N --example-words N`: the page's OCR text is cut to its
 first N state words, and each `fewshot` example to its first N example words. Options are the 12
 types, or with `--reject-option` 13, `none` the last; a page labelled `none` is never accepted.
 Accuracy and seconds from `results/test/<name>.txt`; coverage and reject leak from the `tau_cp`
 lines, "all pages", of `results/confidence/<name>.txt`. Names are `d3-flash-definitions`, `d3-flash-definitions-s500`,
-`d3-flash-definitions-s150`, `d3-flash-fewshot`, `d3-flash-fewshot-s150-e50` and
-`d3-flash-definitions-s150-reject`.
+`d3-flash-definitions-s150`, `d3-flash-fewshot`, `d3-flash-fewshot-s150-e50`,
+`d3-flash-definitions-s150-reject`, `d3-flash-definitions-s150-on6` and
+`d3-flash-definitions-s150-c6`. The last two rows are on the 6-class subset of test, the 266 pages
+labelled handwritten, resume, letter, form, news_article, specification or `none` (230 in-class, 36
+reject), with cut-offs from the 198 validation pages so labelled; the 12-option row is
+`d3-flash-definitions-s150`'s answers on those pages, read from the cache, and the 6-option row
+asks with those 6 types alone (`score.py --pages six`, `--classes six`).
 
 Cutting the page costs little: from 1,500 words to 150, in-class accuracy falls from 0.9511 to
 0.9419, and the median page goes from 2.36 s to 1.75 s. The examples are what hurt
 `fewshot`: cut to 50 words, its accuracy rises from 0.7615 to 0.9144 and its median page falls from 51.8 s
 to 11.2 s, but it is still below `definitions` at the same 150-word state, and it lets 3 reject pages
 through at 5%. Every difference in coverage here is a few pages on one validation draw of 273.
+
+**How much depends on the number of choices?** Little of the accuracy, and the coverage moves the
+other way. On the 230 in-class test pages of the 6-class subset, 6 options are right on 216 and 12
+on 213, 0.9391 against 0.9261; 11 of the 6-option run's 14 errors are handwritten pages, labelled
+letter or form (`results/test/d3-flash-definitions-s150-c6.txt`,
+`results/test/d3-flash-definitions-s150-on6.txt`). Fewer options raise the top probability, a mean
+of 0.9513 on right answers against 0.9286, so the 5% cut-off rises from 0.908260 to 0.993136 and
+coverage falls from 0.6053 to 0.4699, with no reject page through against 1 of 36. At 2% neither
+certifies a page: no cut-off on the 198 validation pages has a Clopper-Pearson bound that low, where
+all 273 gave 0.5152 with 12 options (`results/confidence/d3-flash-definitions-s150-c6.txt`,
+`results/confidence/d3-flash-definitions-s150-on6.txt`). The median page takes 1.24 s with 6
+options against 1.75 s, the shorter question.
 
 **Does a 13th option, `none`, catch reject pages?** Mostly. At the 150-word state d3-flash labels 30
 of the 36 reject test pages `none` (0.8333), against gemma4:e4b's 15 of 36 with `none` allowed.
@@ -316,7 +335,11 @@ image models fall further behind the text ones: 0.5229 and 0.4220 accuracy, no c
   probability, and its seconds are the `system_one` call. It needs transformers 5.17.0, so it runs
   in `.venv-d3`, built from `requirements-d3.txt`, with `HF_HOME` at `data/hf`, a symlink to
   synth-classify's `data/hf`, which holds the model's 16 GB. Names are `d3-flash-definitions` and
-  `d3-flash-fewshot`, with `-s<N>`, `-e<N>` and `-reject` added as above.
+  `d3-flash-fewshot`, with `-s<N>`, `-e<N>` and `-reject` added as above. `--classes six` asks with
+  the 6 types with the most test pages as the options — handwritten, resume, letter, form,
+  news_article and specification, `CLASS_SETS` in `d3.py` — scores only pages labelled one of them
+  or `none`, and adds `-c6`; `--pages six` scores the same pages with all 12 options and adds
+  `-on6`. The option set is part of the cache key.
 - `confidence.py` — adapted from synth-classify's. For α 0.02, 0.05 and 0.10 it picks two cut-offs
   on every validation page: `tau`, the lowest score whose accepted validation error is at most α,
   and `tau_cp`, the same with that error's one-sided 90% Clopper-Pearson upper bound. A reject page
@@ -365,7 +388,7 @@ ln -s ../../synth-classify/data/hf data/hf
 uv venv --python 3.13 .venv-d3
 uv pip install --python .venv-d3/bin/python -r requirements-d3.txt
 export HF_HOME=$PWD/data/hf HF_HUB_OFFLINE=1
-for split in validation test; do      # also --prompt fewshot; --state-words 150 --reject-option
+for split in validation test; do      # also --prompt fewshot; --state-words 150 --reject-option; --classes six; --pages six
   .venv-d3/bin/python score.py --d3 vllm-sr/d3-flash --prompt definitions --split $split --dump
 done
 .venv-d3/bin/python confidence.py --model d3-flash-definitions
