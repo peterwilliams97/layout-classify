@@ -28,9 +28,16 @@ labels REJECT_LABEL is right on a reject page and wrong on an in-class page, as 
 `gemma4-image-reject`, and its report adds the same two reject shares. `--classes six` asks with
 d3.py's CLASS_SETS["six"] as the options instead of all 11, scores only the pages labelled one of
 them or REJECT_LABEL, and adds -c6 to the name; `--pages six` scores the same pages with all 11
-options and adds -on6, so the two reports are on identical pages."""
+options and adds -on6, so the two reports are on identical pages.
+
+`--model NAME --split test --folds` scores the fold models of train.py's or finetune.py's
+`--folds`, models/<name>/fold<f>/, instead of models/<name>/: each fold's report goes to
+results/test/<name>-fold<f>.txt and its dump to results/confidence/dumps/<name>-fold<f>-test.jsonl,
+always written, and results/test/<name>-folds.txt gives the mean accuracy over the folds with its
+range and the seconds per page over every fold's pages together."""
 
 import argparse
+import glob
 import json
 import os
 import statistics
@@ -163,7 +170,10 @@ def main():
     ap.add_argument("--pages", choices=["six"], help="with --d3; only pages labelled a CLASS_SETS['six'] type or none")
     ap.add_argument("--split", choices=SPLITS, required=True)
     ap.add_argument("--dump", action="store_true", help="write results/confidence/dumps/")
+    ap.add_argument("--folds", action="store_true", help="with --model and --split test; models/<name>/fold<f>/")
     args = ap.parse_args()
+    if args.folds and not (args.model and args.split == "test"):
+        ap.error("--folds goes with --model and --split test")
     if args.llm and args.dump:
         sys.exit("--llm gives no score, so there is nothing to --dump")
     if args.prompt and not args.d3:
@@ -205,6 +215,9 @@ def main():
         print(f"{left_out} data/fewshot.txt pages left out of {args.split}", file=sys.stderr)
     gold = [names.index(r["label"]) for r in rows]
 
+    if args.folds:
+        score_folds(args.model, rows, gold, names)
+        return
     if args.llm:
         preds, seconds = [], []
         for i, r in enumerate(rows):
@@ -261,13 +274,65 @@ def main():
         f.write(text)
     print(f"wrote {out}", file=sys.stderr)
     if args.dump:
-        dump = os.path.join("results", "confidence", "dumps", f"{name}-{args.split}.jsonl")
-        os.makedirs(os.path.dirname(dump), exist_ok=True)
-        with open(dump, "w") as f:
-            for r, pred, score in zip(rows, preds, scores):
-                row = {"id": r["id"], "label": r["label"], "predicted": names[pred], "score": score}
-                f.write(json.dumps(row) + "\n")
-        print(f"wrote {len(rows)} rows to {dump}", file=sys.stderr)
+        write_dump(f"{name}-{args.split}", rows, preds, scores, names)
+
+
+def write_dump(stem, rows, preds, scores, names):
+    """write_dump writes each of `rows`' prediction, an index in `names`, and score to
+    results/confidence/dumps/<stem>.jsonl, the format confidence.py reads."""
+    dump = os.path.join("results", "confidence", "dumps", f"{stem}.jsonl")
+    os.makedirs(os.path.dirname(dump), exist_ok=True)
+    with open(dump, "w") as f:
+        for r, pred, score in zip(rows, preds, scores):
+            row = {"id": r["id"], "label": r["label"], "predicted": names[pred], "score": score}
+            f.write(json.dumps(row) + "\n")
+    print(f"wrote {len(rows)} rows to {dump}", file=sys.stderr)
+
+
+def score_folds(name, rows, gold, names):
+    """score_folds is `--folds`: every models/<name>/fold<f>/ scored on the test `rows`, a report
+    and a dump per fold, then results/test/<name>-folds.txt."""
+    folds = sorted(glob.glob(os.path.join("models", name, "fold*")), key=lambda d: int(d.rsplit("fold", 1)[1]))
+    if not folds:
+        sys.exit(f"models/{name}: no fold<f>/ directories; train with --folds")
+    reject = names.index(REJECT_LABEL)
+    accuracy, inclass, seconds = [], [], []
+    for model in folds:
+        fold = os.path.basename(model)
+        preds, scores, s = predict(model, [r["id"] for r in rows])
+        text = report(model, "test", gold, preds, s, names)
+        sys.stdout.write(text)
+        out = os.path.join("results", "test", f"{name}-{fold}.txt")
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        with open(out, "w") as f:
+            f.write(text)
+        print(f"wrote {out}", file=sys.stderr)
+        write_dump(f"{name}-{fold}-test", rows, preds, scores, names)
+        kept = [(g, p) for g, p in zip(gold, preds) if g != reject]
+        accuracy.append(sum(g == p for g, p in zip(gold, preds)) / len(gold))
+        inclass.append(sum(g == p for g, p in kept) / len(kept))
+        seconds += s
+
+    n_in = sum(g != reject for g in gold)
+    spread = lambda xs: f"{statistics.mean(xs):.4f} mean, {min(xs):.4f}–{max(xs):.4f}"
+    lines = [
+        f"model     models/{name}/fold0 to fold{len(folds) - 1}, {len(folds)} fold models",
+        f"test pages {len(gold)} ({len(gold) - n_in} reject pages, always wrong)",
+        *(f"{os.path.basename(m):<9} accuracy {a:.4f}, {i:.4f} without reject pages"
+          f" (results/test/{name}-{os.path.basename(m)}.txt)"
+          for m, a, i in zip(folds, accuracy, inclass)),
+        f"accuracy  {spread(accuracy)}",
+        f"accuracy  {spread(inclass)} without reject pages",
+        f"seconds   {statistics.median(seconds):.3g} median, {statistics.mean(seconds):.3g} mean"
+        f" per page over all {len(seconds)} page scorings of the {len(folds)} folds, one page per"
+        " call",
+    ]
+    text = "\n".join(lines) + "\n"
+    sys.stdout.write(text)
+    out = os.path.join("results", "test", f"{name}-folds.txt")
+    with open(out, "w") as f:
+        f.write(text)
+    print(f"wrote {out}", file=sys.stderr)
 
 
 if __name__ == "__main__":

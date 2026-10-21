@@ -40,7 +40,11 @@ With --calibration pool, the cut-offs and the calibration are fitted on <model>-
 of the validation dump: every train and validation page, from score.py --split pool for a model
 with no training, or the out-of-fold scores of train.py's or finetune.py's --folds for a trained
 one. Test is read as without it. The report goes to results/confidence/<model>-pool.txt, and the
-word "validation" in its first part reads "pool".
+word "validation" in its first part reads "pool". When score.py --folds has written fold dumps,
+<model>-fold<f>-test.jsonl, the pool cut-offs are applied to each of them instead of one
+<model>-test.jsonl: the report opens with, for each alpha and cut-off, the mean over the fold models
+of coverage, error and reject_leak, in-class and over all test pages, with their range, and then
+gives each fold's report in full.
 
 With --dev-size N, the cut-offs and the calibration are fitted on N validation pages drawn by
 `draw`, N / 12 from each class of CLASSES and from the reject pages, so the cut-off's dependence on
@@ -51,6 +55,7 @@ Nothing is fitted or chosen on test. Adapted from synth-classify's confidence.py
 """
 
 import argparse
+import glob
 import json
 import os
 import random
@@ -136,6 +141,80 @@ def routed(score, correct, tau):
     return kept.mean(), (1 - correct[kept]).mean() if kept.any() else None
 
 
+def at_cut_off(score, correct, label, tau):
+    """at_cut_off returns the test figures of cut-off `tau` over dump arrays from `read_dump`:
+    in-class coverage and error, reject_leak, the REJECT_SHARE stream's coverage and error, and
+    coverage and error over every row. An error is None when no row is accepted."""
+    reject = label == len(CLASSES)
+    cov, err = routed(score[~reject], correct[~reject], tau)
+    leak = (score[reject] >= tau).mean()
+    cov_10 = (1 - REJECT_SHARE) * cov + REJECT_SHARE * leak
+    err_10 = None
+    if cov_10 > 0:
+        err_10 = ((1 - REJECT_SHARE) * cov * (err or 0) + REJECT_SHARE * leak) / cov_10
+    all_cov, all_err = routed(score, correct, tau)
+    return cov, err, leak, cov_10, err_10, all_cov, all_err
+
+
+def cut_offs(score, correct):
+    """cut_offs returns `tau` and `tau_cp` for each alpha in ALPHAS, fitted on `score` and
+    `correct`, keyed as the report prints them."""
+    return {
+        alpha: {
+            "tau   ": threshold(score, correct, alpha, bound=False),
+            "tau_cp": threshold(score, correct, alpha, bound=True),
+        }
+        for alpha in ALPHAS
+    }
+
+
+def folds_report(model, pool_path, test_paths):
+    """folds_report returns the --calibration pool report for a model scored on test by score.py
+    --folds: the pool cut-offs applied to each dump of `test_paths`, one per fold model, summarised
+    as the mean and range over the folds, then `report` for each fold. An error's mean is over the
+    folds that accept a page, and the line says how many do."""
+    names = list(CLASSES) + [REJECT_LABEL]
+    pool_s, pool_c, _ = read_dump(pool_path, names)
+    cuts = cut_offs(pool_s, pool_c)
+    folds = [read_dump(path, names) for path in test_paths]
+    n = len(folds)
+
+    def spread(xs, of=n):
+        xs = [x for x in xs if x is not None]
+        if not xs:
+            return f"{'-':<6} (no fold accepts a page)"
+        text = f"{np.mean(xs):.4f} ({min(xs):.4f}–{max(xs):.4f})"
+        return text if len(xs) == of else text + f", {len(xs)} of {of} folds accept a page"
+
+    lines = [
+        f"model     {model}, {n} fold models",
+        f"pool      {pool_path}",
+        *(f"test      {path}" for path in test_paths),
+        f"cut-offs from the pool pages, applied to each fold model's test dump; mean over the {n}"
+        " fold models (min–max)",
+    ]
+    for alpha, taus in cuts.items():
+        lines.append(f"  alpha {alpha:.2f}")
+        for label, t in taus.items():
+            figures = [at_cut_off(s, c, y, t) for s, c, y in folds]
+            n_rej = [int((y == len(CLASSES)).sum()) for _, _, y in folds]
+            leak_n = [int((s[y == len(CLASSES)] >= t).sum()) for s, _, y in folds]
+            lines += [
+                f"    {label} {fmt(None if np.isinf(t) else t, '.6f')}",
+                f"      in-class    coverage {spread([f[0] for f in figures])}",
+                f"      in-class    error    {spread([f[1] for f in figures])}",
+                f"      reject_leak          {spread([f[2] for f in figures])},"
+                f" {'/'.join(map(str, leak_n))} of {n_rej[0]} by fold",
+                f"      all pages   coverage {spread([f[5] for f in figures])}",
+                f"      all pages   error    {spread([f[6] for f in figures])}",
+            ]
+    sections = [
+        report(f"{model}, {os.path.basename(path)}", pool_path, path, fit="pool")
+        for path in test_paths
+    ]
+    return "\n".join(lines) + "\n\n" + "\n".join(sections)
+
+
 def fmt(x, spec=".4f"):
     return "-" if x is None else format(x, spec)
 
@@ -161,13 +240,7 @@ def report(model, validation_path, test_path, dev_size=None, dev_seed=0, fit="va
     scored = np.isfinite(validation_s)
     iso = IsotonicRegression(increasing=True, y_min=0, y_max=1, out_of_bounds="clip")
     iso.fit(validation_s[scored], validation_c[scored])
-    cuts = {
-        alpha: {
-            "tau   ": threshold(validation_s, validation_c, alpha, bound=False),
-            "tau_cp": threshold(validation_s, validation_c, alpha, bound=True),
-        }
-        for alpha in ALPHAS
-    }
+    cuts = cut_offs(validation_s, validation_c)
     validation_reject = validation_y == reject
     all_s, all_c, all_y = read_dump(test_path, names)
     held = not (scored.all() and np.isfinite(all_s).all())
@@ -236,13 +309,7 @@ def report(model, validation_path, test_path, dev_size=None, dev_seed=0, fit="va
     for alpha, taus in cuts.items():
         lines.append(f"  alpha {alpha:.2f}")
         for label, t in taus.items():
-            cov, err = routed(s, c, t)
-            leak = (all_s[test_reject] >= t).mean()
-            cov_10 = (1 - REJECT_SHARE) * cov + REJECT_SHARE * leak
-            err_10 = None
-            if cov_10 > 0:
-                err_10 = ((1 - REJECT_SHARE) * cov * (err or 0) + REJECT_SHARE * leak) / cov_10
-            all_cov, all_err = routed(all_s, all_c, t)
+            cov, err, leak, cov_10, err_10, all_cov, all_err = at_cut_off(all_s, all_c, all_y, t)
             lines += [
                 f"    {label} {fmt(None if np.isinf(t) else t, '.6f')}",
                 f"      in-class             coverage {cov:.4f} error {fmt(err)}",
@@ -280,14 +347,21 @@ def main():
     if args.dev_size is not None and (args.dev_size <= 0 or args.dev_size % classes):
         ap.error(f"--dev-size must be a positive multiple of {classes}, CLASSES and REJECT_LABEL")
     path = lambda split: os.path.join(DUMPS, f"{args.model}-{split}.jsonl")
-    text = report(
-        args.model,
-        path(args.calibration),
-        path("test"),
-        args.dev_size,
-        args.dev_seed,
-        args.calibration,
+    folds = sorted(
+        glob.glob(path("fold*-test")),
+        key=lambda p: int(p.rsplit("-fold", 1)[1].split("-")[0]),
     )
+    if args.calibration == "pool" and folds:
+        text = folds_report(args.model, path("pool"), folds)
+    else:
+        text = report(
+            args.model,
+            path(args.calibration),
+            path("test"),
+            args.dev_size,
+            args.dev_seed,
+            args.calibration,
+        )
     sys.stdout.write(text)
     name = args.model
     if args.calibration == "pool":

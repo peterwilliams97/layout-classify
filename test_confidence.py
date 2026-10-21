@@ -81,6 +81,34 @@ def test_calibration_pool_fits_on_the_pool_dump(tmp_path, monkeypatch):
     assert "      all pages, 3 of 13 reject  coverage 0.6923 error 0.0000\n" in alpha_10
 
 
+def test_calibration_pool_averages_the_fold_dumps(tmp_path, monkeypatch):
+    # Two fold models' test dumps: fold0 is the hand-made dump, fold1 the same rows with the reject
+    # page at 0.91 predicted REJECT_LABEL. The pool cut-offs are the hand-made dump's.
+    dumps = tmp_path / "results" / "confidence" / "dumps"
+    dumps.mkdir(parents=True)
+    write_dump(dumps / "hand-pool.jsonl")
+    write_dump(dumps / "hand-fold0-test.jsonl")
+    fold1 = ROWS[:5] + [(0.91, REJECT_LABEL, REJECT_LABEL)] + ROWS[6:]
+    write_dump(dumps / "hand-fold1-test.jsonl", fold1)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "argv", ["confidence.py", "--model", "hand", "--calibration", "pool"])
+    main()
+    text = (tmp_path / "results" / "confidence" / "hand-pool.txt").read_text()
+    assert text.startswith("model     hand, 2 fold models\n")
+    summary = text.split("\n\n")[0].split("  alpha 0.10\n")[1]
+    # At tau 0.70, fold0 accepts 10 of 13 pages with 1 wrong, the leaked reject page; fold1 accepts
+    # 9, all right. tau_cp accepts nothing in either.
+    assert "    tau    0.700000\n" in summary
+    assert "      in-class    coverage 0.9000 (0.9000–0.9000)\n" in summary
+    assert "      reject_leak          0.1667 (0.0000–0.3333), 1/0 of 3 by fold\n" in summary
+    assert "      all pages   coverage 0.7308 (0.6923–0.7692)\n" in summary
+    assert "      all pages   error    0.0500 (0.0000–0.1000)\n" in summary
+    assert summary.endswith("      all pages   error    -      (no fold accepts a page)")
+    # Each fold's full report follows the summary.
+    assert "test: results/confidence/dumps/hand-fold0-test.jsonl (13 pages, 3 reject)" in text
+    assert "test: results/confidence/dumps/hand-fold1-test.jsonl (13 pages, 3 reject)" in text
+
+
 def test_draw_takes_one_page_per_class_present(tmp_path):
     _, _, label = read_dump(write_dump(tmp_path / "dump.jsonl"), NAMES)
     picked = draw(label, len(NAMES), 0, len(NAMES))

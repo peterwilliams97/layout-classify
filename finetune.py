@@ -17,13 +17,16 @@ confidence.py, as for train.py's C.
 training sets of `fold_training_sets`, the held-out fold's in-class and reject pages scored after
 every epoch. The epoch is the one whose pooled out-of-fold accuracy over every pool page, a reject
 page wrong, is highest, a tie keeping the earlier, and its scores go to
-results/confidence/dumps/<name>-pool.jsonl. The final model is trained on every in-class pool page
-with the same settings and saved at that epoch. results/train/<name>-pool.txt records the folds,
-each epoch's pooled accuracy and the minutes."""
+results/confidence/dumps/<name>-pool.jsonl. Each fold's model is saved after every epoch to
+models/<name>/fold<f>/epoch<e>/, and once the epoch is chosen that epoch's checkpoint becomes
+models/<name>/fold<f>/ and the others are deleted; `score.py --folds` scores those K models on
+test. No model is trained on the whole pool. results/train/<name>-pool.txt records the folds, each
+epoch's pooled accuracy and the minutes."""
 
 import argparse
 import os
 import random
+import shutil
 import sys
 import time
 
@@ -109,12 +112,11 @@ def load_model(path, revision=None):
     return model.to(device), device
 
 
-def finetune(ids, labels, validation_ids, validation_gold, out, stop=None):
+def finetune(ids, labels, validation_ids, validation_gold, out, every_epoch=False):
     """finetune trains for `EPOCHS` and saves the epoch with the best validation accuracy to `out`.
     Returns the best epoch, from 1, each epoch's validation accuracy, and each epoch's
-    (predictions, top probabilities) on the validation pages. With `out` None nothing is saved;
-    with `stop`, training ends after epoch `stop`, which is saved, and `validation_ids` may be
-    empty."""
+    (predictions, top probabilities) on the validation pages. With `every_epoch`, every epoch is
+    saved instead, to `out`/epoch<e>/."""
     import torch
     from transformers import get_linear_schedule_with_warmup
 
@@ -124,7 +126,7 @@ def finetune(ids, labels, validation_ids, validation_gold, out, stop=None):
     # Encoded once, every page padded to MAX_TOKENS so a batch is rows of one tensor. Padding is
     # masked out of attention, so it changes the time and not the result.
     pages = encode(ids, processor, "max_length")
-    validation = encode(validation_ids, processor, "max_length") if validation_ids else None
+    validation = encode(validation_ids, processor, "max_length")
 
     counts = [labels.count(c) for c in range(len(CLASSES))]
     weight = torch.tensor([len(labels) / (len(CLASSES) * n) for n in counts], device=device)
@@ -152,15 +154,6 @@ def finetune(ids, labels, validation_ids, validation_gold, out, stop=None):
             opt.zero_grad()
             total += loss.item() * len(idx)
 
-        if stop is not None and epoch == stop:
-            model.save_pretrained(out)
-            processor.save_pretrained(out)
-            print(f"epoch {epoch}/{EPOCHS} loss {total / len(order):.4f}", file=sys.stderr)
-            return stop, accuracies, scored
-        if validation is None:
-            print(f"epoch {epoch}/{EPOCHS} loss {total / len(order):.4f}", file=sys.stderr)
-            continue
-
         model.eval()
         preds, scores = [], []
         with torch.no_grad():
@@ -177,7 +170,10 @@ def finetune(ids, labels, validation_ids, validation_gold, out, stop=None):
             f" validation accuracy {accuracy:.4f}",
             file=sys.stderr,
         )
-        if out is not None and accuracy > max(accuracies[:-1], default=-1):
+        if every_epoch:
+            model.save_pretrained(os.path.join(out, f"epoch{epoch}"))
+            processor.save_pretrained(os.path.join(out, f"epoch{epoch}"))
+        elif accuracy > max(accuracies[:-1], default=-1):
             best = epoch
             model.save_pretrained(out)
             processor.save_pretrained(out)
@@ -186,9 +182,9 @@ def finetune(ids, labels, validation_ids, validation_gold, out, stop=None):
 
 def finetune_folds(name, which, k, seed):
     """finetune_folds is `--folds`: `finetune` on each fold's training pages, the held-out fold
-    scored after every epoch; the pool dump from the epoch with the best pooled out-of-fold
-    accuracy; and the final model, trained on every in-class pool page and saved at that epoch to
-    models/<name>/. Writes results/train/<name>-pool.txt."""
+    scored and the model saved after every epoch; the pool dump from the epoch with the best pooled
+    out-of-fold accuracy; and each fold's checkpoint at that epoch kept as models/<name>/fold<f>/.
+    Writes results/train/<name>-pool.txt."""
     rows = pool_rows()
     fold = pool_folds(rows, k, seed)
     sets = fold_training_sets(rows, fold, k, which)
@@ -208,7 +204,8 @@ def finetune_folds(name, which, k, seed):
             [gold[i] for i in sets[f]],
             [ids[i] for i in held],
             [gold[i] for i in held],
-            None,
+            os.path.join("models", name, f"fold{f}"),
+            every_epoch=True,
         )
         minutes.append((time.perf_counter() - start) / 60)
         for e, (preds, scores) in enumerate(scored):
@@ -217,12 +214,16 @@ def finetune_folds(name, which, k, seed):
     accuracies = [sum(p == g for p, g in zip(pred[e], gold)) / len(gold) for e in range(EPOCHS)]
     best = accuracies.index(max(accuracies)) + 1
     write_pool_dump(name, rows, pred[best - 1], score[best - 1])
-
-    out = os.path.join("models", name)
-    os.makedirs(out, exist_ok=True)
-    start = time.perf_counter()
-    finetune([ids[i] for i in sets[k]], [gold[i] for i in sets[k]], [], [], out, stop=best)
-    final = (time.perf_counter() - start) / 60
+    for f in range(k):
+        out = os.path.join("models", name, f"fold{f}")
+        for e in range(1, EPOCHS + 1):
+            checkpoint = os.path.join(out, f"epoch{e}")
+            if e != best:
+                shutil.rmtree(checkpoint)
+                continue
+            for entry in os.listdir(checkpoint):
+                os.replace(os.path.join(checkpoint, entry), os.path.join(out, entry))
+            os.rmdir(checkpoint)
 
     reject = sum(g < 0 for g in gold)
     text = "\n".join([
@@ -231,10 +232,8 @@ def finetune_folds(name, which, k, seed):
         f" validation, {reject} reject",
         *fold_lines(rows, fold, k, sets),
         f"epochs    {EPOCHS}",
-        *(f"minutes   {m:.1f} fold {f} (base model load to the last epoch's scoring; encoding"
-          " included)" for f, m in enumerate(minutes)),
-        f"minutes   {final:.1f} final model, to epoch {best} (base model load to save; encoding"
-        " included)",
+        *(f"minutes   {m:.1f} fold {f} (base model load to the last epoch's save; encoding and"
+          " every epoch's save included)" for f, m in enumerate(minutes)),
         f"best      epoch {best} (highest pooled out-of-fold accuracy, all {len(rows)} pool pages,"
         " reject pages wrong; a tie keeps the earlier epoch)",
         *(f"epoch {e:<3} out-of-fold accuracy {a:.4f}" for e, a in enumerate(accuracies, 1)),

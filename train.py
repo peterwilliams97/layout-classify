@@ -20,14 +20,14 @@ crowded out by one with many.
 confidence.py's `--calibration pool` sets its cut-offs on. `pool_folds` splits the pool's in-class
 pages K ways within each class and its reject pages K ways apart from them. For each fold the
 classifier is fitted on the other folds' in-class pages and scores the fold's in-class and reject
-pages, and the pooled out-of-fold scores go to results/confidence/dumps/<name>-pool.jsonl. Then it is
-fitted once on every in-class pool page and saved as models/<name>/, the model score.py scores on
-test. No reject page is trained on, in a fold or in the final model. With `--train small`, the
-SMALL_PER_CLASS draw is made from each fold's training pages, and for the final model from all the
-pool's in-class pages, all recorded in data/selection.json under "small-pool". For `--embed` and
-`--dit`, C is the C_GRID value whose pooled out-of-fold scores rank right over wrong best, by AUROC,
-every pool page counted and a reject page wrong. results/train/<name>-pool.txt records the folds,
-the C grid and the seconds."""
+pages, and the pooled out-of-fold scores go to results/confidence/dumps/<name>-pool.jsonl. Each
+fold's model is saved to models/<name>/fold<f>/, and those K models are the ones `score.py --folds`
+scores on test, so the cut-off is set on the scores of the models it is applied to. No model is
+fitted on the whole pool, and no reject page is trained on. With `--train small`, the
+SMALL_PER_CLASS draw is made from each fold's training pages, recorded in data/selection.json under
+"small-pool". For `--embed` and `--dit`, C is the C_GRID value whose pooled out-of-fold scores rank
+right over wrong best, by AUROC, every pool page counted and a reject page wrong.
+results/train/<name>-pool.txt records the folds, the C grid and the seconds."""
 
 import argparse
 import json
@@ -214,18 +214,14 @@ def pool_folds(rows, k, seed):
 
 
 def fold_training_sets(rows, fold, k, which):
-    """fold_training_sets returns, as lists of row indices, each fold's training pages — the other
-    folds' in-class rows — and then the final model's, every in-class row. With `which` "small"
-    each is `draw_small`'s draw from those rows, and the draws are recorded in
-    data/selection.json under "small-pool"."""
+    """fold_training_sets returns, as lists of row indices, each fold's training pages: the other
+    folds' in-class rows. With `which` "small" each is `draw_small`'s draw from those rows, and the
+    draws are recorded in data/selection.json under "small-pool"."""
     inclass = [i for i, r in enumerate(rows) if r["label"] != REJECT_LABEL]
-    sets = [[i for i in inclass if fold[i] != f] for f in range(k)] + [inclass]
+    sets = [[i for i in inclass if fold[i] != f] for f in range(k)]
     if which == "small":
         drawn = [draw_small([rows[i] for i in s]) for s in sets]
-        record_selection(
-            "small-pool",
-            {"seed": SEED, "per_class": SMALL_PER_CLASS, "folds": drawn[:-1], "ids": drawn[-1]},
-        )
+        record_selection("small-pool", {"seed": SEED, "per_class": SMALL_PER_CLASS, "folds": drawn})
         index = {r["id"]: i for i, r in enumerate(rows)}
         sets = [sorted(index[page_id] for page_id in ids) for ids in drawn]
     return sets
@@ -242,7 +238,6 @@ def fold_lines(rows, fold, k, sets):
             f"fold {f}    held out {len(held) - reject} in-class and {reject} reject pages;"
             f" trained on {len(sets[f])}"
         )
-    lines.append(f"final     trained on {len(sets[k])} in-class pages")
     return lines
 
 
@@ -261,23 +256,25 @@ def write_pool_dump(name, rows, pred, score):
 
 def out_of_fold(make, x, gold, fold, sets):
     """out_of_fold returns the prediction, an index in CLASSES, and top probability of every row of
-    `x`, each from `make()` fitted on `sets[f]`, the training rows of the row's fold f. `x` and
-    `gold` are numpy arrays over the pool rows, a reject row's gold -1."""
+    `x`, each from `make()` fitted on `sets[f]`, the training rows of the row's fold f, and the
+    fitted classifiers in fold order. `x` and `gold` are numpy arrays over the pool rows, a reject
+    row's gold -1."""
     import numpy as np
 
-    pred, score = np.zeros(len(gold), dtype=int), np.zeros(len(gold))
-    for f in range(len(sets) - 1):
+    pred, score, clfs = np.zeros(len(gold), dtype=int), np.zeros(len(gold)), []
+    for f in range(len(sets)):
         clf = make().fit(x[sets[f]], gold[sets[f]])
         held = np.flatnonzero(np.array(fold) == f)
         proba = clf.predict_proba(x[held])
         pred[held], score[held] = clf.classes_[proba.argmax(axis=1)], proba.max(axis=1)
-    return pred, score
+        clfs.append(clf)
+    return pred, score, clfs
 
 
 def train_folds(kind, name, which, k, seed, batch_size):
-    """train_folds is `--folds`: the out-of-fold pool dump, then the final model, fitted on
-    `fold_training_sets`' last set and saved to models/<name>/. A frozen encoder embeds every pool
-    page once, before the folds. Writes results/train/<name>-pool.txt."""
+    """train_folds is `--folds`: the out-of-fold pool dump, and each fold's model at the chosen C
+    saved to models/<name>/fold<f>/. A frozen encoder embeds every pool page once, before the folds.
+    Writes results/train/<name>-pool.txt."""
     import joblib
     import numpy as np
     from sklearn.linear_model import LogisticRegression
@@ -328,24 +325,21 @@ def train_folds(kind, name, which, k, seed, batch_size):
 
     best, lines = None, []
     for c in grid:
-        pred, score = out_of_fold(lambda: make(c), x, gold, fold, sets)
+        pred, score, clfs = out_of_fold(lambda: make(c), x, gold, fold, sets)
         auroc = roc_auc_score(pred == gold, score)
         lines.append(f"C {c:<5} out-of-fold AUROC {auroc:.4f}, all {len(rows)} pool pages")
         if best is None or auroc > best[1]:
-            best = (c, auroc, pred, score)
+            best = (c, auroc, pred, score, clfs)
     folded = time.perf_counter() - start - encoded
     if len(grid) > 1:
         lines.append(f"chosen    C {best[0]} (highest out-of-fold AUROC; a tie goes to the smaller C)")
     else:
         lines.append(f"fixed     C {best[0]}")
     write_pool_dump(name, rows, best[2], best[3])
-
-    final = time.perf_counter()
-    clf = make(best[0]).fit(x[sets[k]], gold[sets[k]])
-    out = os.path.join("models", name)
-    os.makedirs(out, exist_ok=True)
-    joblib.dump(clf, os.path.join(out, file))
-    finaled = time.perf_counter() - final
+    for f, clf in enumerate(best[4]):
+        out = os.path.join("models", name, f"fold{f}")
+        os.makedirs(out, exist_ok=True)
+        joblib.dump(clf, os.path.join(out, file))
 
     text = "\n".join([
         f"model     models/{name}",
@@ -354,7 +348,6 @@ def train_folds(kind, name, which, k, seed, batch_size):
         *fold_lines(rows, fold, k, sets),
         f"seconds   {encoded:.2f} encoding the pool ({scope})",
         f"seconds   {folded:.2f} fitting and scoring {k} folds for each of {len(grid)} C",
-        f"seconds   {finaled:.2f} fitting the final model",
         *lines,
     ]) + "\n"
     sys.stderr.write(text)
