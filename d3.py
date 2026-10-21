@@ -31,12 +31,12 @@ CACHE = "results/d3/cache.jsonl"
 FEWSHOT = "data/fewshot.txt"
 # The defaults of score.py's --state-words and --example-words: a page's OCR text is cut to its
 # first STATE_WORDS words as the state, and a fewshot example's to its first EXAMPLE_WORDS, so the
-# 36 examples and the page fit one prompt.
+# 33 examples and the page fit one prompt.
 STATE_WORDS = 1500
 EXAMPLE_WORDS = 300
-# REJECT_CRITERION is REJECT_LABEL's criterion when score.py's --reject-option makes it a 13th
+# REJECT_CRITERION is REJECT_LABEL's criterion when score.py's --reject-option makes it a 12th
 # option.
-REJECT_CRITERION = "A page that fits none of the 12 types."
+REJECT_CRITERION = "A page that fits none of the 11 types."
 # CLASS_SETS are the options score.py's --classes picks, in CLASSES order: every type, or the 6 with
 # the most test pages.
 CLASS_SETS = {
@@ -44,7 +44,7 @@ CLASS_SETS = {
     "six": [
         name
         for name in CLASSES
-        if name in {"handwritten", "resume", "letter", "form", "news_article", "specification"}
+        if name in {"resume", "letter", "form", "news_article", "specification", "budget"}
     ],
 }
 

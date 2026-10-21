@@ -23,11 +23,11 @@ with `--prompt definitions` (the default) or `fewshot`; the report name is <mode
 first N words; a value other than d3.py's STATE_WORDS or EXAMPLE_WORDS adds -s<N> or -e<N> to the
 name. Its score is the chosen option's probability. It runs in `.venv-d3`. With `fewshot`, any
 data/fewshot.txt page in the split is left out, so no page is scored with itself as an example.
-`--reject-option` makes REJECT_LABEL a 13th option and adds -reject to the name; a page the model
+`--reject-option` makes REJECT_LABEL a 12th option and adds -reject to the name; a page the model
 labels REJECT_LABEL is right on a reject page and wrong on an in-class page, as for
 `gemma4-image-reject`, and its report adds the same two reject shares. `--classes six` asks with
-d3.py's CLASS_SETS["six"] as the options instead of all 12, scores only the pages labelled one of
-them or REJECT_LABEL, and adds -c6 to the name; `--pages six` scores the same pages with all 12
+d3.py's CLASS_SETS["six"] as the options instead of all 11, scores only the pages labelled one of
+them or REJECT_LABEL, and adds -c6 to the name; `--pages six` scores the same pages with all 11
 options and adds -on6, so the two reports are on identical pages."""
 
 import argparse

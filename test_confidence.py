@@ -45,10 +45,22 @@ def test_report_on_test_pages(tmp_path):
     assert "0 of 10 in-class pages, 1 of 3 reject pages" in text
 
 
+def test_report_when_every_scored_in_class_page_is_right(tmp_path):
+    # ROWS with its specification page right and a budget page predicted REJECT_LABEL: the one
+    # in-class error has no score, so AUROC and the mean wrong score are undefined on test.
+    path = tmp_path / "dump.jsonl"
+    rows = ROWS[:11] + [(0.60, "specification", "specification"), ROWS[12]]
+    write_dump(path, rows + [(0.40, "budget", REJECT_LABEL)])
+    text = report("hand", str(path), str(path))
+    assert "  AUROC of score against correctness, in-class  -\n" in text
+    assert "  mean score, wrong predictions       - (0)\n" in text
+    assert "1 of 11 in-class pages, 1 of 3 reject pages" in text
+
+
 def test_draw_takes_one_page_per_class_present(tmp_path):
     _, _, label = read_dump(write_dump(tmp_path / "dump.jsonl"), NAMES)
     picked = draw(label, len(NAMES), 0, len(NAMES))
-    # 10 classes and the reject pages are present; questionnaire and scientific_publication are not.
+    # 10 of the 11 classes and the reject pages are present; scientific_publication is not.
     assert len(picked) == 11
     assert (label[picked] == NAMES.index(REJECT_LABEL)).sum() == 1
     assert list(picked) == list(draw(label, len(NAMES), 0, len(NAMES)))
@@ -67,17 +79,17 @@ ROWS = [
     (0.89, "budget", "budget"),
     (0.85, "invoice", "invoice"),
     (0.80, "resume", "resume"),
-    (0.75, "handwritten", "handwritten"),
+    (0.75, "questionnaire", "questionnaire"),
     (0.70, "news_article", "news_article"),
     (0.60, "specification", "form"),
     (0.50, REJECT_LABEL, "memo"),
 ]
 
 
-def write_dump(path):
-    """Writes ROWS as a score.py --dump file at `path` and returns the path as a string."""
+def write_dump(path, rows=ROWS):
+    """Writes `rows` as a score.py --dump file at `path` and returns the path as a string."""
     with open(path, "w") as f:
-        for i, (score, label, predicted) in enumerate(ROWS):
+        for i, (score, label, predicted) in enumerate(rows):
             row = {"id": f"p{i}", "label": label, "predicted": predicted, "score": score}
             f.write(json.dumps(row) + "\n")
     return str(path)

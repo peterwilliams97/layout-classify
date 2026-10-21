@@ -37,7 +37,7 @@ Output: the report, printed and written to results/confidence/<model>.txt, or wi
 results/confidence/<model>-dev<N>-seed<S>.txt.
 
 With --dev-size N, the cut-offs and the calibration are fitted on N validation pages drawn by
-`draw`, N / 13 from each class of CLASSES and from the reject pages, so the cut-off's dependence on
+`draw`, N / 12 from each class of CLASSES and from the reject pages, so the cut-off's dependence on
 validation size can be measured; a class with fewer pages gives them all. --dev-seed seeds the
 draw.
 
@@ -199,8 +199,13 @@ def report(model, validation_path, test_path, dev_size=None, dev_seed=0):
     s, c, y = all_s[~test_reject], all_c[~test_reject], all_y[~test_reject]
     # `fs` and `fc` are the in-class pages with a score, for the lines that need one.
     fs, fc = s[np.isfinite(s)], c[np.isfinite(s)]
-    if fc.all() or not fc.any():
-        sys.exit(f"{test_path}, in-class: every prediction is {'right' if c.all() else 'wrong'}")
+    if not len(fc):
+        sys.exit(f"{test_path}, in-class: every page is predicted {REJECT_LABEL}")
+    # With every scored in-class page right, as when a model's only in-class errors are
+    # REJECT_LABEL, AUROC and the mean wrong score are undefined and print as "-".
+    auroc = roc_auc_score(fc, fs) if 0 < fc.sum() < len(fc) else None
+    wrong_mean = fs[fc == 0].mean() if (fc == 0).any() else None
+    right_mean = fs[fc == 1].mean() if fc.any() else None
     n_rej = int(test_reject.sum())
     lines += [
         "",
@@ -214,9 +219,9 @@ def report(model, validation_path, test_path, dev_size=None, dev_seed=0):
             " the four lines below are over the rest of the in-class pages",
         ]
     lines += [
-        f"  AUROC of score against correctness, in-class  {roc_auc_score(fc, fs):.4f}",
-        f"  mean score, right predictions       {fs[fc == 1].mean():.4f} ({int(fc.sum())})",
-        f"  mean score, wrong predictions       {fs[fc == 0].mean():.4f} ({int(len(fc) - fc.sum())})",
+        f"  AUROC of score against correctness, in-class  {fmt(auroc)}",
+        f"  mean score, right predictions       {fmt(right_mean)} ({int(fc.sum())})",
+        f"  mean score, wrong predictions       {fmt(wrong_mean)} ({int(len(fc) - fc.sum())})",
         f"  ECE, {ECE_BINS} equal-count bins, isotonic fitted on validation"
         f"  before {ece(fs, fc, fs):.4f}  after {ece(iso.predict(fs), fc, fs):.4f}",
         f"  stream_10: {REJECT_SHARE:.0%} reject pages, {1 - REJECT_SHARE:.0%} in-class",

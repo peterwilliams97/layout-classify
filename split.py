@@ -3,7 +3,7 @@ data/manifest.jsonl, one row per page, and data/fewshot.txt. It is the only plac
 split, so no other script can put one document in two.
 
 In-class pages are the labelled page of every RVL-CDIP-N PDF in data/pdf/manifest.jsonl that is not
-an alias and that quality.py kept. Each class is split on its own: its PDFs, in file-name order, are
+an alias, that quality.py kept and that is not labelled HANDWRITTEN. Each class is split on its own: its PDFs, in file-name order, are
 shuffled, and the first go to test, the next to validation and the rest to train, in the shares of
 SHARES. A share's count is rounded by largest remainder, a tie going to test, then validation, then
 train. Reject pages are page 1 of kept RVL-CDIP-O PDFs, labelled REJECT_LABEL: round(in-class / 9)
@@ -21,7 +21,7 @@ import json
 import math
 import random
 
-from classes import CLASSES, REJECT_LABEL
+from classes import CLASSES, HANDWRITTEN, REJECT_LABEL
 
 SOURCE = "data/pdf/manifest.jsonl"
 QUALITY = "data/pdf/quality.jsonl"
@@ -63,7 +63,7 @@ def main():
     rng = random.Random(0)
     by_class = collections.defaultdict(list)
     for r in pool:
-        if r["set"] == "N":
+        if r["set"] == "N" and r["label"] != HANDWRITTEN:
             by_class[r["label"]].append(r)
     if sorted(by_class) != sorted(CLASSES):
         raise SystemExit(f"{SOURCE}: N labels {sorted(by_class)} are not CLASSES")

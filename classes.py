@@ -1,9 +1,13 @@
-"""CLASSES holds the 12 RVL-CDIP-N document types a classifier here must tell apart, each with the
+"""CLASSES holds the 11 RVL-CDIP-N document types a classifier here must tell apart, each with the
 one-sentence definition that is the only description of the type an LLM or VLM prompt gets. Each
 definition says what separates the type from the one it is most easily taken for, above all in the
 three near-pairs `letter` / `memo`, `form` / `questionnaire` and `budget` / `invoice`. Names are the
 `label` strings of the N rows of data/pdf/manifest.jsonl, which fetch.py takes from the RVL-CDIP-N
-PDF file names; test_classes.py checks the two agree.
+PDF file names, less HANDWRITTEN; test_classes.py checks the two agree.
+
+HANDWRITTEN, RVL-CDIP-N's twelfth type, is left out: handwriting is a medium, not a document type,
+and its pages are not the native digital documents or good scans the corpus is for. split.py drops
+its PDFs before splitting.
 
 Reject pages come from RVL-CDIP-O PDFs, documents of none of these types, and are labelled
 REJECT_LABEL."""
@@ -20,7 +24,7 @@ CLASSES = {
     "scientific_publication": "A journal or conference article with a title, authors and their affiliations, an abstract and references, where a news article has a headline and byline for a general reader.",
     "specification":          "A technical specification setting out the required properties, dimensions or tests of a product, material or process, in numbered clauses or tables, where a form has fields left blank to fill in.",
     "resume":                 "A person's curriculum vitae listing their contact details, education, work history and skills, where a letter is addressed to a recipient.",
-    "handwritten":            "A page whose content is mostly handwriting rather than print, of any kind of document, where the other types are mostly printed or typed.",
 }
 
 REJECT_LABEL = "none"
+HANDWRITTEN = "handwritten"
