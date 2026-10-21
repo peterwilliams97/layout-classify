@@ -36,6 +36,9 @@ uv run python finetune.py --layoutlmv3 --train real   # or --train small; ~11 mi
 uv run python score.py --model tfidf-real --split validation --dump   # also test
 uv run python confidence.py --model tfidf-real  # needs the validation and test dumps
 uv run python confidence.py --model tfidf-real --dev-size 120 --dev-seed 0   # 10 per class and reject
+uv run python train.py --tfidf --train real --folds 5 --fold-seed 0   # pool: out-of-fold dump, final model on 411
+uv run python finetune.py --layoutlmv3 --train real --folds 5 --fold-seed 0
+uv run python confidence.py --model tfidf-real --calibration pool   # cut-offs on the 457 pool pages
 uv run python score.py --llm gemma4-image --split validation   # or gemma4-image-reject; needs ollama serve
 uv run python llm.py --split train              # gemma4:e4b labels to data/llm-labels/; ~4 min
 uv run python train.py --tfidf --train real --labels llm   # or --embed; name gets -llm
