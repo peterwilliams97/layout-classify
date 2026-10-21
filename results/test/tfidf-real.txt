@@ -1,20 +1,20 @@
 model     models/tfidf-real
 test pages 304 (30 reject pages, always wrong)
-accuracy  0.7368
-wrong     80
-accuracy  0.8175 without reject pages
-seconds   0.000308 median, 0.000336 mean per page, one page per call, OCR excluded
+accuracy  0.7928
+wrong     63
+accuracy  0.8796 without reject pages
+seconds   0.000336 median, 0.000394 mean per page, one page per call, OCR excluded
 confusion (row: true class, column: predicted class, numbered as the rows are)
                               0   1   2   3   4   5   6   7   8   9  10  11
-   0 letter                  48   0   0   0   0   0   0   0   0   0   1   0
-   1 memo                    14   1   0   0   0   0   0   1   0   0   1   0
-   2 form                     7   0  19   0   0   0   0   0   0   0   0   0
+   0 letter                  47   0   1   0   0   0   0   0   0   0   1   0
+   1 memo                    13   2   0   0   0   0   0   1   0   0   1   0
+   2 form                     3   0  23   0   0   0   0   0   0   0   0   0
    3 questionnaire            1   0   1  13   0   0   0   0   0   0   0   0
    4 budget                   1   0   0   0  19   0   0   0   0   0   0   0
-   5 invoice                  1   0   0   0   1  13   0   0   0   0   3   0
-   6 email                    6   0   0   0   0   0   5   1   0   0   0   0
-   7 news_article             2   0   0   0   0   0   0  21   0   0   2   0
-   8 scientific_publication   1   0   0   0   0   0   0   0  14   0   0   0
-   9 specification            3   0   0   0   0   0   0   0   0  19   2   0
+   5 invoice                  0   0   0   0   1  17   0   0   0   0   0   0
+   6 email                    5   0   0   0   0   0   6   1   0   0   0   0
+   7 news_article             1   0   0   0   0   0   0  23   0   0   1   0
+   8 scientific_publication   0   0   0   0   0   0   0   0  15   0   0   0
+   9 specification            0   0   0   0   0   0   0   0   0  24   0   0
   10 resume                   1   0   0   0   0   0   0   0   0   0  52   0
-  11 none                     9   0   1   0   2   0   0   2   0   0  16   0
+  11 none                     9   0   4   0   2   0   0   2   0   0  13   0

@@ -1,0 +1,94 @@
+model     tfidf-small
+pool results/confidence/dumps/tfidf-small-pool.jsonl (457 pages, 46 reject; accuracy 0.8271)
+score     top probability over CLASSES; a REJECT_LABEL page is always wrong
+pool AUROC of score against correctness, all pages  0.8845
+routing: accept a page when its score is at least the cut-off, chosen on the pool pages above
+  tau     lowest pool score whose accepted pool error is at most alpha
+  tau_cp  the same with the pool error's one-sided 90% Clopper-Pearson upper bound
+  reject_leak  share of reject pages scoring at least the cut-off
+  alpha 0.02
+    tau    0.190010  pool coverage 0.5558 error 0.0197 reject_leak 0.0652
+    tau_cp -         pool coverage 0.0000 error - reject_leak 0.0000
+  alpha 0.05
+    tau    0.161702  pool coverage 0.7243 error 0.0483 reject_leak 0.1739
+    tau_cp 0.179121  pool coverage 0.6193 error 0.0318 reject_leak 0.1087
+  alpha 0.10
+    tau    0.141159  pool coverage 0.8600 error 0.0992 reject_leak 0.4130
+    tau_cp 0.144558  pool coverage 0.8381 error 0.0783 reject_leak 0.3261
+
+test: results/confidence/dumps/tfidf-small-test.jsonl (304 pages, 30 reject)
+  in-class pages 274, accuracy 0.9270
+  AUROC of score against correctness, in-class  0.8189
+  mean score, right predictions       0.2400 (254)
+  mean score, wrong predictions       0.1596 (20)
+  ECE, 10 equal-count bins, isotonic fitted on pool  before 0.6929  after 0.0638
+  stream_10: 10% reject pages, 90% in-class
+  alpha 0.02
+    tau    0.190010
+      in-class             coverage 0.6204 error 0.0235
+      reject_leak          0.0667 (2 of 30)
+      stream_10            coverage 0.5651 error 0.0350
+      all pages, 30 of 304 reject  coverage 0.5658 error 0.0349
+    tau_cp -
+      in-class             coverage 0.0000 error -
+      reject_leak          0.0000 (0 of 30)
+      stream_10            coverage 0.0000 error -
+      all pages, 30 of 304 reject  coverage 0.0000 error -
+    recall among accepted at tau, in-class, per true class (accepted of total)
+      letter                 0.9474 (19 of 49)
+      memo                   0.0000 (2 of 17)
+      form                   1.0000 (17 of 26)
+      questionnaire          1.0000 (14 of 15)
+      budget                 1.0000 (16 of 20)
+      invoice                0.9231 (13 of 18)
+      email                  1.0000 (5 of 12)
+      news_article           1.0000 (16 of 25)
+      scientific_publication 1.0000 (15 of 15)
+      specification          1.0000 (14 of 24)
+      resume                 1.0000 (39 of 53)
+  alpha 0.05
+    tau    0.161702
+      in-class             coverage 0.7701 error 0.0284
+      reject_leak          0.1333 (4 of 30)
+      stream_10            coverage 0.7064 error 0.0468
+      all pages, 30 of 304 reject  coverage 0.7072 error 0.0465
+    tau_cp 0.179121
+      in-class             coverage 0.6788 error 0.0215
+      reject_leak          0.0667 (2 of 30)
+      stream_10            coverage 0.6176 error 0.0321
+      all pages, 30 of 304 reject  coverage 0.6184 error 0.0319
+    recall among accepted at tau, in-class, per true class (accepted of total)
+      letter                 0.9412 (34 of 49)
+      memo                   0.4000 (5 of 17)
+      form                   1.0000 (21 of 26)
+      questionnaire          1.0000 (14 of 15)
+      budget                 1.0000 (16 of 20)
+      invoice                0.9286 (14 of 18)
+      email                  1.0000 (7 of 12)
+      news_article           1.0000 (20 of 25)
+      scientific_publication 1.0000 (15 of 15)
+      specification          1.0000 (18 of 24)
+      resume                 1.0000 (47 of 53)
+  alpha 0.10
+    tau    0.141159
+      in-class             coverage 0.9088 error 0.0562
+      reject_leak          0.3000 (9 of 30)
+      stream_10            coverage 0.8479 error 0.0896
+      all pages, 30 of 304 reject  coverage 0.8487 error 0.0891
+    tau_cp 0.144558
+      in-class             coverage 0.8905 error 0.0533
+      reject_leak          0.2333 (7 of 30)
+      stream_10            coverage 0.8248 error 0.0801
+      all pages, 30 of 304 reject  coverage 0.8257 error 0.0797
+    recall among accepted at tau, in-class, per true class (accepted of total)
+      letter                 0.9130 (46 of 49)
+      memo                   0.5385 (13 of 17)
+      form                   1.0000 (24 of 26)
+      questionnaire          1.0000 (14 of 15)
+      budget                 1.0000 (19 of 20)
+      invoice                0.9412 (17 of 18)
+      email                  0.7778 (9 of 12)
+      news_article           0.9565 (23 of 25)
+      scientific_publication 1.0000 (15 of 15)
+      specification          1.0000 (19 of 24)
+      resume                 1.0000 (50 of 53)
