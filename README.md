@@ -161,29 +161,31 @@ gemma4:e4b runs through Ollama; TF-IDF and Tesseract run on the CPU. Nothing els
 
 **Coverage certified under 5% and under 2% error, all test pages**
 
-| Classifier                             | Labels                     | Coverage at 5%         | Error at 5%            | Reject leak at 5%      | Coverage at 2%         | Error at 2%            | Reject leak at 2%      |
-|----------------------------------------|----------------------------|------------------------|------------------------|------------------------|------------------------|------------------------|------------------------|
-| TF-IDF + LR, real                      | 411 (328–329 per model)    | 0.6757 (0.6612–0.6908) | 0.0448 (0.0345–0.0524) | 0.0600 (0.0333–0.1000) | 0.3954 (0.3816–0.4145) | 0.0067 (0.0000–0.0172) | 0.0000 (0.0000–0.0000) |
-| TF-IDF + LR, small                     | 254 of 411 (110 per model) | 0.6066 (0.5822–0.6217) | 0.0467 (0.0372–0.0601) | 0.0933 (0.0333–0.1333) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
-| UltraBERT-Embed-150M + LR, real        | 411 (328–329 per model)    | 0.7592 (0.7500–0.7664) | 0.0320 (0.0259–0.0388) | 0.0733 (0.0333–0.1000) | 0.6408 (0.6250–0.6513) | 0.0174 (0.0152–0.0205) | 0.0333 (0.0333–0.0333) |
-| UltraBERT-Embed-150M + LR, small       | 254 of 411 (110 per model) | 0.5875 (0.5428–0.6612) | 0.0287 (0.0121–0.0393) | 0.0533 (0.0000–0.1000) | 0.4980 (0.4638–0.5559) | 0.0221 (0.0071–0.0392) | 0.0333 (0.0000–0.0667) |
-| d3-flash, `definitions`, 150 words     | 0                          | 0.8421                 | 0.0352                 | 0.3000 (9 of 30)       | 0.7862                 | 0.0251                 | 0.2000 (6 of 30)       |
-| d3-flash, `fewshot`, 150 / 50 words    | 33                         | 0.7303                 | 0.0405                 | 0.2333 (7 of 30)       | 0.6645                 | 0.0198                 | 0.1000 (3 of 30)       |
-| DiT + LR, real, image                  | 411 (328–329 per model)    | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
-| DiT + LR, small, image                 | 254 of 411 (110 per model) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
-| LayoutLMv3, real, image and OCR words  | 411 (328–329 per model)    | 0.2487 (0.0921–0.5033) | 0.0073 (0.0000–0.0213) | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
-| LayoutLMv3, small, image and OCR words | 254 of 411 (110 per model) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
-| gemma4:e4b, image                      | 0                          | —                      | —                      | —                      | —                      | —                      | —                      |
-| gemma4:e4b, image + `none`             | 0                          | —                      | —                      | —                      | —                      | —                      | —                      |
+| Classifier                                  | Labels                     | Coverage at 5%         | Error at 5%            | Reject leak at 5%      | Coverage at 2%         | Error at 2%            | Reject leak at 2%      |
+|---------------------------------------------|----------------------------|------------------------|------------------------|------------------------|------------------------|------------------------|------------------------|
+| TF-IDF + LR, real                           | 411 (328–329 per model)    | 0.6757 (0.6612–0.6908) | 0.0448 (0.0345–0.0524) | 0.0600 (0.0333–0.1000) | 0.3954 (0.3816–0.4145) | 0.0067 (0.0000–0.0172) | 0.0000 (0.0000–0.0000) |
+| TF-IDF + LR, small                          | 254 of 411 (110 per model) | 0.6066 (0.5822–0.6217) | 0.0467 (0.0372–0.0601) | 0.0933 (0.0333–0.1333) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
+| UltraBERT-Embed-150M + LR, real             | 411 (328–329 per model)    | 0.7592 (0.7500–0.7664) | 0.0320 (0.0259–0.0388) | 0.0733 (0.0333–0.1000) | 0.6408 (0.6250–0.6513) | 0.0174 (0.0152–0.0205) | 0.0333 (0.0333–0.0333) |
+| UltraBERT-Embed-150M + LR, small            | 254 of 411 (110 per model) | 0.5875 (0.5428–0.6612) | 0.0287 (0.0121–0.0393) | 0.0533 (0.0000–0.1000) | 0.4980 (0.4638–0.5559) | 0.0221 (0.0071–0.0392) | 0.0333 (0.0000–0.0667) |
+| d3-flash, `definitions`, 150 words          | 0                          | 0.8421                 | 0.0352                 | 0.3000 (9 of 30)       | 0.7862                 | 0.0251                 | 0.2000 (6 of 30)       |
+| d3-flash, `definitions` + `none`, 150 words | 0                          | 0.9079                 | 0.0362                 | 0.3333 (10 of 30)      | 0.8914                 | 0.0295                 | 0.2667 (8 of 30)       |
+| d3-flash, `fewshot`, 150 / 50 words         | 33                         | 0.7303                 | 0.0405                 | 0.2333 (7 of 30)       | 0.6645                 | 0.0198                 | 0.1000 (3 of 30)       |
+| DiT + LR, real, image                       | 411 (328–329 per model)    | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
+| DiT + LR, small, image                      | 254 of 411 (110 per model) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
+| LayoutLMv3, real, image and OCR words       | 411 (328–329 per model)    | 0.2487 (0.0921–0.5033) | 0.0073 (0.0000–0.0213) | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
+| LayoutLMv3, small, image and OCR words      | 254 of 411 (110 per model) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
+| gemma4:e4b, image                           | 0                          | —                      | —                      | —                      | —                      | —                      | —                      |
+| gemma4:e4b, image + `none`                  | 0                          | —                      | —                      | —                      | —                      | —                      | —                      |
 
 From `results/confidence/<name>-pool.txt`, `tau_cp` lines, "all pages"; a trained row is the mean
 over its 5 fold models (min–max), from the summary at the head of that file. Real fold models are
 trained on 328 or 329 of the 411 in-class pool pages; small ones on 10 per type drawn from those,
 110 pages, 254 distinct pages over the 5. An error's mean is over the fold models that accept a
 page; at these cut-offs every trained row accepts pages on all 5 fold models or on none. The bound
-holds on the pool, not on test. On the mean, d3-flash `definitions` at 2%, 0.0251, and
-UltraBERT-Embed-150M + LR small at 2%, 0.0221, land above their level on all test pages; d3-flash's
-in-class error is 0, so its excess is the 6 reject pages it accepts. Single fold models land above
+holds on the pool, not on test. On the mean, d3-flash `definitions` at 2%, 0.0251, `definitions` +
+`none` at 2%, 0.0295, and UltraBERT-Embed-150M + LR small at 2%, 0.0221, land above their level on
+all test pages; d3-flash's in-class error is 0 with either prompt, so its excess is the 6 or 8
+reject pages it accepts. Single fold models land above
 too: TF-IDF + LR real at 5% up to 0.0524 and small up to 0.0601, and UltraBERT-Embed-150M + LR real
 at 2% up to 0.0205. LayoutLMv3 real certifies nothing at 2%, and at 5% its cut-off, 0.966747,
 accepts 9% to 50% of all test pages depending on the fold model, a mean of 0.2487, with no reject
@@ -203,6 +205,7 @@ cut-off on and `confidence.py` has nothing to route.
 | UltraBERT-Embed-150M + LR, real  | 0.9358 (0.9270–0.9453)            | 0.0349                   | 0.0332                 |
 | UltraBERT-Embed-150M + LR, small | 0.8876 (0.8613–0.9088)            | 0.0349                   | 0.033                  |
 | d3-flash, `definitions`          | 0.9818                            | 1.68                     | 1.71                   |
+| d3-flash, `definitions` + `none` | 0.9708                            | 1.72                     | 1.81                   |
 | d3-flash, `fewshot`              | 0.9197                            | 11.4                     | 11.4                   |
 | DiT + LR, real                   | 0.5978 (0.5839–0.6168)            | 0.0186                   | 0.0189                 |
 | DiT + LR, small                  | 0.4781 (0.4416–0.4964)            | 0.0185                   | 0.0189                 |
@@ -216,7 +219,8 @@ The trained rows are from `results/test/<name>-folds.txt`: the mean accuracy ove
 over all 5 × 304 page scorings. Names are `tfidf-real`, `tfidf-small`, `ultrabert-embed-real`,
 `ultrabert-embed-small`, `dit-real`, `dit-small`, `layoutlmv3-real` and `layoutlmv3-small`. The
 other rows are from `results/test/<name>.txt`, names `gemma4-image`, `gemma4-image-reject`,
-`d3-flash-definitions-s150` and `d3-flash-fewshot-s150-e50`. Seconds are the classifier alone, one
+`d3-flash-definitions-s150`, `d3-flash-definitions-s150-reject` and `d3-flash-fewshot-s150-e50`.
+Seconds are the classifier alone, one
 page per call, on MPS for UltraBERT, DiT, LayoutLMv3 and d3-flash and through Ollama for
 gemma4:e4b; OCR and the image read are not in them. Tesseract takes 0.673 s a page median and 0.795
 mean (`results/ocr-time.txt`), to be added for every classifier that reads the OCR text, LayoutLMv3
@@ -257,18 +261,21 @@ as a 12th option, 457 pages certify 0.8914 at 2%, error 0.0295 with 8 of 30 reje
 (`results/confidence/d3-flash-definitions-s150-reject-pool.txt`). UltraBERT-Embed-150M + LR
 certifies 0.6408 at 2% on the pool where 230 validation pages certified nothing.
 
-With `none` allowed, gemma4:e4b labels 16 of the 30 reject pages `none` (0.5333) and 5 of the 274
-in-class pages (0.0182), all 5 specifications (`results/test/gemma4-image-reject.txt`). The other
-14 reject pages get a type, as all 30 do without `none`. Over all 304 test pages, where a `none` on
-a reject page is right, its accuracy is 0.8914 against 0.8553 without `none`.
+**1. How much work can it do without a person checking?** With no labelled page, d3-flash
+`definitions` + `none` passes the most, 0.9079 of all test pages at 5% and 0.8914 at 2%, though at
+2% its test error is 0.0295; with every in-class train and validation page, UltraBERT-Embed-150M +
+LR real passes 0.7592 and 0.6408. With 10 labelled pages per type, TF-IDF + LR small passes 0.6066
+at 5% and nothing at 2%, and UltraBERT-Embed-150M + LR small 0.5875 and 0.4980. The image rows pass
+little: DiT and LayoutLMv3 small nothing, LayoutLMv3 real 0.2487 at 5% and nothing at 2%, and
+gemma4:e4b nothing, having no score.
 
-**Does the page image beat OCR text?** The image alone does not; the image with the OCR words does
-on accuracy, on 328 or 329 training pages, but not on coverage. DiT + LR on the image alone reaches
-0.5978 accuracy and certifies no coverage. LayoutLMv3, which reads the image and the OCR words and
-boxes together, reaches 0.9723, above UltraBERT-Embed-150M + LR's 0.9358 on the text and under
-d3-flash `definitions`' 0.9818, but certifies 0.2487 at 5%, from 0.0921 to 0.5033 by fold model,
-against 0.7592 for UltraBERT-Embed-150M + LR and 0.8421 for d3-flash, and nothing at 2%. Its 5%
-cut-off, 0.966747, is above every fold model's mean score on its right in-class test predictions,
+**2. Does the page image beat OCR text?** The image alone does not; the image with the OCR words
+does on accuracy, on 328 or 329 training pages, but not on coverage. DiT + LR on the image alone
+reaches 0.5978 accuracy and certifies no coverage. LayoutLMv3, which reads the image and the OCR
+words and boxes together, reaches 0.9723, above UltraBERT-Embed-150M + LR's 0.9358 on the text and
+under d3-flash `definitions`' 0.9818, but certifies 0.2487 at 5%, from 0.0921 to 0.5033 by fold
+model, against 0.7592 for UltraBERT-Embed-150M + LR and 0.8421 for d3-flash, and nothing at 2%. Its
+5% cut-off, 0.966747, is above every fold model's mean score on its right in-class test predictions,
 0.9363 to 0.9605, so small differences between the fold models move many pages across it. gemma4:e4b
 on the image is 0.9489 accurate and needs no OCR, but it has no score, so none of its pages can be
 passed without a person; 6 of its 14 errors on in-class pages are letters and emails labelled memo
@@ -276,6 +283,27 @@ passed without a person; 6 of its 14 errors on in-class pages are letters and em
 0.673 s plus UltraBERT's 0.0349 s, and under d3-flash's 1.68 s plus OCR. Trained on small, both
 image models fall further behind the text ones: 0.4781 and 0.3745 accuracy, no coverage, against
 0.8876 and 0.5875 for UltraBERT small.
+
+**3. What do pages that fit no type cost?** With `none` allowed, gemma4:e4b labels 16 of the 30
+reject pages `none` (0.5333) and 5 of the 274 in-class pages (0.0182), all 5 specifications
+(`results/test/gemma4-image-reject.txt`). The other 14 reject pages get a type, as all 30 do without
+`none`. Over all 304 test pages, where a `none` on a reject page is right, its accuracy is 0.8914
+against 0.8553 without `none`. d3-flash `definitions` with `none` labels 20 of the 30 reject pages
+`none` (0.6667) and 8 of the 274 in-class pages (0.0292), 6 of them specifications
+(`results/test/d3-flash-definitions-s150-reject.txt`). Its accepted in-class pages have no error
+with or without `none`, so every accepted error is a reject page. Without `none`, 9 of 30 reject
+pages pass at 5% and 6 at 2%, taking in-class coverage of 0.9015 and 0.8504 to 0.8421 and 0.7862 of
+all pages, at error 0.0352 and 0.0251 (`results/confidence/d3-flash-definitions-s150-pool.txt`).
+With `none`, 10 and 8 pass, taking 0.9708 and 0.9599 to 0.9079 and 0.8914, at error 0.0362 and
+0.0295 (`results/confidence/d3-flash-definitions-s150-reject-pool.txt`): `none` raises coverage and
+lets more reject pages through, not fewer.
+
+**4. How many seconds per page?** On the classifier alone, the median is under 0.0003 s for TF-IDF +
+LR, 0.0186 for DiT + LR, 0.0349 for UltraBERT-Embed-150M + LR and 0.0488 for LayoutLMv3, against
+0.985 for gemma4:e4b on the image and, for d3-flash, 1.68 with `definitions`, 1.72 with `none` and
+11.4 with `fewshot`. Every classifier that reads the OCR text adds Tesseract's 0.673 s median
+(`results/ocr-time.txt`), so on medians a page through UltraBERT-Embed-150M + LR takes 0.708 s,
+through d3-flash `definitions` + `none` 2.39 s, and gemma4:e4b, with no OCR, falls between them.
 
 ## Files
 
