@@ -1,21 +1,20 @@
 model     models/dit-small
-validation pages 273 (27 reject pages, always wrong)
-accuracy  0.4505
-wrong     150
-accuracy  0.5000 without reject pages
-seconds   0.0193 median, 0.0203 mean per page, one page per call, image read excluded
+validation pages 230 (23 reject pages, always wrong)
+accuracy  0.4261
+wrong     132
+accuracy  0.4734 without reject pages
+seconds   0.0187 median, 0.0193 mean per page, one page per call, image read excluded
 confusion (row: true class, column: predicted class, numbered as the rows are)
-                              0   1   2   3   4   5   6   7   8   9  10  11  12
-   0 letter                  12   9   0   0   1  10   2   0   0   0   3   0   0
-   1 memo                     1   8   0   1   0   1   0   0   1   0   0   1   0
-   2 form                     0   0  12   2   0   3   1   1   0   0   0   0   0
-   3 questionnaire            0   2   2   3   0   1   1   0   0   0   3   0   0
-   4 budget                   0   0   0   0   8   2   0   2   2   0   1   0   0
-   5 invoice                  0   0   3   0   2   8   0   0   0   1   0   0   0
-   6 email                    0   0   0   0   1   1   6   0   0   1   0   0   0
-   7 news_article             0   0   0   1   0   0   0  14   0   4   0   0   0
-   8 scientific_publication   0   0   0   0   0   0   0   0  11   0   1   0   0
-   9 specification            0   0   7   0   0   2   0   0   0   7   1   1   0
-  10 resume                   5   8   1   3   0   0   5   1   5   1  10   0   0
-  11 handwritten              0   0   7   1   0   1   0   4   2   0   0  24   0
-  12 none                     2   4   2   5   6   3   1   1   2   0   1   0   0
+                              0   1   2   3   4   5   6   7   8   9  10  11
+   0 letter                   8  14   0   2   0   6   2   0   1   1   3   0
+   1 memo                     2   6   0   1   0   2   1   0   0   0   1   0
+   2 form                     0   0  12   2   0   4   0   1   0   0   0   0
+   3 questionnaire            0   1   1   5   2   1   0   0   0   0   2   0
+   4 budget                   0   0   2   1   7   1   0   2   1   1   0   0
+   5 invoice                  0   0   2   1   0   9   1   0   0   1   0   0
+   6 email                    1   0   0   1   1   0   6   0   0   0   0   0
+   7 news_article             0   0   0   1   1   0   0  15   1   0   1   0
+   8 scientific_publication   1   0   0   0   0   0   0   0   8   1   2   0
+   9 specification            1   0   3   0   0   4   0   0   0  10   0   0
+  10 resume                   3   4   4   2   0   2   2   0   6   4  12   0
+  11 none                     0   3   3   1   6   2   3   1   1   1   2   0

@@ -1,16 +1,16 @@
 model     models/layoutlmv3-small
-train     small (119 pages)
-pages     119
+train     small (109 pages)
+pages     109
 epochs    10
-minutes   6.2 (base model load to last save; encoding and validation scoring included)
-best      epoch 9 (highest validation accuracy, all 273 validation pages, reject pages wrong; a tie keeps the earlier epoch)
-epoch 1   validation accuracy 0.1099
-epoch 2   validation accuracy 0.1319
-epoch 3   validation accuracy 0.2198
-epoch 4   validation accuracy 0.2527
-epoch 5   validation accuracy 0.2894
-epoch 6   validation accuracy 0.3297
-epoch 7   validation accuracy 0.3663
-epoch 8   validation accuracy 0.3810
-epoch 9   validation accuracy 0.3993
-epoch 10  validation accuracy 0.3956
+minutes   5.3 (base model load to last save; encoding and validation scoring included)
+best      epoch 6 (highest validation accuracy, all 230 validation pages, reject pages wrong; a tie keeps the earlier epoch)
+epoch 1   validation accuracy 0.1174
+epoch 2   validation accuracy 0.2435
+epoch 3   validation accuracy 0.2348
+epoch 4   validation accuracy 0.2652
+epoch 5   validation accuracy 0.2696
+epoch 6   validation accuracy 0.3348
+epoch 7   validation accuracy 0.3130
+epoch 8   validation accuracy 0.3304
+epoch 9   validation accuracy 0.3261
+epoch 10  validation accuracy 0.3261

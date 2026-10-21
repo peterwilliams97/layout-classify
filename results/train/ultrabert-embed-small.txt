@@ -1,9 +1,9 @@
 model     models/ultrabert-embed-small
-train     small (119 pages)
-pages     119
-seconds   14.15 (base model load to save; validation embedding and C grid included; OCR excluded)
-C 0.01  validation AUROC 0.9053
-C 0.1   validation AUROC 0.9080
-C 1     validation AUROC 0.8968
-C 10    validation AUROC 0.8738
-chosen    C 0.1 (highest validation AUROC; a tie goes to the smaller C)
+train     small (109 pages)
+pages     109
+seconds   16.08 (base model load to save; validation embedding and C grid included; OCR excluded)
+C 0.01  validation AUROC 0.9037
+C 0.1   validation AUROC 0.9094
+C 1     validation AUROC 0.9039
+C 10    validation AUROC 0.9143
+chosen    C 10 (highest validation AUROC; a tie goes to the smaller C)

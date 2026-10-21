@@ -36,6 +36,11 @@ is rendered here from its PDF at 200 dpi. `docs/2026-10-19-corpus-plan.md` has t
 and the match of images to PDFs. `fetch.py` downloads the PDFs to `data/pdf/` and writes
 `data/pdf/manifest.jsonl`.
 
+**Handwritten removed.** RVL-CDIP-N's twelfth type, handwritten, is not a class here: handwriting
+is a medium, not a document type, and its pages are outside the corpus's target of native digital
+documents and good scans. `split.py` drops its 131 kept PDFs before splitting, so 11 types remain.
+The results with handwritten as a twelfth class, on a split of 906 pages, are at `5fef286`.
+
 **Duplicates.** `fetch.py` hashes every PDF. 27 of the 1256 are byte copies of another and become
 aliases of the first in manifest order, which drops them before the gate: 15 N PDFs copy an N PDF
 of the same type (`pdfs_2-documentcloud_00259_news_article` has two copies), and 12 O PDFs copy an
@@ -57,16 +62,16 @@ distorted from their PDF page; page 1 is taken for them too, and 8 of them are i
 aliases against "native digital documents or good scans of them". A page whose largest image covers
 at least 80% of it is a scan and passes only at an image resolution of at least 150 dpi, whatever
 its text layer. Any other page passes with at least 50 non-space characters of text layer, or else
-with its largest image at 150 dpi or more. 1045 pass and 184 fail: 129 scans under 150 dpi, 53
-pages with neither a text layer nor an image at 150 dpi, and 2 that pdfplumber cannot read
-(`data/pdf/quality.jsonl`).
+with its largest image at 150 dpi or more. Every type is gated, handwritten included: 1045 pass and
+184 fail, 129 scans under 150 dpi, 53 pages with neither a text layer nor an image at 150 dpi, and 2
+that pdfplumber cannot read (`data/pdf/quality.jsonl`).
 
 | Type                   | Kept | Dropped |
 |------------------------|------|---------|
 | budget                 | 50   | 8       |
 | email                  | 30   | 2       |
 | form                   | 64   | 4       |
-| handwritten            | 131  | 40      |
+| handwritten (dropped)  | 131  | 40      |
 | invoice                | 45   | 12      |
 | letter                 | 123  | 26      |
 | memo                   | 42   | 5       |
@@ -78,12 +83,12 @@ pages with neither a text layer nor an image at 150 dpi, and 2 that pdfplumber c
 | O (reject source)      | 229  | 13      |
 | **Total**              | 1045 | 184     |
 
-**Splits.** `split.py` splits the 816 kept N PDFs by class with `random.Random(0)`: test 40%,
-validation 30%, train 30%, each class rounded by largest remainder, a tie going to test, then
-validation, then train. A PDF gives one page, so no document is in two splits, and the run asserts
-that no sha256 is. It writes `data/manifest.jsonl` (`id`, `split`, `label`, `pdf`, `page`,
+**Splits.** `split.py` splits the 685 kept N PDFs of the 11 types by class with `random.Random(0)`:
+test 40%, validation 30%, train 30%, each class rounded by largest remainder, a tie going to test,
+then validation, then train. A PDF gives one page, so no document is in two splits, and the run
+asserts that no sha256 is. It writes `data/manifest.jsonl` (`id`, `split`, `label`, `pdf`, `page`,
 `sha256`, and from `render.py` `width` and `height`) and `data/fewshot.txt`, the first 3 train pages
-of each class, 36 in all, a subset of train and not a fourth split. `render.py` writes each page to
+of each class, 33 in all, a subset of train and not a fourth split. `render.py` writes each page to
 `data/<split>/<id>.png`.
 
 | Class                  | Train | Validation | Test | Total |
@@ -91,7 +96,6 @@ of each class, 36 in all, a subset of train and not a fourth split. `render.py` 
 | budget                 | 15    | 15         | 20   | 50    |
 | email                  | 9     | 9          | 12   | 30    |
 | form                   | 19    | 19         | 26   | 64    |
-| handwritten            | 39    | 39         | 53   | 131   |
 | invoice                | 13    | 14         | 18   | 45    |
 | letter                 | 37    | 37         | 49   | 123   |
 | memo                   | 12    | 13         | 17   | 42    |
@@ -100,12 +104,17 @@ of each class, 36 in all, a subset of train and not a fourth split. `render.py` 
 | resume                 | 39    | 39         | 53   | 131   |
 | scientific_publication | 12    | 12         | 15   | 39    |
 | specification          | 18    | 18         | 24   | 60    |
-| **In-class**           | 243   | 246        | 327  | 816   |
-| reject (RVL-CDIP-O)    | 27    | 27         | 36   | 90    |
-| **Split total**        | 270   | 273        | 363  | 906   |
+| **In-class**           | 204   | 207        | 274  | 685   |
+| reject (RVL-CDIP-O)    | 23    | 23         | 30   | 76    |
+| **Split total**        | 227   | 230        | 304  | 761   |
+
+The classes share one `random.Random(0)`, drawn in sorted order, so dropping handwritten, which
+sorted between form and invoice, changed every later class's draw: budget, email and form kept
+their splits, and 333 of the other 685 in-class pages moved split against `5fef286`. The per-class
+counts are unchanged.
 
 **Reject pages.** Each split gets round(in-class / 9) reject pages, a tenth of the split: page 1 of
-kept O PDFs, drawn with the same `random.Random(0)` after the classes, labelled `none`. Train's 27
+kept O PDFs, drawn with the same `random.Random(0)` after the classes, labelled `none`. Train's 23
 are in the manifest but no classifier trains on them.
 
 **Limits.**
@@ -120,148 +129,159 @@ are in the manifest but no classifier trains on them.
 
 On the OCR text, the page image, or both. A page is accepted when its score is at least the cut-off
 `tau_cp`, chosen on validation so that the one-sided 90% Clopper-Pearson upper bound on the accepted
-validation error is at most 5%, or 2% (`confidence.py`). Coverage is the share of all 363 test pages
-accepted, the 36 reject pages included; error is the share of accepted pages whose type is wrong, a
-reject page always wrong; reject leak is the share of the 36 reject pages accepted. Small is 10
+validation error is at most 5%, or 2% (`confidence.py`). Coverage is the share of all 304 test pages
+accepted, the 30 reject pages included; error is the share of accepted pages whose type is wrong, a
+reject page always wrong; reject leak is the share of the 30 reject pages accepted. Small is 10
 train pages per type, 9 for email.
 
 **Coverage certified under 5% and under 2% error, all test pages**
 
 | Classifier                                  | Labels | Coverage at 5% | Error at 5% | Reject leak at 5% | Coverage at 2% | Error at 2% | Reject leak at 2% |
 |---------------------------------------------|--------|----------------|-------------|-------------------|----------------|-------------|-------------------|
-| TF-IDF + LR, train                          | 243    | 0.3223         | 0.0085      | 0.0278 (1 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
-| TF-IDF + LR, small                          | 119    | 0.3499         | 0.0157      | 0.0556 (2 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
-| UltraBERT-Embed-150M + LR, train            | 243    | 0.5592         | 0.0099      | 0.0278 (1 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
-| UltraBERT-Embed-150M + LR, small            | 119    | 0.4298         | 0.0064      | 0.0278 (1 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
-| d3-flash, `definitions`                     | 0      | 0.6915         | 0.0080      | 0.0556 (2 of 36)  | 0.4408         | 0.0000      | 0.0000 (0 of 36)  |
-| d3-flash, `fewshot`                         | 36     | 0.4160         | 0.0066      | 0.0278 (1 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
-| DiT + LR, train, image                      | 243    | 0.0000         | —           | 0.0000 (0 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
-| DiT + LR, small, image                      | 119    | 0.0000         | —           | 0.0000 (0 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
-| LayoutLMv3, train, image and OCR words      | 243    | 0.1763         | 0.0000      | 0.0000 (0 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
-| LayoutLMv3, small, image and OCR words      | 119    | 0.0000         | —           | 0.0000 (0 of 36)  | 0.0000         | —           | 0.0000 (0 of 36)  |
+| TF-IDF + LR, train                          | 204    | 0.5461         | 0.0542      | 0.0333 (1 of 30)  | 0.0000         | —           | 0.0000 (0 of 30)  |
+| TF-IDF + LR, small                          | 109    | 0.3849         | 0.0171      | 0.0333 (1 of 30)  | 0.0000         | —           | 0.0000 (0 of 30)  |
+| UltraBERT-Embed-150M + LR, train            | 204    | 0.7632         | 0.0517      | 0.1667 (5 of 30)  | 0.0000         | —           | 0.0000 (0 of 30)  |
+| UltraBERT-Embed-150M + LR, small            | 109    | 0.6151         | 0.0267      | 0.0333 (1 of 30)  | 0.0000         | —           | 0.0000 (0 of 30)  |
+| d3-flash, `definitions`, 150 words          | 0      | 0.8487         | 0.0349      | 0.3000 (9 of 30)  | 0.6711         | 0.0098      | 0.0667 (2 of 30)  |
+| d3-flash, `fewshot`, 150 / 50 words         | 33     | 0.7664         | 0.0515      | 0.3000 (9 of 30)  | 0.6612         | 0.0149      | 0.0667 (2 of 30)  |
+| DiT + LR, train, image                      | 204    | 0.0000         | —           | 0.0000 (0 of 30)  | 0.0000         | —           | 0.0000 (0 of 30)  |
+| DiT + LR, small, image                      | 109    | 0.0000         | —           | 0.0000 (0 of 30)  | 0.0000         | —           | 0.0000 (0 of 30)  |
+| LayoutLMv3, train, image and OCR words      | 204    | 0.0000         | —           | 0.0000 (0 of 30)  | 0.0000         | —           | 0.0000 (0 of 30)  |
+| LayoutLMv3, small, image and OCR words      | 109    | 0.0000         | —           | 0.0000 (0 of 30)  | 0.0000         | —           | 0.0000 (0 of 30)  |
 | gemma4:e4b, image                           | 0      | —              | —           | —                 | —              | —           | —                 |
 | gemma4:e4b, image + `none`                  | 0      | —              | —           | —                 | —              | —           | —                 |
 
-From `results/confidence/<name>.txt`, `tau_cp` lines, "all pages". Validation is 246 in-class
-pages, with 27 reject pages beside them. In synth-classify, at 200 validation rows the certified
+From `results/confidence/<name>.txt`, `tau_cp` lines, "all pages". Validation is 207 in-class
+pages, with 23 reject pages beside them. In synth-classify, at 200 validation rows the certified
 coverage at 5% ranged from 0 to 0.95 between draws for UltraBERT-Embed-150M + LR, and at 400 from
-0.72 to 0.93 (synth-classify `README.md` @ `6368e3b`), so one draw of 246 pages here is not a
-stable figure. At 2% the bound needs the top 114 validation pages right with no error before it
-accepts any page; only d3-flash's ranking gives that. gemma4:e4b's rows are "—" because it
-answers with a type name and no probability (`llm.py`, Ollama's structured output), so there is no
-score to set a cut-off on and `confidence.py` has nothing to route.
+0.72 to 0.93 (synth-classify `README.md` @ `6368e3b`), so one draw of 230 pages here is not a
+stable figure. The bound holds on validation, not on test: three rows land just above 5% on all
+test pages, TF-IDF + LR on train at 0.0542, UltraBERT-Embed-150M + LR on train at 0.0517 and
+d3-flash `fewshot` at 0.0515, each with an in-class error under 5% (0.0485, 0.0308 and 0.0134) and
+the reject pages it accepts on top. At 2% the bound needs the top 114 validation pages right with no
+error before it accepts any page; only d3-flash's ranking gives that. gemma4:e4b's rows are "—"
+because it answers with a type name and no probability (`llm.py`, Ollama's structured output), so
+there is no score to set a cut-off on and `confidence.py` has nothing to route.
 
 **Accuracy and seconds per page, test**
 
-| Classifier                       | Accuracy, 327 in-class test pages | Seconds per page, median | Seconds per page, mean |
+| Classifier                       | Accuracy, 274 in-class test pages | Seconds per page, median | Seconds per page, mean |
 |----------------------------------|-----------------------------------|--------------------------|------------------------|
-| TF-IDF + LR, train               | 0.8410                            | 0.00028                  | 0.0003                 |
-| TF-IDF + LR, small               | 0.8654                            | 0.000261                 | 0.000282               |
-| UltraBERT-Embed-150M + LR, train | 0.9480                            | 0.0347                   | 0.0316                 |
-| UltraBERT-Embed-150M + LR, small | 0.8991                            | 0.0346                   | 0.0315                 |
-| d3-flash, `definitions`          | 0.9511                            | 2.36                     | 2.71                   |
-| d3-flash, `fewshot`              | 0.7615                            | 51.8                     | 53.8                   |
-| DiT + LR, train                  | 0.6422                            | 0.0189                   | 0.0196                 |
-| DiT + LR, small                  | 0.5229                            | 0.019                    | 0.0195                 |
-| LayoutLMv3, train                | 0.8502                            | 0.0467                   | 0.0422                 |
-| LayoutLMv3, small                | 0.4220                            | 0.0454                   | 0.0413                 |
-| gemma4:e4b, image                | 0.9083                            | 0.973                    | 0.996                  |
-| gemma4:e4b, image + `none`       | 0.9113                            | 0.984                    | 0.996                  |
+| TF-IDF + LR, train               | 0.8175                            | 0.000308                 | 0.000336               |
+| TF-IDF + LR, small               | 0.8321                            | 0.000288                 | 0.000314               |
+| UltraBERT-Embed-150M + LR, train | 0.9343                            | 0.0349                   | 0.0336                 |
+| UltraBERT-Embed-150M + LR, small | 0.8759                            | 0.0349                   | 0.0335                 |
+| d3-flash, `definitions`          | 0.9818                            | 1.68                     | 1.71                   |
+| d3-flash, `fewshot`              | 0.9197                            | 11.4                     | 11.4                   |
+| DiT + LR, train                  | 0.5401                            | 0.0184                   | 0.0189                 |
+| DiT + LR, small                  | 0.4088                            | 0.0186                   | 0.019                  |
+| LayoutLMv3, train                | 0.8102                            | 0.0494                   | 0.0436                 |
+| LayoutLMv3, small                | 0.3285                            | 0.0492                   | 0.0435                 |
+| gemma4:e4b, image                | 0.9489                            | 0.985                    | 1.01                   |
+| gemma4:e4b, image + `none`       | 0.9307                            | 0.97                     | 0.98                   |
 
 From `results/test/<name>.txt`; names are `dit-real`, `dit-small`, `layoutlmv3-real`,
-`layoutlmv3-small`, `gemma4-image` and `gemma4-image-reject`. Seconds are the classifier alone, one
+`layoutlmv3-small`, `gemma4-image` and `gemma4-image-reject`, and the d3-flash rows are
+`d3-flash-definitions-s150` and `d3-flash-fewshot-s150-e50`. Seconds are the classifier alone, one
 page per call, on MPS for UltraBERT, DiT, LayoutLMv3 and d3-flash and through Ollama for gemma4:e4b;
-OCR and the image read are not in them. Tesseract takes 0.622 s a page median and 0.724 mean
+OCR and the image read are not in them. Tesseract takes 0.673 s a page median and 0.795 mean
 (`results/ocr-time.txt`), to be added for every classifier that reads the OCR text, LayoutLMv3
-included; DiT and gemma4:e4b read only the image. Fine-tuning LayoutLMv3 took 9.5 minutes on train
-and 6.2 on small, and the epoch kept was 10 of 10 and 9 of 10; on train its validation accuracy was
-still rising at epoch 10, 0.7363 to 0.7656 (`results/train/layoutlmv3-real.txt`,
-`results/train/layoutlmv3-small.txt`). DiT + LR trained in 20.54 s and 15.48 s
+included; DiT and gemma4:e4b read only the image. Fine-tuning LayoutLMv3 took 7.9 minutes on train
+and 5.3 on small, and the epoch kept was 10 of 10 and 6 of 10; on train its validation accuracy was
+still rising at epoch 10, 0.7217 to 0.7391 (`results/train/layoutlmv3-real.txt`,
+`results/train/layoutlmv3-small.txt`). DiT + LR trained in 18.96 s and 15.39 s
 (`results/train/dit-real.txt`, `results/train/dit-small.txt`).
 
-The 36 examples make d3-flash worse, not better. With `fewshot` it puts all 15 scientific
-publications under news_article and 37 of 53 resumes under handwritten
-(`results/test/d3-flash-fewshot.txt`), where with `definitions` it is 95% accurate. Each page's
-prompt grows from about 400 words of question to about 7,800, and each page takes 20 times as long.
+d3-flash's 5 in-class test errors with `definitions` are a budget and a news article taken for
+memos and three specifications, one taken for a letter and two for news articles
+(`results/test/d3-flash-definitions-s150.txt`). With `fewshot`, 14 of its 22 errors are
+scientific publications, 6 put under news_article and 8 under specification, so only 1 of 15 is
+right (`results/test/d3-flash-fewshot-s150-e50.txt`).
 
 **What the question and state lengths do**
 
-| Prompt        | Options | State words | Example words | Accuracy, 327 in-class test pages | Coverage at 5% | Reject leak at 5% | Coverage at 2% | Reject leak at 2% | Seconds per page, median |
+| Prompt        | Options | State words | Example words | Accuracy, 274 in-class test pages | Coverage at 5% | Reject leak at 5% | Coverage at 2% | Reject leak at 2% | Seconds per page, median |
 |---------------|---------|-------------|---------------|-----------------------------------|----------------|-------------------|----------------|-------------------|--------------------------|
-| `definitions` | 12      | 1500        | —             | 0.9511                            | 0.6915         | 0.0556 (2 of 36)  | 0.4408         | 0.0000 (0 of 36)  | 2.36                     |
-| `definitions` | 12      | 500         | —             | 0.9480                            | 0.6915         | 0.0556 (2 of 36)  | 0.4601         | 0.0000 (0 of 36)  | 2.3                      |
-| `definitions` | 12      | 150         | —             | 0.9419                            | 0.6804         | 0.0278 (1 of 36)  | 0.5152         | 0.0278 (1 of 36)  | 1.75                     |
-| `fewshot`     | 12      | 1500        | 300           | 0.7615                            | 0.4160         | 0.0278 (1 of 36)  | 0.0000         | 0.0000 (0 of 36)  | 51.8                     |
-| `fewshot`     | 12      | 150         | 50            | 0.9144                            | 0.6198         | 0.0833 (3 of 36)  | 0.4380         | 0.0000 (0 of 36)  | 11.2                     |
-| `definitions` | 13      | 150         | —             | 0.9235                            | 0.7879         | 0.1111 (4 of 36)  | 0.5482         | 0.0000 (0 of 36)  | 1.74                     |
-| `definitions` | 12      | 150         | —             | 0.9261 (of 230)                   | 0.6053         | 0.0278 (1 of 36)  | 0.0000         | 0.0000 (0 of 36)  | 1.75                     |
-| `definitions` | 6       | 150         | —             | 0.9391 (of 230)                   | 0.4699         | 0.0000 (0 of 36)  | 0.0000         | 0.0000 (0 of 36)  | 1.24                     |
+| `definitions` | 11      | 1500        | —             | 0.9854                            | 0.8388         | 0.2667 (8 of 30)  | 0.6776         | 0.0667 (2 of 30)  | 2.24                     |
+| `definitions` | 11      | 150         | —             | 0.9818                            | 0.8487         | 0.3000 (9 of 30)  | 0.6711         | 0.0667 (2 of 30)  | 1.68                     |
+| `fewshot`     | 11      | 150         | 50            | 0.9197                            | 0.7664         | 0.3000 (9 of 30)  | 0.6612         | 0.0667 (2 of 30)  | 11.4                     |
+| `definitions` | 12      | 150         | —             | 0.9708                            | 0.9013         | 0.2667 (8 of 30)  | 0.8684         | 0.2000 (6 of 30)  | 1.72                     |
+| `definitions` | 11      | 150         | —             | 0.9746 (of 197)                   | 0.8062         | 0.2000 (6 of 30)  | 0.0000         | 0.0000 (0 of 30)  | 1.68                     |
+| `definitions` | 6       | 150         | —             | 0.9797 (of 197)                   | 0.8502         | 0.2333 (7 of 30)  | 0.7048         | 0.0333 (1 of 30)  | 1.3                      |
 
 d3-flash, `score.py --d3 --state-words N --example-words N`: the page's OCR text is cut to its
-first N state words, and each `fewshot` example to its first N example words. Options are the 12
-types, or with `--reject-option` 13, `none` the last; a page labelled `none` is never accepted.
+first N state words, and each `fewshot` example to its first N example words. Options are the 11
+types, or with `--reject-option` 12, `none` the last; a page labelled `none` is never accepted.
 Accuracy and seconds from `results/test/<name>.txt`; coverage and reject leak from the `tau_cp`
-lines, "all pages", of `results/confidence/<name>.txt`. Names are `d3-flash-definitions`, `d3-flash-definitions-s500`,
-`d3-flash-definitions-s150`, `d3-flash-fewshot`, `d3-flash-fewshot-s150-e50`,
-`d3-flash-definitions-s150-reject`, `d3-flash-definitions-s150-on6` and
-`d3-flash-definitions-s150-c6`. The last two rows are on the 6-class subset of test, the 266 pages
-labelled handwritten, resume, letter, form, news_article, specification or `none` (230 in-class, 36
-reject), with cut-offs from the 198 validation pages so labelled; the 12-option row is
-`d3-flash-definitions-s150`'s answers on those pages, read from the cache, and the 6-option row
-asks with those 6 types alone (`score.py --pages six`, `--classes six`).
+lines, "all pages", of `results/confidence/<name>.txt`. Names are `d3-flash-definitions`,
+`d3-flash-definitions-s150`, `d3-flash-fewshot-s150-e50`, `d3-flash-definitions-s150-reject`,
+`d3-flash-definitions-s150-on6` and `d3-flash-definitions-s150-c6`. The last two rows are on the
+6-class subset of test, the 227 pages labelled resume, letter, form, news_article, specification,
+budget or `none` (197 in-class, 30 reject), with cut-offs from the 170 validation pages so labelled;
+the 11-option row is `d3-flash-definitions-s150`'s answers on those pages, read from the cache, and
+the 6-option row asks with those 6 types alone (`score.py --pages six`, `--classes six`).
 
-Cutting the page costs little: from 1,500 words to 150, in-class accuracy falls from 0.9511 to
-0.9419, and the median page goes from 2.36 s to 1.75 s. The examples are what hurt
-`fewshot`: cut to 50 words, its accuracy rises from 0.7615 to 0.9144 and its median page falls from 51.8 s
-to 11.2 s, but it is still below `definitions` at the same 150-word state, and it lets 3 reject pages
-through at 5%. Every difference in coverage here is a few pages on one validation draw of 273.
+Two rows of the table with handwritten were not rerun. `fewshot` at a 1,500-word state and 300-word
+examples took 51.8 s a page median at `5fef286`, nearly 8 hours for validation and test, and was
+dropped; the 150 / 50 row stands for `fewshot`. The 500-word `definitions` row was not in this
+rerun either. Both are at `5fef286`, with handwritten as a twelfth class.
 
-**How much depends on the number of choices?** Little of the accuracy, and the coverage moves the
-other way. On the 230 in-class test pages of the 6-class subset, 6 options are right on 216 and 12
-on 213, 0.9391 against 0.9261; 11 of the 6-option run's 14 errors are handwritten pages, labelled
-letter or form (`results/test/d3-flash-definitions-s150-c6.txt`,
+Cutting the page costs little: from 1,500 words to 150, in-class accuracy falls from 0.9854 to
+0.9818, coverage at 5% moves from 0.8388 to 0.8487 and at 2% from 0.6776 to 0.6711, and the median
+page goes from 2.24 s to 1.68 s. The examples still hurt: `fewshot` at 50-word examples is 0.9197
+against 0.9818 for `definitions` at the same 150-word state, certifies less at both levels, and
+takes 11.4 s a page against 1.68. Every difference in coverage here is a few pages on one
+validation draw of 230.
+
+**How much depends on the number of choices?** Little of the accuracy, and here fewer choices raise
+the coverage. On the 197 in-class test pages of the 6-class subset, 6 options are right on 193 and
+11 on 192, 0.9797 against 0.9746 (`results/test/d3-flash-definitions-s150-c6.txt`,
 `results/test/d3-flash-definitions-s150-on6.txt`). Fewer options raise the top probability, a mean
-of 0.9513 on right answers against 0.9286, so the 5% cut-off rises from 0.908260 to 0.993136 and
-coverage falls from 0.6053 to 0.4699, with no reject page through against 1 of 36. At 2% neither
-certifies a page: no cut-off on the 198 validation pages has a Clopper-Pearson bound that low, where
-all 273 gave 0.5152 with 12 options (`results/confidence/d3-flash-definitions-s150-c6.txt`,
-`results/confidence/d3-flash-definitions-s150-on6.txt`). The median page takes 1.24 s with 6
-options against 1.75 s, the shorter question.
+of 0.9797 on right answers against 0.9636, and the ranking holds: the 5% cut-off rises from 0.867704
+to 0.886821 and coverage still rises from 0.8062 to 0.8502, with 7 reject pages through against 6
+of 30. At 2% the 6-option run certifies 0.7048 with 1 of 30 reject pages through, and the 11-option
+answers certify nothing: no cut-off on the 170 validation pages has a Clopper-Pearson bound that
+low, where all 230 gave 0.6711 with 11 options
+(`results/confidence/d3-flash-definitions-s150-c6.txt`,
+`results/confidence/d3-flash-definitions-s150-on6.txt`). The median page takes 1.3 s with 6
+options against 1.68 s, the shorter question.
 
-**Does a 13th option, `none`, catch reject pages?** Mostly. At the 150-word state d3-flash labels 30
-of the 36 reject test pages `none` (0.8333), against gemma4:e4b's 15 of 36 with `none` allowed.
-Since a `none` page goes to a person, reject leak falls from 1 of 36 to 0 at 2%; at 5% the cut-off
-is lower, 0.642976 against 0.880820, and 4 of the 6 reject pages given a type pass it, against 1 of
-36 with 12 options. The cost on in-class pages is 19 of 327 labelled `none` (0.0581), 11 of them
-handwritten, 6 specifications, a budget and a resume, so in-class accuracy falls from 0.9419 to
-0.9235. Coverage still rises, from 0.6804 to 0.7879 at 5% (error 0.0040 to 0.0210) and from 0.5152
-to 0.5482 at 2% (error 0.0053 to 0.0000), and the median page takes 1.74 s against 1.75
+**Does a 12th option, `none`, catch reject pages?** Two in three. At the 150-word state d3-flash
+labels 20 of the 30 reject test pages `none` (0.6667), against gemma4:e4b's 16 of 30 with `none`
+allowed. The cut-off falls with it, to 0.473749 from 0.794289 at 5% and to 0.637405 from 0.964708
+at 2%, so of the 10 reject pages given a type, 8 pass at 5% against 9 of 30 with 11 options, and 6
+pass at 2% against 2. The cost on in-class pages is 8 of 274 labelled `none` (0.0292), 6 of them
+specifications, a budget and a news article, so in-class accuracy falls from 0.9818 to 0.9708;
+every in-class page it gives a type is right. Coverage rises, from 0.8487 to 0.9013 at 5% (error
+0.0349 to 0.0292) and from 0.6711 to 0.8684 at 2%, but the error at 2% rises from 0.0098 to 0.0227,
+above the 2% it was certified for: on validation 1 of 23 reject pages passed that cut-off, on test
+6 of 30. The median page takes 1.72 s against 1.68
 (`results/test/d3-flash-definitions-s150-reject.txt`,
 `results/confidence/d3-flash-definitions-s150-reject.txt`).
 
-With `none` allowed, gemma4:e4b labels 15 of the 36 reject pages `none` (0.4167) and 6 of the 327
-in-class pages (0.0183), 5 of them specifications (`results/test/gemma4-image-reject.txt`). The
-other 21 reject pages get a type, as all 36 do without `none`. Over all 363 test pages, where a
-`none` on a reject page is right, its accuracy is 0.8623 against 0.8182 without `none`.
+With `none` allowed, gemma4:e4b labels 16 of the 30 reject pages `none` (0.5333) and 5 of the 274
+in-class pages (0.0182), all 5 specifications (`results/test/gemma4-image-reject.txt`). The other
+14 reject pages get a type, as all 30 do without `none`. Over all 304 test pages, where a `none` on
+a reject page is right, its accuracy is 0.8914 against 0.8553 without `none`.
 
 **Does the page image beat OCR text?** Not here. Against UltraBERT-Embed-150M + LR on train's OCR
-text, 0.5592 coverage at 5% and 0.9480 accuracy, and d3-flash `definitions` on the first 150 words,
-0.6804 and 0.9419, every image row is lower on both, or has no coverage at all. DiT + LR on the
-image alone reaches 0.6422 accuracy and certifies no coverage; LayoutLMv3, which reads the image and
-the OCR words and boxes together, reaches 0.8502 and 0.1763 coverage at 5%, about a third of
-UltraBERT's. gemma4:e4b on the image comes closest in accuracy, 0.9083, 4 points under UltraBERT,
-and needs no OCR, but it has no score, so none of its pages can be passed without a person; 18 of
-its 30 errors on in-class pages are handwritten pages labelled letter, memo or questionnaire
-(`results/test/gemma4-image.txt`). On seconds, gemma4:e4b's 0.973 s median is above Tesseract's
-0.622 s plus UltraBERT's 0.0347 s, and under d3-flash's 1.75 s plus OCR. Trained on small, both
-image models fall further behind the text ones: 0.5229 and 0.4220 accuracy, no coverage, against
-0.8991 and 0.4298 for UltraBERT small.
+text, 0.7632 coverage at 5% and 0.9343 accuracy, and d3-flash `definitions` on the first 150 words,
+0.8487 and 0.9818, every image row with a score is lower on both and certifies no coverage. DiT + LR
+on the image alone reaches 0.5401 accuracy; LayoutLMv3, which reads the image and the OCR words and
+boxes together, reaches 0.8102. gemma4:e4b on the image is 0.9489 accurate, above UltraBERT and
+under d3-flash, and needs no OCR, but it has no score, so none of its pages can be passed without a
+person; 6 of its 14 errors on in-class pages are letters and emails labelled memo
+(`results/test/gemma4-image.txt`). On seconds, gemma4:e4b's 0.985 s median is above Tesseract's
+0.673 s plus UltraBERT's 0.0349 s, and under d3-flash's 1.68 s plus OCR. Trained on small, both
+image models fall further behind the text ones: 0.4088 and 0.3285 accuracy, no coverage, against
+0.8759 and 0.6151 for UltraBERT small.
 
 ## Files
 
-- `classes.py` — `CLASSES`, the 12 RVL-CDIP-N types with a one-sentence definition each, saying
-  what separates the type from its near pair; `REJECT_LABEL`, `"none"`. `test_classes.py` checks
-  that `CLASSES` are the labels of the N rows of `data/pdf/manifest.jsonl`.
+- `classes.py` — `CLASSES`, 11 of the 12 RVL-CDIP-N types, handwritten left out, with a one-sentence
+  definition each, saying what separates the type from its near pair; `REJECT_LABEL`, `"none"`.
+  `test_classes.py` checks that `CLASSES` are the labels of the N rows of `data/pdf/manifest.jsonl`
+  less handwritten.
 - `fetch.py` — downloads the source PDFs to `data/pdf/` and writes `data/pdf/manifest.jsonl`, one
   row per PDF with its sha256, aliases and labelled page; resumable.
 - `quality.py` — the quality gate above, on each PDF's labelled page; writes
@@ -278,8 +298,8 @@ image models fall further behind the text ones: 0.5229 and 0.4220 accuracy, no c
   `dmis-lab/UltraBERT-Embed-150M` embeddings, at synth-classify's pinned revision, with a task
   instruction before the page text and the first 512 tokens kept. `--train real` is every train
   page; `--train small` is 10 per class, drawn with seed 0, the ids in data/selection.json under
-  `small`; email has 9 train pages and gives all 9, so small is 119 pages. Neither holds a reject
-  page: train's 27 are left out. Every classifier uses `class_weight="balanced"`. For
+  `small`; email has 9 train pages and gives all 9, so small is 109 pages. Neither holds a reject
+  page: train's 23 are left out. Every classifier uses `class_weight="balanced"`. For
   `--embed` and `--dit`, C is the value in `C_GRID` (0.01, 0.1, 1, 10), each fitted on train, with
   the highest validation AUROC of top probability against correctness over all validation pages, a
   tie going to the smaller C; `results/train/<name>.txt` gives each value's AUROC and the choice.
@@ -309,7 +329,7 @@ image models fall further behind the text ones: 0.5229 and 0.4220 accuracy, no c
   words and boxes and the image; its seconds are the forward pass, the page read and the processor
   excluded. `--dump` writes each page's prediction and top probability for `confidence.py`.
 - `llm.py` — `classify` sends one page image, `data/<split>/<id>.png`, to `gemma4:e4b` on Ollama
-  with `PROMPT`: the 12 `CLASSES` names and their definitions. The reply is restricted by Ollama's
+  with `PROMPT`: the 11 `CLASSES` names and their definitions. The reply is restricted by Ollama's
   structured output to an enum of those names, at temperature 0 with thinking off. With
   `allow_reject` the prompt is `REJECT_PROMPT`, which adds `none` for a page that fits no type, and
   the enum holds it too. `score.py --llm gemma4-image` or `--llm gemma4-image-reject` scores it; its
@@ -320,13 +340,13 @@ image models fall further behind the text ones: 0.5229 and 0.4220 accuracy, no c
   `id`, `label` and `seconds`: `uv run python llm.py --split train`. That file is tracked.
 - `d3.py` — `vllm-sr/d3-flash`, a Decision 3.0 model from vLLM Semantic Router, run locally on MPS
   in bfloat16 at a pinned revision and asked one `choice` question per page; it answers with a
-  probability for every type. Copied from synth-classify's. The question's options are the 12
+  probability for every type. Copied from synth-classify's. The question's options are the 11
   `CLASSES` and its criteria their definitions; with `--prompt fewshot` each definition is followed
   by the OCR text of that type's 3 `data/fewshot.txt` pages, each cut to its first 300 words. The
   state is the page's OCR text cut to its first 1,500 words. `--state-words N` and, with
   `fewshot`, `--example-words N` change those cuts and add `-s<N>` and `-e<N>` to the name.
-  `--reject-option` adds `none` as a 13th option, with the criterion "A page that fits none of the
-  12 types.", and `-reject` to the name; a `none` answer is right on a reject page and wrong on an
+  `--reject-option` adds `none` as a 12th option, with the criterion "A page that fits none of the
+  11 types.", and `-reject` to the name; a `none` answer is right on a reject page and wrong on an
   in-class one, as for `gemma4-image-reject`, and the report adds the same two shares. Every answer
   is cached in
   `results/d3/cache.jsonl`, so a rerun of `score.py --d3` rebuilds its report without the model.
@@ -336,9 +356,9 @@ image models fall further behind the text ones: 0.5229 and 0.4220 accuracy, no c
   in `.venv-d3`, built from `requirements-d3.txt`, with `HF_HOME` at `data/hf`, a symlink to
   synth-classify's `data/hf`, which holds the model's 16 GB. Names are `d3-flash-definitions` and
   `d3-flash-fewshot`, with `-s<N>`, `-e<N>` and `-reject` added as above. `--classes six` asks with
-  the 6 types with the most test pages as the options — handwritten, resume, letter, form,
-  news_article and specification, `CLASS_SETS` in `d3.py` — scores only pages labelled one of them
-  or `none`, and adds `-c6`; `--pages six` scores the same pages with all 12 options and adds
+  the 6 types with the most test pages as the options — resume, letter, form, news_article,
+  specification and budget, `CLASS_SETS` in `d3.py` — scores only pages labelled one of them
+  or `none`, and adds `-c6`; `--pages six` scores the same pages with all 11 options and adds
   `-on6`. The option set is part of the cache key.
 - `confidence.py` — adapted from synth-classify's. For α 0.02, 0.05 and 0.10 it picks two cut-offs
   on every validation page: `tau`, the lowest score whose accepted validation error is at most α,
@@ -348,9 +368,9 @@ image models fall further behind the text ones: 0.5229 and 0.4220 accuracy, no c
   are over the other pages. It then reports on test, at each cut-off,
   coverage and error on in-class pages, the reject leak (the share of reject pages at or above it),
   and coverage and error for a stream with 10% reject pages and for all test pages. `--dev-size N
-  --dev-seed S` fits on N validation pages, N / 13 from each class and from the reject pages, and
+  --dev-seed S` fits on N validation pages, N / 12 from each class and from the reject pages, and
   writes `results/confidence/<name>-dev<N>-seed<S>.txt`. `test_confidence.py` checks it on a
-  hand-made 12-row dump.
+  hand-made 13-row dump.
 - `data/` — the manifest and the selection are tracked. The page images are ignored by git.
 - `ocr/` — the OCR cache, one JSON file per page.
 - `models/` — trained classifiers, ignored by git and rebuilt by `train.py` and `finetune.py`.

@@ -1,21 +1,20 @@
 model     vllm-sr/d3-flash prompt definitions, state 150 words
-validation pages 273 (27 reject pages, always wrong)
-accuracy  0.8718
-wrong     35
-accuracy  0.9675 without reject pages
-seconds   1.76 median, 1.81 mean per page, one page per call, OCR excluded
+validation pages 230 (23 reject pages, always wrong)
+accuracy  0.8739
+wrong     29
+accuracy  0.9710 without reject pages
+seconds   1.71 median, 1.81 mean per page, one page per call, OCR excluded
 confusion (row: true class, column: predicted class, numbered as the rows are)
-                              0   1   2   3   4   5   6   7   8   9  10  11  12
-   0 letter                  37   0   0   0   0   0   0   0   0   0   0   0   0
-   1 memo                     0  13   0   0   0   0   0   0   0   0   0   0   0
-   2 form                     0   0  19   0   0   0   0   0   0   0   0   0   0
-   3 questionnaire            0   0   0  12   0   0   0   0   0   0   0   0   0
-   4 budget                   0   0   0   0  14   0   0   0   0   0   0   1   0
-   5 invoice                  0   0   0   0   0  14   0   0   0   0   0   0   0
-   6 email                    0   1   0   0   0   0   8   0   0   0   0   0   0
-   7 news_article             0   0   0   0   0   0   0  18   0   0   0   1   0
-   8 scientific_publication   0   0   0   0   0   0   0   0  12   0   0   0   0
-   9 specification            0   0   0   0   0   0   0   0   0  18   0   0   0
-  10 resume                   0   0   0   0   0   0   0   0   0   0  39   0   0
-  11 handwritten              0   2   1   0   0   1   0   1   0   0   0  34   0
-  12 none                     0  12   5   0   1   1   0   6   2   0   0   0   0
+                              0   1   2   3   4   5   6   7   8   9  10  11
+   0 letter                  37   0   0   0   0   0   0   0   0   0   0   0
+   1 memo                     0  13   0   0   0   0   0   0   0   0   0   0
+   2 form                     0   0  19   0   0   0   0   0   0   0   0   0
+   3 questionnaire            0   0   0  12   0   0   0   0   0   0   0   0
+   4 budget                   0   0   0   0  14   1   0   0   0   0   0   0
+   5 invoice                  0   0   0   0   0  14   0   0   0   0   0   0
+   6 email                    0   1   0   0   0   0   8   0   0   0   0   0
+   7 news_article             0   0   0   1   0   0   0  17   1   0   0   0
+   8 scientific_publication   0   0   0   0   0   0   0   0  12   0   0   0
+   9 specification            0   0   0   0   0   0   0   2   0  16   0   0
+  10 resume                   0   0   0   0   0   0   0   0   0   0  39   0
+  11 none                     1   7  11   0   2   0   0   1   0   1   0   0

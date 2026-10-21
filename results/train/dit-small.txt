@@ -1,9 +1,9 @@
 model     models/dit-small
-train     small (119 pages)
-pages     119
-seconds   15.48 (base model load to save; validation embedding, C grid and page image reads included)
-C 0.01  validation AUROC 0.7099
-C 0.1   validation AUROC 0.7132
-C 1     validation AUROC 0.7017
-C 10    validation AUROC 0.6784
-chosen    C 0.1 (highest validation AUROC; a tie goes to the smaller C)
+train     small (109 pages)
+pages     109
+seconds   15.39 (base model load to save; validation embedding, C grid and page image reads included)
+C 0.01  validation AUROC 0.7464
+C 0.1   validation AUROC 0.7018
+C 1     validation AUROC 0.6840
+C 10    validation AUROC 0.6635
+chosen    C 0.01 (highest validation AUROC; a tie goes to the smaller C)

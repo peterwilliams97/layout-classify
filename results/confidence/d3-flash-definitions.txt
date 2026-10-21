@@ -1,97 +1,94 @@
 model     d3-flash-definitions
-validation results/confidence/dumps/d3-flash-definitions-validation.jsonl (273 pages, 27 reject; accuracy 0.8681)
+validation results/confidence/dumps/d3-flash-definitions-validation.jsonl (230 pages, 23 reject; accuracy 0.8783)
 score     top probability over CLASSES; a REJECT_LABEL page is always wrong
-validation AUROC of score against correctness, all pages  0.8973
+validation AUROC of score against correctness, all pages  0.9523
 routing: accept a page when its score is at least the cut-off, chosen on the validation pages above
   tau     lowest validation score whose accepted validation error is at most alpha
   tau_cp  the same with the validation error's one-sided 90% Clopper-Pearson upper bound
   reject_leak  share of reject pages scoring at least the cut-off
   alpha 0.02
-    tau    0.908260  validation coverage 0.6447 error 0.0170 reject_leak 0.1111
-    tau_cp 0.987305  validation coverage 0.4542 error 0.0000 reject_leak 0.0000
+    tau    0.894389  validation coverage 0.7696 error 0.0169 reject_leak 0.1304
+    tau_cp 0.970807  validation coverage 0.6435 error 0.0000 reject_leak 0.0000
   alpha 0.05
-    tau    0.803248  validation coverage 0.7912 error 0.0463 reject_leak 0.3333
-    tau_cp 0.884520  validation coverage 0.6740 error 0.0272 reject_leak 0.1481
+    tau    0.723498  validation coverage 0.8870 error 0.0490 reject_leak 0.3913
+    tau_cp 0.827753  validation coverage 0.8304 error 0.0262 reject_leak 0.2174
   alpha 0.10
-    tau    0.388498  validation coverage 0.9597 error 0.0992 reject_leak 0.7778
-    tau_cp 0.652761  validation coverage 0.8828 error 0.0705 reject_leak 0.5556
+    tau    0.440256  validation coverage 0.9739 error 0.0982 reject_leak 0.8261
+    tau_cp 0.599077  validation coverage 0.9304 error 0.0701 reject_leak 0.6087
 
-test: results/confidence/dumps/d3-flash-definitions-test.jsonl (363 pages, 36 reject)
-  in-class pages 327, accuracy 0.9511
-  AUROC of score against correctness, in-class  0.9664
-  mean score, right predictions       0.9344 (311)
-  mean score, wrong predictions       0.4887 (16)
-  ECE, 10 equal-count bins, isotonic fitted on validation  before 0.0385  after 0.0457
+test: results/confidence/dumps/d3-flash-definitions-test.jsonl (304 pages, 30 reject)
+  in-class pages 274, accuracy 0.9854
+  AUROC of score against correctness, in-class  0.9907
+  mean score, right predictions       0.9577 (270)
+  mean score, wrong predictions       0.5260 (4)
+  ECE, 10 equal-count bins, isotonic fitted on validation  before 0.0340  after 0.0504
   stream_10: 10% reject pages, 90% in-class
   alpha 0.02
-    tau    0.908260
-      in-class             coverage 0.7370 error 0.0000
-      reject_leak          0.0556 (2 of 36)
-      stream_10            coverage 0.6689 error 0.0083
-      all pages, 36 of 363 reject  coverage 0.6694 error 0.0082
-    tau_cp 0.987305
-      in-class             coverage 0.4893 error 0.0000
-      reject_leak          0.0000 (0 of 36)
-      stream_10            coverage 0.4404 error 0.0000
-      all pages, 36 of 363 reject  coverage 0.4408 error 0.0000
+    tau    0.894389
+      in-class             coverage 0.8723 error 0.0000
+      reject_leak          0.2000 (6 of 30)
+      stream_10            coverage 0.8050 error 0.0248
+      all pages, 30 of 304 reject  coverage 0.8059 error 0.0245
+    tau_cp 0.970807
+      in-class             coverage 0.7445 error 0.0000
+      reject_leak          0.0667 (2 of 30)
+      stream_10            coverage 0.6767 error 0.0099
+      all pages, 30 of 304 reject  coverage 0.6776 error 0.0097
     recall among accepted at tau, in-class, per true class (accepted of total)
-      letter                 1.0000 (49 of 49)
+      letter                 1.0000 (48 of 49)
       memo                   1.0000 (16 of 17)
       form                   1.0000 (17 of 26)
       questionnaire          1.0000 (1 of 15)
-      budget                 1.0000 (17 of 20)
-      invoice                1.0000 (16 of 18)
-      email                  1.0000 (11 of 12)
-      news_article           1.0000 (25 of 25)
-      scientific_publication 1.0000 (14 of 15)
-      specification          1.0000 (19 of 24)
-      resume                 1.0000 (52 of 53)
-      handwritten            1.0000 (4 of 53)
-  alpha 0.05
-    tau    0.803248
-      in-class             coverage 0.8410 error 0.0036
-      reject_leak          0.1111 (4 of 36)
-      stream_10            coverage 0.7680 error 0.0181
-      all pages, 36 of 363 reject  coverage 0.7686 error 0.0179
-    tau_cp 0.884520
-      in-class             coverage 0.7615 error 0.0000
-      reject_leak          0.0556 (2 of 36)
-      stream_10            coverage 0.6909 error 0.0080
-      all pages, 36 of 363 reject  coverage 0.6915 error 0.0080
-    recall among accepted at tau, in-class, per true class (accepted of total)
-      letter                 1.0000 (49 of 49)
-      memo                   1.0000 (17 of 17)
-      form                   1.0000 (22 of 26)
-      questionnaire          1.0000 (7 of 15)
-      budget                 1.0000 (19 of 20)
+      budget                 1.0000 (18 of 20)
       invoice                1.0000 (18 of 18)
       email                  1.0000 (11 of 12)
-      news_article           1.0000 (25 of 25)
-      scientific_publication 1.0000 (14 of 15)
-      specification          1.0000 (20 of 24)
+      news_article           1.0000 (24 of 25)
+      scientific_publication 1.0000 (15 of 15)
+      specification          1.0000 (19 of 24)
       resume                 1.0000 (52 of 53)
-      handwritten            0.9524 (21 of 53)
+  alpha 0.05
+    tau    0.723498
+      in-class             coverage 0.9416 error 0.0000
+      reject_leak          0.4333 (13 of 30)
+      stream_10            coverage 0.8908 error 0.0486
+      all pages, 30 of 304 reject  coverage 0.8914 error 0.0480
+    tau_cp 0.827753
+      in-class             coverage 0.9015 error 0.0000
+      reject_leak          0.2667 (8 of 30)
+      stream_10            coverage 0.8380 error 0.0318
+      all pages, 30 of 304 reject  coverage 0.8388 error 0.0314
+    recall among accepted at tau, in-class, per true class (accepted of total)
+      letter                 1.0000 (48 of 49)
+      memo                   1.0000 (17 of 17)
+      form                   1.0000 (23 of 26)
+      questionnaire          1.0000 (11 of 15)
+      budget                 1.0000 (19 of 20)
+      invoice                1.0000 (18 of 18)
+      email                  1.0000 (12 of 12)
+      news_article           1.0000 (24 of 25)
+      scientific_publication 1.0000 (15 of 15)
+      specification          1.0000 (19 of 24)
+      resume                 1.0000 (52 of 53)
   alpha 0.10
-    tau    0.388498
-      in-class             coverage 0.9786 error 0.0312
-      reject_leak          0.9444 (34 of 36)
-      stream_10            coverage 0.9752 error 0.1251
-      all pages, 36 of 363 reject  coverage 0.9752 error 0.1243
-    tau_cp 0.652761
-      in-class             coverage 0.9297 error 0.0164
-      reject_leak          0.3889 (14 of 36)
-      stream_10            coverage 0.8756 error 0.0601
-      all pages, 36 of 363 reject  coverage 0.8760 error 0.0597
+    tau    0.440256
+      in-class             coverage 0.9964 error 0.0110
+      reject_leak          0.8667 (26 of 30)
+      stream_10            coverage 0.9834 error 0.0982
+      all pages, 30 of 304 reject  coverage 0.9836 error 0.0970
+    tau_cp 0.599077
+      in-class             coverage 0.9745 error 0.0037
+      reject_leak          0.6333 (19 of 30)
+      stream_10            coverage 0.9403 error 0.0708
+      all pages, 30 of 304 reject  coverage 0.9408 error 0.0699
     recall among accepted at tau, in-class, per true class (accepted of total)
       letter                 1.0000 (49 of 49)
       memo                   1.0000 (17 of 17)
       form                   1.0000 (26 of 26)
-      questionnaire          1.0000 (15 of 15)
+      questionnaire          0.9333 (15 of 15)
       budget                 1.0000 (20 of 20)
       invoice                1.0000 (18 of 18)
       email                  1.0000 (12 of 12)
-      news_article           1.0000 (25 of 25)
+      news_article           1.0000 (24 of 25)
       scientific_publication 1.0000 (15 of 15)
-      specification          0.9130 (23 of 24)
+      specification          0.9167 (24 of 24)
       resume                 1.0000 (53 of 53)
-      handwritten            0.8298 (47 of 53)

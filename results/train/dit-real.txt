@@ -1,9 +1,9 @@
 model     models/dit-real
-train     real (243 pages)
-pages     243
-seconds   20.54 (base model load to save; validation embedding, C grid and page image reads included)
-C 0.01  validation AUROC 0.7039
-C 0.1   validation AUROC 0.7165
-C 1     validation AUROC 0.7527
-C 10    validation AUROC 0.7442
-chosen    C 1 (highest validation AUROC; a tie goes to the smaller C)
+train     real (204 pages)
+pages     204
+seconds   18.96 (base model load to save; validation embedding, C grid and page image reads included)
+C 0.01  validation AUROC 0.7193
+C 0.1   validation AUROC 0.6781
+C 1     validation AUROC 0.6857
+C 10    validation AUROC 0.7024
+chosen    C 0.01 (highest validation AUROC; a tie goes to the smaller C)
