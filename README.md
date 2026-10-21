@@ -233,6 +233,29 @@ against 0.9818 for `definitions` at the same 150-word state, certifies less at b
 takes 11.4 s a page against 1.68. Every difference in coverage here is a few pages on one
 validation draw of 230.
 
+**How much the cut-off moves between validation draws**
+
+| Classifier                         | Coverage at 5%, 3 draws (all 230) | Error at 5%, max | Coverage at 2%, 3 draws (all 230) | Error at 2%, max | Reject leak at 5%, 3 draws |
+|------------------------------------|-----------------------------------|------------------|-----------------------------------|------------------|----------------------------|
+| d3-flash, `definitions`, 150 words | 0.7928–0.8487 (0.8487)            | 0.0349           | 0.0000–0.0000 (0.6711)            | —                | 0.2000–0.3000              |
+| d3-flash, `definitions` + `none`   | 0.8980–0.9013 (0.9013)            | 0.0293           | 0.0000–0.8684 (0.8684)            | 0.0227           | 0.2667–0.2667              |
+| UltraBERT-Embed-150M + LR, train   | 0.3651–0.7632 (0.7632)            | 0.0517           | 0.0000–0.0000 (0.0000)            | —                | 0.0000–0.1667              |
+
+`confidence.py --dev-size 144 --dev-seed S`, S = 0, 1, 2: cut-offs fitted on 12 validation pages
+per type and 12 reject pages, 141 pages because email has 9, then applied to all 304 test pages;
+the `tau_cp` lines, "all pages", of `results/confidence/<name>-dev144-seed<S>.txt`, with the
+figure in brackets from `results/confidence/<name>.txt`. Names are `d3-flash-definitions-s150`,
+`d3-flash-definitions-s150-reject` and `ultrabert-embed-real`. Error at 2% is "—" where no draw
+accepts a page.
+
+At 5%, d3-flash's two rows move little across the draws, 0.7928 to 0.8487 and 0.8980 to 0.9013,
+and every draw's error is under 5% on test. UltraBERT-Embed-150M + LR moves from 0.3651 to 0.7632,
+so its 0.7632 on all 230 pages is the top of its range, not the middle. At 2% the 141 pages
+certify nothing for `definitions` in any draw, against 0.6711 on 230, and for `definitions` with
+`none` they certify 0.8684 on two draws and nothing on the third. The ranking at 5% holds in every
+draw, `none` first, `definitions` second, UltraBERT third; at 2% it holds on seeds 0 and 2 and
+seed 1 ties all three at 0.
+
 **How much depends on the number of choices?** Little of the accuracy, and here fewer choices raise
 the coverage. On the 197 in-class test pages of the 6-class subset, 6 options are right on 193 and
 11 on 192, 0.9797 against 0.9746 (`results/test/d3-flash-definitions-s150-c6.txt`,
