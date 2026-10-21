@@ -25,7 +25,10 @@ name. Its score is the chosen option's probability. It runs in `.venv-d3`. With 
 data/fewshot.txt page in the split is left out, so no page is scored with itself as an example.
 `--reject-option` makes REJECT_LABEL a 13th option and adds -reject to the name; a page the model
 labels REJECT_LABEL is right on a reject page and wrong on an in-class page, as for
-`gemma4-image-reject`, and its report adds the same two reject shares."""
+`gemma4-image-reject`, and its report adds the same two reject shares. `--classes six` asks with
+d3.py's CLASS_SETS["six"] as the options instead of all 12, scores only the pages labelled one of
+them or REJECT_LABEL, and adds -c6 to the name; `--pages six` scores the same pages with all 12
+options and adds -on6, so the two reports are on identical pages."""
 
 import argparse
 import json
@@ -37,7 +40,7 @@ import time
 from sklearn.metrics import confusion_matrix
 
 from classes import CLASSES, REJECT_LABEL
-from d3 import D3_PROMPTS, EXAMPLE_WORDS, STATE_WORDS, classify_d3, fewshot_ids
+from d3 import CLASS_SETS, D3_PROMPTS, EXAMPLE_WORDS, STATE_WORDS, classify_d3, fewshot_ids
 from llm import MODEL, NAMES, classify
 from train import manifest, page_image, page_text
 
@@ -154,6 +157,8 @@ def main():
     ap.add_argument("--state-words", type=int, help=f"with --d3; default {STATE_WORDS}")
     ap.add_argument("--example-words", type=int, help=f"with --prompt fewshot; default {EXAMPLE_WORDS}")
     ap.add_argument("--reject-option", action="store_true", help=f"with --d3; {REJECT_LABEL} is an option")
+    ap.add_argument("--classes", choices=list(CLASS_SETS), help="with --d3; options and pages; default all")
+    ap.add_argument("--pages", choices=["six"], help="with --d3; only pages labelled a CLASS_SETS['six'] type or none")
     ap.add_argument("--split", choices=SPLITS, required=True)
     ap.add_argument("--dump", action="store_true", help="write results/confidence/dumps/")
     args = ap.parse_args()
@@ -168,6 +173,11 @@ def main():
         ap.error("--example-words goes with --prompt fewshot")
     if args.reject_option and not args.d3:
         ap.error("--reject-option goes with --d3")
+    if (args.classes or args.pages) and not args.d3:
+        ap.error("--classes and --pages go with --d3")
+    if args.classes and args.pages:
+        ap.error("--classes already sets the pages")
+    classes = args.classes or "all"
     state_words = args.state_words or STATE_WORDS
     example_words = args.example_words or EXAMPLE_WORDS
 
@@ -178,6 +188,9 @@ def main():
     unknown = sorted({r["label"] for r in rows} - set(names))
     if unknown:
         sys.exit(f"{args.split}: labels not in CLASSES or REJECT_LABEL: {unknown}")
+    if classes != "all" or args.pages:
+        kept = set(CLASS_SETS[classes if classes != "all" else args.pages]) | {REJECT_LABEL}
+        rows = [r for r in rows if r["label"] in kept]
     left_out = 0
     if args.d3 and prompt == "fewshot":
         shots = {page_id for ids in fewshot_ids().values() for page_id in ids}
@@ -209,11 +222,24 @@ def main():
         if args.reject_option:
             name += "-reject"
             model += f", {REJECT_LABEL} an option"
+        if classes == "six":
+            name += "-c6"
+            model += f", options {len(CLASS_SETS['six'])} types, pages of those and {REJECT_LABEL}"
+        if args.pages:
+            name += "-on6"
+            model += f", pages of the {len(CLASS_SETS['six'])} --classes six types and {REJECT_LABEL}"
         answers = classify_d3(
-            [r["id"] for r in rows], prompt, args.d3, state_words, example_words, args.reject_option
+            [r["id"] for r in rows],
+            prompt,
+            args.d3,
+            state_words,
+            example_words,
+            args.reject_option,
+            classes,
         )
+        options = CLASS_SETS[classes] + ([REJECT_LABEL] if args.reject_option else [])
         preds = [names.index(label) for label, _, _ in answers]
-        scores = [v[p] for (_, v, _), p in zip(answers, preds)]
+        scores = [v[options.index(label)] for label, v, _ in answers]
         seconds = [s for _, _, s in answers]
     else:
         name = args.model
