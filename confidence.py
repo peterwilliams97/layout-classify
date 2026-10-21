@@ -2,8 +2,13 @@
 
 Input: the two `score.py --dump` files of one model, validation and test, at
 results/confidence/dumps/<model>-<split>.jsonl. Each row has `id`, `label`, `predicted` and
-`score`, the top probability over CLASSES. A row labelled REJECT_LABEL is always wrong: no model
-predicts it, so a reject page that scores above a cut-off is an accepted error.
+`score`, the top probability over CLASSES. A row labelled REJECT_LABEL is wrong unless it was
+predicted REJECT_LABEL, so a reject page given a type that scores above a cut-off is an accepted
+error. A model that may predict REJECT_LABEL (score.py's `gemma4-image-reject` and
+`--reject-option`) is right on a reject page it so labels and wrong on an in-class one, and a page
+predicted REJECT_LABEL is never accepted, whatever its score: it goes to a person. Its score is
+read as -inf, below every cut-off, and AUROC, isotonic regression, ECE and mean scores are over
+the other pages.
 
 Computed:
   AUROC of score against correctness on every validation page.
@@ -63,15 +68,15 @@ DUMPS = "results/confidence/dumps"
 
 
 def read_dump(path, names):
-    """Reads a --dump file. Returns three arrays over its rows: score, correct (predicted == label,
-    as 0/1) and label index in `names`. Exits if a label is not in `names` or a prediction is not
-    in CLASSES."""
+    """Reads a --dump file. Returns three arrays over its rows: score, -inf where the prediction is
+    REJECT_LABEL; correct (predicted == label, as 0/1); and label index in `names`. Exits if a
+    label or a prediction is not in `names`."""
     with open(path) as f: rows = [json.loads(line) for line in f if line.strip()]
     if not rows: sys.exit(f"{path}: no rows")
     for r in rows:
-        if r["label"] not in names or r["predicted"] not in CLASSES:
+        if r["label"] not in names or r["predicted"] not in names:
             sys.exit(f"{path}: row not over CLASSES and REJECT_LABEL: {r['id']}")
-    score = np.array([r["score"] for r in rows])
+    score = np.array([-np.inf if r["predicted"] == REJECT_LABEL else r["score"] for r in rows])
     correct = np.array([r["predicted"] == r["label"] for r in rows], dtype=float)
     label = np.array([names.index(r["label"]) for r in rows])
     return score, correct, label
@@ -109,8 +114,8 @@ def cp_upper(errors, n):
 def threshold(score, correct, alpha, bound):
     """Lowest value in `score` at which the error of `correct` among rows with score >= that value
     is <= `alpha`. With `bound`, the error is replaced by cp_upper of it. Returns inf if no value
-    qualifies."""
-    for tau in np.unique(score):
+    qualifies. A -inf score is never a cut-off, so its row is never accepted."""
+    for tau in np.unique(score[np.isfinite(score)]):
         kept = score >= tau
         errors, n = int((1 - correct[kept]).sum()), int(kept.sum())
         if (cp_upper(errors, n) if bound else errors / n) <= alpha:
@@ -146,8 +151,9 @@ def report(model, validation_path, test_path, dev_size=None, dev_seed=0):
             validation_s[keep], validation_c[keep], validation_y[keep]
         )
 
+    scored = np.isfinite(validation_s)
     iso = IsotonicRegression(increasing=True, y_min=0, y_max=1, out_of_bounds="clip")
-    iso.fit(validation_s, validation_c)
+    iso.fit(validation_s[scored], validation_c[scored])
     cuts = {
         alpha: {
             "tau   ": threshold(validation_s, validation_c, alpha, bound=False),
@@ -156,14 +162,20 @@ def report(model, validation_path, test_path, dev_size=None, dev_seed=0):
         for alpha in ALPHAS
     }
     validation_reject = validation_y == reject
+    all_s, all_c, all_y = read_dump(test_path, names)
+    held = not (scored.all() and np.isfinite(all_s).all())
 
     lines = [
         f"model     {model}",
         f"validation {validation_path} ({validation_desc},"
         f" {int(validation_reject.sum())} reject; accuracy {validation_c.mean():.4f})",
-        "score     top probability over CLASSES; a REJECT_LABEL page is always wrong",
-        "validation AUROC of score against correctness, all pages  "
-        f"{roc_auc_score(validation_c, validation_s):.4f}",
+        "score     top probability over CLASSES; a REJECT_LABEL page is always wrong"
+        if not held else
+        f"score     top probability; a page predicted {REJECT_LABEL}, right only on a reject page,"
+        " is never accepted",
+        f"validation AUROC of score against correctness, all pages"
+        + (f" not predicted {REJECT_LABEL}" if held else "")
+        + f"  {roc_auc_score(validation_c[scored], validation_s[scored]):.4f}",
         "routing: accept a page when its score is at least the cut-off, chosen on the validation"
         " pages above",
         "  tau     lowest validation score whose accepted validation error is at most alpha",
@@ -181,23 +193,32 @@ def report(model, validation_path, test_path, dev_size=None, dev_seed=0):
                 f"validation coverage {cov:.4f} error {fmt(err)} reject_leak {leak:.4f}"
             )
 
-    all_s, all_c, all_y = read_dump(test_path, names)
     test_reject = all_y == reject
     if not test_reject.any():
         sys.exit(f"{test_path}: no reject pages, so reject_leak is undefined")
     s, c, y = all_s[~test_reject], all_c[~test_reject], all_y[~test_reject]
-    if c.all() or not c.any():
+    # `fs` and `fc` are the in-class pages with a score, for the lines that need one.
+    fs, fc = s[np.isfinite(s)], c[np.isfinite(s)]
+    if fc.all() or not fc.any():
         sys.exit(f"{test_path}, in-class: every prediction is {'right' if c.all() else 'wrong'}")
     n_rej = int(test_reject.sum())
     lines += [
         "",
         f"test: {test_path} ({len(all_s)} pages, {n_rej} reject)",
         f"  in-class pages {len(s)}, accuracy {c.mean():.4f}",
-        f"  AUROC of score against correctness, in-class  {roc_auc_score(c, s):.4f}",
-        f"  mean score, right predictions       {s[c == 1].mean():.4f} ({int(c.sum())})",
-        f"  mean score, wrong predictions       {s[c == 0].mean():.4f} ({int(len(c) - c.sum())})",
+    ]
+    if held:
+        lines += [
+            f"  predicted {REJECT_LABEL}, never accepted: {int(np.isinf(s).sum())} of {len(s)}"
+            f" in-class pages, {int(np.isinf(all_s[test_reject]).sum())} of {n_rej} reject pages;"
+            " the four lines below are over the rest of the in-class pages",
+        ]
+    lines += [
+        f"  AUROC of score against correctness, in-class  {roc_auc_score(fc, fs):.4f}",
+        f"  mean score, right predictions       {fs[fc == 1].mean():.4f} ({int(fc.sum())})",
+        f"  mean score, wrong predictions       {fs[fc == 0].mean():.4f} ({int(len(fc) - fc.sum())})",
         f"  ECE, {ECE_BINS} equal-count bins, isotonic fitted on validation"
-        f"  before {ece(s, c, s):.4f}  after {ece(iso.predict(s), c, s):.4f}",
+        f"  before {ece(fs, fc, fs):.4f}  after {ece(iso.predict(fs), fc, fs):.4f}",
         f"  stream_10: {REJECT_SHARE:.0%} reject pages, {1 - REJECT_SHARE:.0%} in-class",
     ]
     for alpha, taus in cuts.items():

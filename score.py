@@ -22,7 +22,10 @@ with `--prompt definitions` (the default) or `fewshot`; the report name is <mode
 `--state-words N` and, with `fewshot`, `--example-words N` cut the page and each example to their
 first N words; a value other than d3.py's STATE_WORDS or EXAMPLE_WORDS adds -s<N> or -e<N> to the
 name. Its score is the chosen option's probability. It runs in `.venv-d3`. With `fewshot`, any
-data/fewshot.txt page in the split is left out, so no page is scored with itself as an example."""
+data/fewshot.txt page in the split is left out, so no page is scored with itself as an example.
+`--reject-option` makes REJECT_LABEL a 13th option and adds -reject to the name; a page the model
+labels REJECT_LABEL is right on a reject page and wrong on an in-class page, as for
+`gemma4-image-reject`, and its report adds the same two reject shares."""
 
 import argparse
 import json
@@ -150,6 +153,7 @@ def main():
     ap.add_argument("--prompt", choices=D3_PROMPTS, help="with --d3; default definitions")
     ap.add_argument("--state-words", type=int, help=f"with --d3; default {STATE_WORDS}")
     ap.add_argument("--example-words", type=int, help=f"with --prompt fewshot; default {EXAMPLE_WORDS}")
+    ap.add_argument("--reject-option", action="store_true", help=f"with --d3; {REJECT_LABEL} is an option")
     ap.add_argument("--split", choices=SPLITS, required=True)
     ap.add_argument("--dump", action="store_true", help="write results/confidence/dumps/")
     args = ap.parse_args()
@@ -162,6 +166,8 @@ def main():
         ap.error("--state-words goes with --d3")
     if args.example_words is not None and prompt != "fewshot":
         ap.error("--example-words goes with --prompt fewshot")
+    if args.reject_option and not args.d3:
+        ap.error("--reject-option goes with --d3")
     state_words = args.state_words or STATE_WORDS
     example_words = args.example_words or EXAMPLE_WORDS
 
@@ -200,7 +206,12 @@ def main():
             name += f"-e{example_words}"
         if prompt == "fewshot":
             model += f", {left_out} data/fewshot.txt pages left out"
-        answers = classify_d3([r["id"] for r in rows], prompt, args.d3, state_words, example_words)
+        if args.reject_option:
+            name += "-reject"
+            model += f", {REJECT_LABEL} an option"
+        answers = classify_d3(
+            [r["id"] for r in rows], prompt, args.d3, state_words, example_words, args.reject_option
+        )
         preds = [names.index(label) for label, _, _ in answers]
         scores = [v[p] for (_, v, _), p in zip(answers, preds)]
         seconds = [s for _, _, s in answers]
@@ -209,7 +220,7 @@ def main():
         model = os.path.join("models", args.model)
         preds, scores, seconds = predict(model, [r["id"] for r in rows])
 
-    can_reject = bool(args.llm and NAMES[args.llm])
+    can_reject = bool(args.llm and NAMES[args.llm]) or args.reject_option
     text = report(model, args.split, gold, preds, seconds, names, can_reject)
     sys.stdout.write(text)
     out = os.path.join("results", args.split, name + ".txt")

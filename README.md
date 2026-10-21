@@ -186,25 +186,39 @@ prompt grows from about 400 words of question to about 7,800, and each page take
 
 **What the question and state lengths do**
 
-| Prompt        | State words | Example words | Accuracy, 327 in-class test pages | Coverage at 5% | Reject leak at 5% | Coverage at 2% | Reject leak at 2% | Seconds per page, median |
-|---------------|-------------|---------------|-----------------------------------|----------------|-------------------|----------------|-------------------|--------------------------|
-| `definitions` | 1500        | —             | 0.9511                            | 0.6915         | 0.0556 (2 of 36)  | 0.4408         | 0.0000 (0 of 36)  | 2.36                     |
-| `definitions` | 500         | —             | 0.9480                            | 0.6915         | 0.0556 (2 of 36)  | 0.4601         | 0.0000 (0 of 36)  | 2.3                      |
-| `definitions` | 150         | —             | 0.9419                            | 0.6804         | 0.0278 (1 of 36)  | 0.5152         | 0.0278 (1 of 36)  | 1.75                     |
-| `fewshot`     | 1500        | 300           | 0.7615                            | 0.4160         | 0.0278 (1 of 36)  | 0.0000         | 0.0000 (0 of 36)  | 51.8                     |
-| `fewshot`     | 150         | 50            | 0.9144                            | 0.6198         | 0.0833 (3 of 36)  | 0.4380         | 0.0000 (0 of 36)  | 11.2                     |
+| Prompt        | Options | State words | Example words | Accuracy, 327 in-class test pages | Coverage at 5% | Reject leak at 5% | Coverage at 2% | Reject leak at 2% | Seconds per page, median |
+|---------------|---------|-------------|---------------|-----------------------------------|----------------|-------------------|----------------|-------------------|--------------------------|
+| `definitions` | 12      | 1500        | —             | 0.9511                            | 0.6915         | 0.0556 (2 of 36)  | 0.4408         | 0.0000 (0 of 36)  | 2.36                     |
+| `definitions` | 12      | 500         | —             | 0.9480                            | 0.6915         | 0.0556 (2 of 36)  | 0.4601         | 0.0000 (0 of 36)  | 2.3                      |
+| `definitions` | 12      | 150         | —             | 0.9419                            | 0.6804         | 0.0278 (1 of 36)  | 0.5152         | 0.0278 (1 of 36)  | 1.75                     |
+| `fewshot`     | 12      | 1500        | 300           | 0.7615                            | 0.4160         | 0.0278 (1 of 36)  | 0.0000         | 0.0000 (0 of 36)  | 51.8                     |
+| `fewshot`     | 12      | 150         | 50            | 0.9144                            | 0.6198         | 0.0833 (3 of 36)  | 0.4380         | 0.0000 (0 of 36)  | 11.2                     |
+| `definitions` | 13      | 150         | —             | 0.9235                            | 0.7879         | 0.1111 (4 of 36)  | 0.5482         | 0.0000 (0 of 36)  | 1.74                     |
 
 d3-flash, `score.py --d3 --state-words N --example-words N`: the page's OCR text is cut to its
-first N state words, and each `fewshot` example to its first N example words. Accuracy and seconds
-from `results/test/<name>.txt`; coverage and reject leak from the `tau_cp` lines, "all pages", of
-`results/confidence/<name>.txt`. Names are `d3-flash-definitions`, `d3-flash-definitions-s500`,
-`d3-flash-definitions-s150`, `d3-flash-fewshot` and `d3-flash-fewshot-s150-e50`.
+first N state words, and each `fewshot` example to its first N example words. Options are the 12
+types, or with `--reject-option` 13, `none` the last; a page labelled `none` is never accepted.
+Accuracy and seconds from `results/test/<name>.txt`; coverage and reject leak from the `tau_cp`
+lines, "all pages", of `results/confidence/<name>.txt`. Names are `d3-flash-definitions`, `d3-flash-definitions-s500`,
+`d3-flash-definitions-s150`, `d3-flash-fewshot`, `d3-flash-fewshot-s150-e50` and
+`d3-flash-definitions-s150-reject`.
 
 Cutting the page costs little: from 1,500 words to 150, in-class accuracy falls from 0.9511 to
 0.9419, and the median page goes from 2.36 s to 1.75 s. The examples are what hurt
 `fewshot`: cut to 50 words, its accuracy rises from 0.7615 to 0.9144 and its median page falls from 51.8 s
 to 11.2 s, but it is still below `definitions` at the same 150-word state, and it lets 3 reject pages
 through at 5%. Every difference in coverage here is a few pages on one validation draw of 273.
+
+**Does a 13th option, `none`, catch reject pages?** Mostly. At the 150-word state d3-flash labels 30
+of the 36 reject test pages `none` (0.8333), against gemma4:e4b's 15 of 36 with `none` allowed.
+Since a `none` page goes to a person, reject leak falls from 1 of 36 to 0 at 2%; at 5% the cut-off
+is lower, 0.642976 against 0.880820, and 4 of the 6 reject pages given a type pass it, against 1 of
+36 with 12 options. The cost on in-class pages is 19 of 327 labelled `none` (0.0581), 11 of them
+handwritten, 6 specifications, a budget and a resume, so in-class accuracy falls from 0.9419 to
+0.9235. Coverage still rises, from 0.6804 to 0.7879 at 5% (error 0.0040 to 0.0210) and from 0.5152
+to 0.5482 at 2% (error 0.0053 to 0.0000), and the median page takes 1.74 s against 1.75
+(`results/test/d3-flash-definitions-s150-reject.txt`,
+`results/confidence/d3-flash-definitions-s150-reject.txt`).
 
 With `none` allowed, gemma4:e4b labels 15 of the 36 reject pages `none` (0.4167) and 6 of the 327
 in-class pages (0.0183), 5 of them specifications (`results/test/gemma4-image-reject.txt`). The
@@ -291,18 +305,24 @@ image models fall further behind the text ones: 0.5229 and 0.4220 accuracy, no c
   `CLASSES` and its criteria their definitions; with `--prompt fewshot` each definition is followed
   by the OCR text of that type's 3 `data/fewshot.txt` pages, each cut to its first 300 words. The
   state is the page's OCR text cut to its first 1,500 words. `--state-words N` and, with
-  `fewshot`, `--example-words N` change those cuts and add `-s<N>` and `-e<N>` to the name. Every answer is cached in
+  `fewshot`, `--example-words N` change those cuts and add `-s<N>` and `-e<N>` to the name.
+  `--reject-option` adds `none` as a 13th option, with the criterion "A page that fits none of the
+  12 types.", and `-reject` to the name; a `none` answer is right on a reject page and wrong on an
+  in-class one, as for `gemma4-image-reject`, and the report adds the same two shares. Every answer
+  is cached in
   `results/d3/cache.jsonl`, so a rerun of `score.py --d3` rebuilds its report without the model.
   `score.py --d3 vllm-sr/d3-flash` scores it; with `fewshot`, a `data/fewshot.txt` page in the split
   would be left out, and as those are train pages none is. Its score is the chosen type's
   probability, and its seconds are the `system_one` call. It needs transformers 5.17.0, so it runs
   in `.venv-d3`, built from `requirements-d3.txt`, with `HF_HOME` at `data/hf`, a symlink to
   synth-classify's `data/hf`, which holds the model's 16 GB. Names are `d3-flash-definitions` and
-  `d3-flash-fewshot`.
+  `d3-flash-fewshot`, with `-s<N>`, `-e<N>` and `-reject` added as above.
 - `confidence.py` — adapted from synth-classify's. For α 0.02, 0.05 and 0.10 it picks two cut-offs
   on every validation page: `tau`, the lowest score whose accepted validation error is at most α,
   and `tau_cp`, the same with that error's one-sided 90% Clopper-Pearson upper bound. A reject page
-  scoring at or above a cut-off is an accepted error. It then reports on test, at each cut-off,
+  given a type and scoring at or above a cut-off is an accepted error. A page predicted `none` is
+  never accepted, whatever its score: it goes to a person, and AUROC, calibration and mean scores
+  are over the other pages. It then reports on test, at each cut-off,
   coverage and error on in-class pages, the reject leak (the share of reject pages at or above it),
   and coverage and error for a stream with 10% reject pages and for all test pages. `--dev-size N
   --dev-seed S` fits on N validation pages, N / 13 from each class and from the reject pages, and
@@ -345,7 +365,7 @@ ln -s ../../synth-classify/data/hf data/hf
 uv venv --python 3.13 .venv-d3
 uv pip install --python .venv-d3/bin/python -r requirements-d3.txt
 export HF_HOME=$PWD/data/hf HF_HUB_OFFLINE=1
-for split in validation test; do      # also --prompt fewshot
+for split in validation test; do      # also --prompt fewshot; --state-words 150 --reject-option
   .venv-d3/bin/python score.py --d3 vllm-sr/d3-flash --prompt definitions --split $split --dump
 done
 .venv-d3/bin/python confidence.py --model d3-flash-definitions

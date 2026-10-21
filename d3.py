@@ -9,7 +9,7 @@ The model's code runs with `trust_remote_code` and needs transformers 5.17.0, wh
 version in pyproject.toml, so it runs in its own venv, `.venv-d3`, made from requirements-d3.txt.
 
 Every response is cached in results/d3/cache.jsonl under the page's id, the prompt, the model id
-and the two word limits, so a re-run of score.py reproduces its report, `seconds` line included, without loading the
+the two word limits and whether REJECT_LABEL is an option, so a re-run of score.py reproduces its report, `seconds` line included, without loading the
 model."""
 
 import hashlib
@@ -19,7 +19,7 @@ import re
 import sys
 import time
 
-from classes import CLASSES
+from classes import CLASSES, REJECT_LABEL
 from train import manifest, page_text
 
 # The prompts `d3_question` builds; the report name is <model basename>-<key>.
@@ -34,6 +34,9 @@ FEWSHOT = "data/fewshot.txt"
 # 36 examples and the page fit one prompt.
 STATE_WORDS = 1500
 EXAMPLE_WORDS = 300
+# REJECT_CRITERION is REJECT_LABEL's criterion when score.py's --reject-option makes it a 13th
+# option.
+REJECT_CRITERION = "A page that fits none of the 12 types."
 
 
 def first_words(text, n):
@@ -56,10 +59,11 @@ def fewshot_ids():
     return shots
 
 
-def d3_question(prompt, example_words):
+def d3_question(prompt, example_words, reject):
     """d3_question is the `choice` question the model is asked about each page: the CLASSES names as
     options with their definitions as criteria, and for `fewshot` each definition followed by the
-    first `example_words` words of the OCR text of each of that class's data/fewshot.txt pages."""
+    first `example_words` words of the OCR text of each of that class's data/fewshot.txt pages. With
+    `reject`, REJECT_LABEL is a last option, with REJECT_CRITERION as its criterion."""
     criteria = dict(CLASSES)
     if prompt == "fewshot":
         shots = fewshot_ids()
@@ -71,6 +75,8 @@ def d3_question(prompt, example_words):
             )
             for name, definition in CLASSES.items()
         }
+    if reject:
+        criteria[REJECT_LABEL] = REJECT_CRITERION
     return {
         "type": "choice",
         "instructions": "Which type of document is this page, given its OCR text?",
@@ -79,9 +85,9 @@ def d3_question(prompt, example_words):
 
 
 def read_cache(path):
-    """read_cache returns {(page id, prompt, model id, state words, example words): cached row}; a
-    later row for a key replaces an earlier one. A row without the word limits was asked with
-    STATE_WORDS and EXAMPLE_WORDS."""
+    """read_cache returns {(page id, prompt, model id, state words, example words, reject): cached
+    row}; a later row for a key replaces an earlier one. A row without the word limits was asked
+    with STATE_WORDS and EXAMPLE_WORDS, and one without `reject` without REJECT_LABEL."""
     if not os.path.exists(path):
         return {}
     with open(path) as f:
@@ -93,20 +99,22 @@ def read_cache(path):
             r["model"],
             r.get("state_words", STATE_WORDS),
             r.get("example_words", EXAMPLE_WORDS),
+            r.get("reject", False),
         ): r
         for r in rows
     }
 
 
-def classify_d3(ids, prompt, model_id, state_words, example_words):
+def classify_d3(ids, prompt, model_id, state_words, example_words, reject):
     """classify_d3 returns a (class name, probabilities, seconds) tuple for each page of `ids`: the
-    option the model chose, every option's probability as a list in CLASSES order, and the wall time
-    of that page's `system_one` call. The state is the page's OCR text cut to `state_words` words.
-    `prompt` is a D3_PROMPTS key; `example_words` is passed to `d3_question`. A cached row is used when it was asked of the same revision, the
+    option the model chose, every option's probability as a list in CLASSES order, REJECT_LABEL last
+    with `reject`, and the wall time of that page's `system_one` call. The state is the page's OCR
+    text cut to `state_words` words. `prompt` is a D3_PROMPTS key; `example_words` and `reject` are
+    passed to `d3_question`. A cached row is used when it was asked of the same revision, the
     same question and the same state; the model is loaded, on MPS in bfloat16, only if some page is
     not cached."""
-    names = list(CLASSES)
-    question = d3_question(prompt, example_words)
+    names = list(CLASSES) + ([REJECT_LABEL] if reject else [])
+    question = d3_question(prompt, example_words, reject)
     revision = REVISIONS.get(model_id)
     cache = read_cache(CACHE)
     os.makedirs(os.path.dirname(CACHE), exist_ok=True)
@@ -115,7 +123,7 @@ def classify_d3(ids, prompt, model_id, state_words, example_words):
     for i, page_id in enumerate(ids):
         state = first_words(page_text(page_id), state_words)
         digest = hashlib.sha256(state.encode()).hexdigest()
-        row = cache.get((page_id, prompt, model_id, state_words, example_words))
+        row = cache.get((page_id, prompt, model_id, state_words, example_words, reject))
         if (
             row is None
             or row["revision"] != revision
@@ -133,6 +141,7 @@ def classify_d3(ids, prompt, model_id, state_words, example_words):
                 "model": model_id,
                 "state_words": state_words,
                 "example_words": example_words,
+                "reject": reject,
                 "revision": revision,
                 "question": question,
                 "state_sha256": digest,
@@ -147,7 +156,7 @@ def classify_d3(ids, prompt, model_id, state_words, example_words):
         if "error" in answer:
             sys.exit(f"{page_id}: {model_id} answered {answer['error']!r}")
         if answer["choice"] not in names:
-            raise ValueError(f"{page_id}: {model_id} chose {answer['choice']!r}, not in CLASSES")
+            raise ValueError(f"{page_id}: {model_id} chose {answer['choice']!r}, not an option")
         vector = [float(answer["probabilities"][name]) for name in names]
         out.append((answer["choice"], vector, row["seconds"]))
     return out
