@@ -6,9 +6,12 @@ In-class pages are the labelled page of every RVL-CDIP-N PDF in data/pdf/manifes
 an alias, that quality.py kept and that is not labelled HANDWRITTEN. Each class is split on its own: its PDFs, in file-name order, are
 shuffled, and the first go to test, the next to validation and the rest to train, in the shares of
 SHARES. A share's count is rounded by largest remainder, a tie going to test, then validation, then
-train. Reject pages are page 1 of kept RVL-CDIP-O PDFs, labelled REJECT_LABEL: round(in-class / 9)
-per split, so they are a tenth of the split, drawn from the shuffled O PDFs in the order test,
-validation, train. One random.Random(0) makes every shuffle, classes in sorted order, then O.
+train. Reject pages are page 1 of every kept RVL-CDIP-O PDF that is not an alias, labelled
+REJECT_LABEL and split the same way, as one more class. One random.Random(0) makes every shuffle,
+classes in sorted order, then O.
+
+The in-class rows are those of IN_CLASS_AT, the split every in-class result was measured on: the run
+exits rather than write a manifest whose in-class rows differ from that commit's.
 
 A manifest row is `id`, `split`, `label`, `pdf` (the file under data/pdf/), `page` (0-based) and
 `sha256`; `id` is the split and the file stem, so it names data/<split>/<id>.png and ocr/<id>.json.
@@ -20,6 +23,7 @@ import collections
 import json
 import math
 import random
+import subprocess
 
 from classes import CLASSES, HANDWRITTEN, REJECT_LABEL
 
@@ -30,6 +34,7 @@ FEWSHOT_FILE = "data/fewshot.txt"
 SPLITS = ["train", "validation", "test"]
 SHARES = {"test": 0.4, "validation": 0.3, "train": 0.3}  # dict order breaks remainder ties
 FEWSHOT = 3
+IN_CLASS_AT = "eb3f793"
 
 
 def quotas(n):
@@ -72,10 +77,8 @@ def main():
         picked += [(s, r, label) for s, r in assign(by_class[label], quotas(len(by_class[label])),
                                                      rng)]
     in_class = collections.Counter(s for s, _, _ in picked)
-    reject_counts = {s: round(in_class[s] / 9) for s in SHARES}
     o_rows = [r for r in pool if r["set"] == "O"]
-    if sum(reject_counts.values()) > len(o_rows):
-        raise SystemExit(f"{sum(reject_counts.values())} reject pages needed, {len(o_rows)} kept")
+    reject_counts = quotas(len(o_rows))
     picked += [(s, r, REJECT_LABEL) for s, r in assign(o_rows, reject_counts, rng)]
 
     rows = [{"id": f"{s}-{r['file'].removesuffix('.pdf')}", "split": s, "label": label,
@@ -87,6 +90,13 @@ def main():
     for r in rows:
         other = split_of.setdefault(r["sha256"], r["split"])
         assert other == r["split"], f"{r['sha256']} in {other} and {r['split']}"
+    keys = ["id", "split", "label", "pdf", "page", "sha256"]
+    pinned = subprocess.run(["git", "show", f"{IN_CLASS_AT}:{MANIFEST}"], capture_output=True,
+                            text=True, check=True).stdout
+    pinned = [{k: r[k] for k in keys} for r in map(json.loads, pinned.splitlines())
+              if r["label"] != REJECT_LABEL]
+    if [{k: r[k] for k in keys} for r in rows if r["label"] != REJECT_LABEL] != pinned:
+        raise SystemExit(f"in-class rows differ from {MANIFEST} at {IN_CLASS_AT}")
 
     with open(MANIFEST, "w") as f:
         for r in rows:
