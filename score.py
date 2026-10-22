@@ -12,10 +12,10 @@ its seconds are the forward pass alone, the page read and the processor excluded
 the softmax's top probability. Adapted from synth-classify's score.py.
 
 `--llm` scores one of llm.py's `NAMES` instead of a saved model: gemma4:e4b on Ollama, given the
-page image, with no hand labels. It gives no probability, so `--dump` is refused. The
-`gemma4-image-reject` variant may answer REJECT_LABEL, which is right on a reject page, and its
-report adds the share of reject pages it gave REJECT_LABEL and the share of in-class pages it
-did.
+page image, with no hand labels; the report header records `ollama --version`. It gives no
+probability, so `--dump` is refused. The `gemma4-image-reject` variant may answer REJECT_LABEL,
+which is right on a reject page, and its report adds the share of reject pages it gave REJECT_LABEL
+and the share of in-class pages it did.
 
 `--d3 MODEL` scores a Decision 3.0 model run locally by d3.py, `vllm-sr/d3-flash`, on the OCR text,
 with `--prompt definitions` (the default) or `fewshot`; the report name is <model basename>-<prompt>.
@@ -41,6 +41,7 @@ import glob
 import json
 import os
 import statistics
+import subprocess
 import sys
 import time
 
@@ -219,6 +220,12 @@ def main():
         score_folds(args.model, rows, gold, names)
         return
     if args.llm:
+        # The runtime is recorded because it changes accuracy and seconds on the same model.
+        try:
+            out = subprocess.run(["ollama", "--version"], capture_output=True, text=True, check=True)
+        except (OSError, subprocess.CalledProcessError) as e:
+            sys.exit(f"ollama --version failed: {e}")
+        version = "; ".join(line.strip() for line in (out.stdout + out.stderr).splitlines() if line.strip())
         preds, seconds = [], []
         for i, r in enumerate(rows):
             path = os.path.join("data", args.split, r["id"] + ".png")
@@ -226,7 +233,7 @@ def main():
             preds.append(names.index(label))
             seconds.append(s)
             print(f"{i + 1}/{len(rows)} {r['id']}: {label} ({s:.2f} s)", file=sys.stderr)
-        name, model = args.llm, f"{args.llm} ({MODEL} on Ollama)"
+        name, model = args.llm, f"{args.llm} ({MODEL} on Ollama, `ollama --version`: {version})"
     elif args.d3:
         name = f"{os.path.basename(os.path.normpath(args.d3))}-{prompt}"
         model = f"{args.d3} prompt {prompt}, state {state_words} words"
