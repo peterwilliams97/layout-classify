@@ -1,10 +1,10 @@
 model     models/ultrabert-embed-real/fold0 to fold4, 5 fold models
-test pages 304 (30 reject pages, always wrong)
-fold0     accuracy 0.8520, 0.9453 without reject pages (results/test/ultrabert-embed-real-fold0.txt)
-fold1     accuracy 0.8355, 0.9270 without reject pages (results/test/ultrabert-embed-real-fold1.txt)
-fold2     accuracy 0.8487, 0.9416 without reject pages (results/test/ultrabert-embed-real-fold2.txt)
-fold3     accuracy 0.8454, 0.9380 without reject pages (results/test/ultrabert-embed-real-fold3.txt)
-fold4     accuracy 0.8355, 0.9270 without reject pages (results/test/ultrabert-embed-real-fold4.txt)
-accuracy  0.8434 mean, 0.8355–0.8520
+test pages 365 (91 reject pages, always wrong)
+fold0     accuracy 0.7096, 0.9453 without reject pages (results/test/ultrabert-embed-real-fold0.txt)
+fold1     accuracy 0.6959, 0.9270 without reject pages (results/test/ultrabert-embed-real-fold1.txt)
+fold2     accuracy 0.7068, 0.9416 without reject pages (results/test/ultrabert-embed-real-fold2.txt)
+fold3     accuracy 0.7041, 0.9380 without reject pages (results/test/ultrabert-embed-real-fold3.txt)
+fold4     accuracy 0.6959, 0.9270 without reject pages (results/test/ultrabert-embed-real-fold4.txt)
+accuracy  0.7025 mean, 0.6959–0.7096
 accuracy  0.9358 mean, 0.9270–0.9453 without reject pages
-seconds   0.0349 median, 0.0332 mean per page over all 1520 page scorings of the 5 folds, one page per call
+seconds   0.0355 median, 0.0336 mean per page over all 1825 page scorings of the 5 folds, one page per call

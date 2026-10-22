@@ -1,9 +1,9 @@
 model     models/ultrabert-embed-real
 train     real (204 pages)
 pages     204
-seconds   21.68 (base model load to save; validation embedding and C grid included; OCR excluded)
-C 0.01  validation AUROC 0.9573
-C 0.1   validation AUROC 0.9505
-C 1     validation AUROC 0.9418
-C 10    validation AUROC 0.9333
+seconds   17.74 (base model load to save; validation embedding and C grid included; OCR excluded)
+C 0.01  validation AUROC 0.9430
+C 0.1   validation AUROC 0.9408
+C 1     validation AUROC 0.9361
+C 10    validation AUROC 0.9189
 chosen    C 0.01 (highest validation AUROC; a tie goes to the smaller C)

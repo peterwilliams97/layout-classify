@@ -1,11 +1,11 @@
 model     models/tfidf-real
-train     real, 5 folds, fold seed 0; pool 457 pages, train and validation, 46 reject
-fold 0    held out 83 in-class and 9 reject pages; trained on 328
-fold 1    held out 82 in-class and 10 reject pages; trained on 329
-fold 2    held out 82 in-class and 9 reject pages; trained on 329
-fold 3    held out 82 in-class and 9 reject pages; trained on 329
-fold 4    held out 82 in-class and 9 reject pages; trained on 329
-seconds   0.00 encoding the pool (OCR read excluded)
-seconds   5.15 fitting and scoring 5 folds for each of 1 C
-C 10    out-of-fold AUROC 0.8983, all 457 pool pages
+train     real, 5 folds, fold seed 0; pool 549 pages, train and validation, 138 reject
+fold 0    held out 83 in-class and 27 reject pages; trained on 328
+fold 1    held out 82 in-class and 28 reject pages; trained on 329
+fold 2    held out 82 in-class and 28 reject pages; trained on 329
+fold 3    held out 82 in-class and 28 reject pages; trained on 329
+fold 4    held out 82 in-class and 27 reject pages; trained on 329
+seconds   0.01 encoding the pool (OCR read excluded)
+seconds   5.19 fitting and scoring 5 folds for each of 1 C
+C 10    out-of-fold AUROC 0.9169, all 549 pool pages
 fixed     C 10

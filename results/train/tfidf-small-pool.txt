@@ -1,11 +1,11 @@
 model     models/tfidf-small
-train     small, 5 folds, fold seed 0; pool 457 pages, train and validation, 46 reject
-fold 0    held out 83 in-class and 9 reject pages; trained on 110
-fold 1    held out 82 in-class and 10 reject pages; trained on 110
-fold 2    held out 82 in-class and 9 reject pages; trained on 110
-fold 3    held out 82 in-class and 9 reject pages; trained on 110
-fold 4    held out 82 in-class and 9 reject pages; trained on 110
+train     small, 5 folds, fold seed 0; pool 549 pages, train and validation, 138 reject
+fold 0    held out 83 in-class and 27 reject pages; trained on 110
+fold 1    held out 82 in-class and 28 reject pages; trained on 110
+fold 2    held out 82 in-class and 28 reject pages; trained on 110
+fold 3    held out 82 in-class and 28 reject pages; trained on 110
+fold 4    held out 82 in-class and 27 reject pages; trained on 110
 seconds   0.00 encoding the pool (OCR read excluded)
-seconds   1.20 fitting and scoring 5 folds for each of 1 C
-C 10    out-of-fold AUROC 0.8845, all 457 pool pages
+seconds   1.23 fitting and scoring 5 folds for each of 1 C
+C 10    out-of-fold AUROC 0.9064, all 549 pool pages
 fixed     C 10

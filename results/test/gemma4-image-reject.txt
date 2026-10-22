@@ -1,22 +1,22 @@
 model     gemma4-image-reject (gemma4:e4b on Ollama)
-test pages 304 (30 reject pages)
-accuracy  0.8914
-wrong     33
-accuracy  0.9307 without reject pages
-seconds   0.97 median, 0.98 mean per page, one page per call, image read excluded
+test pages 365 (91 reject pages)
+accuracy  0.8356
+wrong     60
+accuracy  0.9708 without reject pages
+seconds   2.51 median, 2.51 mean per page, one page per call, image read excluded
 confusion (row: true class, column: predicted class, numbered as the rows are)
                               0   1   2   3   4   5   6   7   8   9  10  11
-   0 letter                  43   5   0   0   0   0   0   0   0   0   1   0
-   1 memo                     1  16   0   0   0   0   0   0   0   0   0   0
+   0 letter                  49   0   0   0   0   0   0   0   0   0   0   0
+   1 memo                     0  17   0   0   0   0   0   0   0   0   0   0
    2 form                     0   0  26   0   0   0   0   0   0   0   0   0
    3 questionnaire            0   0   0  15   0   0   0   0   0   0   0   0
    4 budget                   0   0   0   0  20   0   0   0   0   0   0   0
    5 invoice                  0   0   0   0   0  18   0   0   0   0   0   0
-   6 email                    0   4   0   0   0   0   8   0   0   0   0   0
-   7 news_article             0   1   0   0   0   0   0  24   0   0   0   0
+   6 email                    1   0   0   0   0   0  11   0   0   0   0   0
+   7 news_article             0   0   0   0   0   0   0  25   0   0   0   0
    8 scientific_publication   0   0   0   0   0   0   0   0  15   0   0   0
-   9 specification            0   0   0   0   0   0   0   1   1  17   0   5
+   9 specification            0   0   0   0   0   0   0   1   2  17   0   4
   10 resume                   0   0   0   0   0   0   0   0   0   0  53   0
-  11 none                     3   4   0   0   3   1   0   2   0   1   0  16
-reject    0.5333 of reject pages labelled none
-reject    0.0182 of in-class pages labelled none
+  11 none                    10  17   4   0   9   1   0   8   3   0   0  39
+reject    0.4286 of reject pages labelled none
+reject    0.0146 of in-class pages labelled none

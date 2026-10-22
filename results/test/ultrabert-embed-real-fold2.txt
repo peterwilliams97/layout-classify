@@ -1,9 +1,9 @@
 model     models/ultrabert-embed-real/fold2
-test pages 304 (30 reject pages, always wrong)
-accuracy  0.8487
-wrong     46
+test pages 365 (91 reject pages, always wrong)
+accuracy  0.7068
+wrong     107
 accuracy  0.9416 without reject pages
-seconds   0.035 median, 0.033 mean per page, one page per call, OCR excluded
+seconds   0.0358 median, 0.0337 mean per page, one page per call, OCR excluded
 confusion (row: true class, column: predicted class, numbered as the rows are)
                               0   1   2   3   4   5   6   7   8   9  10  11
    0 letter                  45   0   1   0   0   1   0   1   0   0   1   0
@@ -17,4 +17,4 @@ confusion (row: true class, column: predicted class, numbered as the rows are)
    8 scientific_publication   0   0   0   0   0   0   0   0  15   0   0   0
    9 specification            0   0   0   0   0   0   0   0   0  24   0   0
   10 resume                   0   0   0   0   0   0   0   0   0   0  53   0
-  11 none                     6   5   6   0   2   0   1   6   0   0   4   0
+  11 none                    13  13  19   0  10   1   5  19   0   1  10   0

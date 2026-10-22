@@ -1,10 +1,10 @@
 model     models/dit-small/fold0 to fold4, 5 fold models
-test pages 304 (30 reject pages, always wrong)
-fold0     accuracy 0.3980, 0.4416 without reject pages (results/test/dit-small-fold0.txt)
-fold1     accuracy 0.4474, 0.4964 without reject pages (results/test/dit-small-fold1.txt)
-fold2     accuracy 0.4342, 0.4818 without reject pages (results/test/dit-small-fold2.txt)
-fold3     accuracy 0.4342, 0.4818 without reject pages (results/test/dit-small-fold3.txt)
-fold4     accuracy 0.4408, 0.4891 without reject pages (results/test/dit-small-fold4.txt)
-accuracy  0.4309 mean, 0.3980–0.4474
+test pages 365 (91 reject pages, always wrong)
+fold0     accuracy 0.3315, 0.4416 without reject pages (results/test/dit-small-fold0.txt)
+fold1     accuracy 0.3726, 0.4964 without reject pages (results/test/dit-small-fold1.txt)
+fold2     accuracy 0.3616, 0.4818 without reject pages (results/test/dit-small-fold2.txt)
+fold3     accuracy 0.3616, 0.4818 without reject pages (results/test/dit-small-fold3.txt)
+fold4     accuracy 0.3671, 0.4891 without reject pages (results/test/dit-small-fold4.txt)
+accuracy  0.3589 mean, 0.3315–0.3726
 accuracy  0.4781 mean, 0.4416–0.4964 without reject pages
-seconds   0.0185 median, 0.0189 mean per page over all 1520 page scorings of the 5 folds, one page per call
+seconds   0.0192 median, 0.0195 mean per page over all 1825 page scorings of the 5 folds, one page per call

@@ -1,20 +1,20 @@
 model     models/layoutlmv3-real/fold2
-test pages 304 (30 reject pages, always wrong)
-accuracy  0.8750
-wrong     38
+test pages 365 (91 reject pages, always wrong)
+accuracy  0.7288
+wrong     99
 accuracy  0.9708 without reject pages
-seconds   0.0487 median, 0.043 mean per page, one page per call, OCR excluded
+seconds   0.0498 median, 0.0441 mean per page, one page per call, OCR excluded
 confusion (row: true class, column: predicted class, numbered as the rows are)
                               0   1   2   3   4   5   6   7   8   9  10  11
-   0 letter                  48   1   0   0   0   0   0   0   0   0   0   0
-   1 memo                     1  15   0   0   0   0   1   0   0   0   0   0
-   2 form                     0   0  26   0   0   0   0   0   0   0   0   0
+   0 letter                  49   0   0   0   0   0   0   0   0   0   0   0
+   1 memo                     0  15   0   0   0   0   1   1   0   0   0   0
+   2 form                     0   0  25   1   0   0   0   0   0   0   0   0
    3 questionnaire            0   0   1  14   0   0   0   0   0   0   0   0
-   4 budget                   0   0   0   0  20   0   0   0   0   0   0   0
-   5 invoice                  0   0   1   0   0  17   0   0   0   0   0   0
-   6 email                    0   1   0   0   0   0  11   0   0   0   0   0
+   4 budget                   0   0   0   0  19   0   0   0   0   0   1   0
+   5 invoice                  0   0   0   0   1  17   0   0   0   0   0   0
+   6 email                    0   0   0   0   0   0  12   0   0   0   0   0
    7 news_article             0   0   0   0   0   0   0  25   0   0   0   0
    8 scientific_publication   0   0   0   0   0   0   0   0  15   0   0   0
    9 specification            0   0   0   0   0   0   0   1   0  23   0   0
-  10 resume                   1   0   0   0   0   0   0   0   0   0  52   0
-  11 none                     4   1   6   3   2   0   0   1   2   0  11   0
+  10 resume                   0   0   0   1   0   0   0   0   0   0  52   0
+  11 none                     6   7  14  11   9   0   0   5   3   0  36   0

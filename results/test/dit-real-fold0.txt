@@ -1,20 +1,20 @@
 model     models/dit-real/fold0
-test pages 304 (30 reject pages, always wrong)
-accuracy  0.5395
-wrong     140
-accuracy  0.5985 without reject pages
-seconds   0.0184 median, 0.019 mean per page, one page per call, OCR excluded
+test pages 365 (91 reject pages, always wrong)
+accuracy  0.4767
+wrong     191
+accuracy  0.6350 without reject pages
+seconds   0.0189 median, 0.0194 mean per page, one page per call, OCR excluded
 confusion (row: true class, column: predicted class, numbered as the rows are)
                               0   1   2   3   4   5   6   7   8   9  10  11
-   0 letter                  37   5   0   1   0   2   2   0   1   0   1   0
-   1 memo                     5   3   2   0   0   0   2   1   0   0   4   0
-   2 form                     1   0  13   0   0   4   2   0   0   4   2   0
-   3 questionnaire            0   0   1   6   1   1   1   0   0   2   3   0
-   4 budget                   1   0   0   1  15   2   0   0   0   0   1   0
-   5 invoice                  3   0   1   0   4   9   0   0   0   0   1   0
-   6 email                    1   0   1   1   0   1   7   1   0   0   0   0
-   7 news_article             0   0   0   0   1   0   0  22   0   2   0   0
-   8 scientific_publication   1   2   0   0   0   0   0   0  10   0   2   0
-   9 specification            1   0   1   0   0   4   0   0   2  15   1   0
-  10 resume                   6   4   3   7   0   2   1   0   0   3  27   0
-  11 none                     5   0   2   7   2   3   0   0   4   2   5   0
+   0 letter                  44   2   0   0   0   1   0   0   1   0   1   0
+   1 memo                     4   2   2   0   0   1   1   1   1   0   5   0
+   2 form                     3   1  11   0   0   4   1   0   0   5   1   0
+   3 questionnaire            0   0   1   6   1   1   1   0   0   3   2   0
+   4 budget                   1   0   0   1  17   0   0   1   0   0   0   0
+   5 invoice                  2   0   1   0   4   8   1   0   0   0   2   0
+   6 email                    1   1   1   1   0   0   7   1   0   0   0   0
+   7 news_article             0   1   0   0   1   0   0  21   0   2   0   0
+   8 scientific_publication   1   1   0   0   0   0   0   0  11   0   2   0
+   9 specification            1   0   1   0   0   4   0   1   2  13   2   0
+  10 resume                   4   4   2   2   0   2   0   1   0   4  34   0
+  11 none                    12   3   8  18  12   8   6   3   5   1  15   0

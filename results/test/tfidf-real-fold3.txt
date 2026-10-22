@@ -1,9 +1,9 @@
 model     models/tfidf-real/fold3
-test pages 304 (30 reject pages, always wrong)
-accuracy  0.7763
-wrong     68
+test pages 365 (91 reject pages, always wrong)
+accuracy  0.6466
+wrong     129
 accuracy  0.8613 without reject pages
-seconds   0.000297 median, 0.000315 mean per page, one page per call, OCR excluded
+seconds   0.000352 median, 0.00039 mean per page, one page per call, OCR excluded
 confusion (row: true class, column: predicted class, numbered as the rows are)
                               0   1   2   3   4   5   6   7   8   9  10  11
    0 letter                  47   0   1   0   0   0   0   0   0   0   1   0
@@ -17,4 +17,4 @@ confusion (row: true class, column: predicted class, numbered as the rows are)
    8 scientific_publication   0   0   0   0   0   0   0   0  15   0   0   0
    9 specification            2   0   0   0   0   0   0   1   0  20   1   0
   10 resume                   0   0   0   0   0   0   0   0   0   0  53   0
-  11 none                    11   0   2   0   2   0   0   2   0   0  13   0
+  11 none                    36   0   5   0   6   0   0   5   0   3  36   0

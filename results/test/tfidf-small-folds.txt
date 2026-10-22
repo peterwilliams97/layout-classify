@@ -1,10 +1,10 @@
 model     models/tfidf-small/fold0 to fold4, 5 fold models
-test pages 304 (30 reject pages, always wrong)
-fold0     accuracy 0.7829, 0.8686 without reject pages (results/test/tfidf-small-fold0.txt)
-fold1     accuracy 0.8092, 0.8978 without reject pages (results/test/tfidf-small-fold1.txt)
-fold2     accuracy 0.8092, 0.8978 without reject pages (results/test/tfidf-small-fold2.txt)
-fold3     accuracy 0.7862, 0.8723 without reject pages (results/test/tfidf-small-fold3.txt)
-fold4     accuracy 0.8092, 0.8978 without reject pages (results/test/tfidf-small-fold4.txt)
-accuracy  0.7993 mean, 0.7829–0.8092
+test pages 365 (91 reject pages, always wrong)
+fold0     accuracy 0.6521, 0.8686 without reject pages (results/test/tfidf-small-fold0.txt)
+fold1     accuracy 0.6740, 0.8978 without reject pages (results/test/tfidf-small-fold1.txt)
+fold2     accuracy 0.6740, 0.8978 without reject pages (results/test/tfidf-small-fold2.txt)
+fold3     accuracy 0.6548, 0.8723 without reject pages (results/test/tfidf-small-fold3.txt)
+fold4     accuracy 0.6740, 0.8978 without reject pages (results/test/tfidf-small-fold4.txt)
+accuracy  0.6658 mean, 0.6521–0.6740
 accuracy  0.8869 mean, 0.8686–0.8978 without reject pages
-seconds   0.000276 median, 0.000295 mean per page over all 1520 page scorings of the 5 folds, one page per call
+seconds   0.00028 median, 0.000302 mean per page over all 1825 page scorings of the 5 folds, one page per call

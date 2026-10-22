@@ -1,14 +1,14 @@
 model     models/ultrabert-embed-real
-train     real, 5 folds, fold seed 0; pool 457 pages, train and validation, 46 reject
-fold 0    held out 83 in-class and 9 reject pages; trained on 328
-fold 1    held out 82 in-class and 10 reject pages; trained on 329
-fold 2    held out 82 in-class and 9 reject pages; trained on 329
-fold 3    held out 82 in-class and 9 reject pages; trained on 329
-fold 4    held out 82 in-class and 9 reject pages; trained on 329
-seconds   19.52 encoding the pool (base model load and pool embedding included; OCR read excluded)
-seconds   0.35 fitting and scoring 5 folds for each of 4 C
-C 0.01  out-of-fold AUROC 0.9312, all 457 pool pages
-C 0.1   out-of-fold AUROC 0.9244, all 457 pool pages
-C 1     out-of-fold AUROC 0.9166, all 457 pool pages
-C 10    out-of-fold AUROC 0.9210, all 457 pool pages
+train     real, 5 folds, fold seed 0; pool 549 pages, train and validation, 138 reject
+fold 0    held out 83 in-class and 27 reject pages; trained on 328
+fold 1    held out 82 in-class and 28 reject pages; trained on 329
+fold 2    held out 82 in-class and 28 reject pages; trained on 329
+fold 3    held out 82 in-class and 28 reject pages; trained on 329
+fold 4    held out 82 in-class and 27 reject pages; trained on 329
+seconds   20.09 encoding the pool (base model load and pool embedding included; OCR read excluded)
+seconds   0.37 fitting and scoring 5 folds for each of 4 C
+C 0.01  out-of-fold AUROC 0.9251, all 549 pool pages
+C 0.1   out-of-fold AUROC 0.9204, all 549 pool pages
+C 1     out-of-fold AUROC 0.9136, all 549 pool pages
+C 10    out-of-fold AUROC 0.9149, all 549 pool pages
 chosen    C 0.01 (highest out-of-fold AUROC; a tie goes to the smaller C)

@@ -1,14 +1,14 @@
 model     models/dit-small
-train     small, 5 folds, fold seed 0; pool 457 pages, train and validation, 46 reject
-fold 0    held out 83 in-class and 9 reject pages; trained on 110
-fold 1    held out 82 in-class and 10 reject pages; trained on 110
-fold 2    held out 82 in-class and 9 reject pages; trained on 110
-fold 3    held out 82 in-class and 9 reject pages; trained on 110
-fold 4    held out 82 in-class and 9 reject pages; trained on 110
-seconds   17.02 encoding the pool (base model load, page image reads and pool embedding included)
-seconds   0.28 fitting and scoring 5 folds for each of 4 C
-C 0.01  out-of-fold AUROC 0.7444, all 457 pool pages
-C 0.1   out-of-fold AUROC 0.7474, all 457 pool pages
-C 1     out-of-fold AUROC 0.7595, all 457 pool pages
-C 10    out-of-fold AUROC 0.7527, all 457 pool pages
+train     small, 5 folds, fold seed 0; pool 549 pages, train and validation, 138 reject
+fold 0    held out 83 in-class and 27 reject pages; trained on 110
+fold 1    held out 82 in-class and 28 reject pages; trained on 110
+fold 2    held out 82 in-class and 28 reject pages; trained on 110
+fold 3    held out 82 in-class and 28 reject pages; trained on 110
+fold 4    held out 82 in-class and 27 reject pages; trained on 110
+seconds   18.22 encoding the pool (base model load, page image reads and pool embedding included)
+seconds   0.29 fitting and scoring 5 folds for each of 4 C
+C 0.01  out-of-fold AUROC 0.7189, all 549 pool pages
+C 0.1   out-of-fold AUROC 0.7284, all 549 pool pages
+C 1     out-of-fold AUROC 0.7419, all 549 pool pages
+C 10    out-of-fold AUROC 0.7344, all 549 pool pages
 chosen    C 1 (highest out-of-fold AUROC; a tie goes to the smaller C)

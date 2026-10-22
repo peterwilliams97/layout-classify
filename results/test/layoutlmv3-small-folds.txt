@@ -1,10 +1,10 @@
 model     models/layoutlmv3-small/fold0 to fold4, 5 fold models
-test pages 304 (30 reject pages, always wrong)
-fold0     accuracy 0.3618, 0.4015 without reject pages (results/test/layoutlmv3-small-fold0.txt)
-fold1     accuracy 0.3289, 0.3650 without reject pages (results/test/layoutlmv3-small-fold1.txt)
-fold2     accuracy 0.3553, 0.3942 without reject pages (results/test/layoutlmv3-small-fold2.txt)
-fold3     accuracy 0.2796, 0.3102 without reject pages (results/test/layoutlmv3-small-fold3.txt)
-fold4     accuracy 0.3618, 0.4015 without reject pages (results/test/layoutlmv3-small-fold4.txt)
-accuracy  0.3375 mean, 0.2796–0.3618
-accuracy  0.3745 mean, 0.3102–0.4015 without reject pages
-seconds   0.0485 median, 0.0426 mean per page over all 1520 page scorings of the 5 folds, one page per call
+test pages 365 (91 reject pages, always wrong)
+fold0     accuracy 0.2959, 0.3942 without reject pages (results/test/layoutlmv3-small-fold0.txt)
+fold1     accuracy 0.2767, 0.3686 without reject pages (results/test/layoutlmv3-small-fold1.txt)
+fold2     accuracy 0.3014, 0.4015 without reject pages (results/test/layoutlmv3-small-fold2.txt)
+fold3     accuracy 0.2548, 0.3394 without reject pages (results/test/layoutlmv3-small-fold3.txt)
+fold4     accuracy 0.3123, 0.4161 without reject pages (results/test/layoutlmv3-small-fold4.txt)
+accuracy  0.2882 mean, 0.2548–0.3123
+accuracy  0.3839 mean, 0.3394–0.4161 without reject pages
+seconds   0.049 median, 0.0435 mean per page over all 1825 page scorings of the 5 folds, one page per call

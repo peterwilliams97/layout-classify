@@ -1,24 +1,24 @@
 model     models/layoutlmv3-real
-train     real, 5 folds, fold seed 0; pool 457 pages, train and validation, 46 reject
-fold 0    held out 83 in-class and 9 reject pages; trained on 328
-fold 1    held out 82 in-class and 10 reject pages; trained on 329
-fold 2    held out 82 in-class and 9 reject pages; trained on 329
-fold 3    held out 82 in-class and 9 reject pages; trained on 329
-fold 4    held out 82 in-class and 9 reject pages; trained on 329
+train     real, 5 folds, fold seed 0; pool 549 pages, train and validation, 138 reject
+fold 0    held out 83 in-class and 27 reject pages; trained on 328
+fold 1    held out 82 in-class and 28 reject pages; trained on 329
+fold 2    held out 82 in-class and 28 reject pages; trained on 329
+fold 3    held out 82 in-class and 28 reject pages; trained on 329
+fold 4    held out 82 in-class and 27 reject pages; trained on 329
 epochs    10
-minutes   10.1 fold 0 (base model load to the last epoch's save; encoding and every epoch's save included)
+minutes   10.3 fold 0 (base model load to the last epoch's save; encoding and every epoch's save included)
 minutes   10.1 fold 1 (base model load to the last epoch's save; encoding and every epoch's save included)
-minutes   9.9 fold 2 (base model load to the last epoch's save; encoding and every epoch's save included)
-minutes   10.0 fold 3 (base model load to the last epoch's save; encoding and every epoch's save included)
-minutes   10.0 fold 4 (base model load to the last epoch's save; encoding and every epoch's save included)
-best      epoch 9 (highest pooled out-of-fold accuracy, all 457 pool pages, reject pages wrong; a tie keeps the earlier epoch)
-epoch 1   out-of-fold accuracy 0.2276
-epoch 2   out-of-fold accuracy 0.3457
-epoch 3   out-of-fold accuracy 0.4792
-epoch 4   out-of-fold accuracy 0.6980
-epoch 5   out-of-fold accuracy 0.8009
-epoch 6   out-of-fold accuracy 0.8271
-epoch 7   out-of-fold accuracy 0.8534
-epoch 8   out-of-fold accuracy 0.8556
-epoch 9   out-of-fold accuracy 0.8600
-epoch 10  out-of-fold accuracy 0.8600
+minutes   11.2 fold 2 (base model load to the last epoch's save; encoding and every epoch's save included)
+minutes   10.2 fold 3 (base model load to the last epoch's save; encoding and every epoch's save included)
+minutes   10.3 fold 4 (base model load to the last epoch's save; encoding and every epoch's save included)
+best      epoch 10 (highest pooled out-of-fold accuracy, all 549 pool pages, reject pages wrong; a tie keeps the earlier epoch)
+epoch 1   out-of-fold accuracy 0.1913
+epoch 2   out-of-fold accuracy 0.2914
+epoch 3   out-of-fold accuracy 0.4299
+epoch 4   out-of-fold accuracy 0.5938
+epoch 5   out-of-fold accuracy 0.6466
+epoch 6   out-of-fold accuracy 0.6885
+epoch 7   out-of-fold accuracy 0.7049
+epoch 8   out-of-fold accuracy 0.7104
+epoch 9   out-of-fold accuracy 0.7086
+epoch 10  out-of-fold accuracy 0.7122

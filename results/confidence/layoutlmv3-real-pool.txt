@@ -7,516 +7,516 @@ test      results/confidence/dumps/layoutlmv3-real-fold3-test.jsonl
 test      results/confidence/dumps/layoutlmv3-real-fold4-test.jsonl
 cut-offs from the pool pages, applied to each fold model's test dump; mean over the 5 fold models (min–max)
   alpha 0.02
-    tau    0.966747
-      in-class    coverage 0.2759 (0.1022–0.5584)
-      in-class    error    0.0073 (0.0000–0.0213)
-      reject_leak          0.0000 (0.0000–0.0000), 0/0/0/0/0 of 30 by fold
-      all pages   coverage 0.2487 (0.0921–0.5033)
-      all pages   error    0.0073 (0.0000–0.0213)
+    tau    0.962542
+      in-class    coverage 0.4453 (0.3504–0.5146)
+      in-class    error    0.0104 (0.0071–0.0208)
+      reject_leak          0.0154 (0.0000–0.0330), 2/2/3/0/0 of 91 by fold
+      all pages   coverage 0.3381 (0.2630–0.3945)
+      all pages   error    0.0209 (0.0079–0.0278)
     tau_cp -
       in-class    coverage 0.0000 (0.0000–0.0000)
       in-class    error    -      (no fold accepts a page)
-      reject_leak          0.0000 (0.0000–0.0000), 0/0/0/0/0 of 30 by fold
+      reject_leak          0.0000 (0.0000–0.0000), 0/0/0/0/0 of 91 by fold
       all pages   coverage 0.0000 (0.0000–0.0000)
       all pages   error    -      (no fold accepts a page)
   alpha 0.05
-    tau    0.927622
-      in-class    coverage 0.8628 (0.8248–0.9343)
-      in-class    error    0.0076 (0.0039–0.0210)
-      reject_leak          0.1867 (0.1000–0.2667), 8/5/7/5/3 of 30 by fold
-      all pages   coverage 0.7961 (0.7533–0.8684)
-      all pages   error    0.0304 (0.0175–0.0412)
-    tau_cp 0.966747
-      in-class    coverage 0.2759 (0.1022–0.5584)
-      in-class    error    0.0073 (0.0000–0.0213)
-      reject_leak          0.0000 (0.0000–0.0000), 0/0/0/0/0 of 30 by fold
-      all pages   coverage 0.2487 (0.0921–0.5033)
-      all pages   error    0.0073 (0.0000–0.0213)
+    tau    0.956716
+      in-class    coverage 0.5803 (0.5182–0.6533)
+      in-class    error    0.0077 (0.0056–0.0141)
+      reject_leak          0.0989 (0.0440–0.1209), 10/11/11/4/9 of 91 by fold
+      all pages   coverage 0.4603 (0.4000–0.5151)
+      all pages   error    0.0604 (0.0411–0.0745)
+    tau_cp 0.961473
+      in-class    coverage 0.4854 (0.3905–0.5365)
+      in-class    error    0.0095 (0.0068–0.0187)
+      reject_leak          0.0396 (0.0000–0.0769), 3/6/7/0/2 of 91 by fold
+      all pages   coverage 0.3742 (0.2932–0.4219)
+      all pages   error    0.0341 (0.0187–0.0519)
   alpha 0.10
-    tau    0.744989
-      in-class    coverage 0.9693 (0.9599–0.9891)
-      in-class    error    0.0173 (0.0114–0.0261)
-      reject_leak          0.6200 (0.5667–0.8333), 17/17/17/25/17 of 30 by fold
-      all pages   coverage 0.9349 (0.9211–0.9638)
-      all pages   error    0.0814 (0.0714–0.1092)
-    tau_cp 0.844919
-      in-class    coverage 0.9540 (0.9234–0.9745)
-      in-class    error    0.0145 (0.0079–0.0262)
-      reject_leak          0.4200 (0.3333–0.5333), 13/13/10/16/11 of 30 by fold
-      all pages   coverage 0.9013 (0.8684–0.9309)
-      all pages   error    0.0596 (0.0492–0.0813)
+    tau    0.933159
+      in-class    coverage 0.8635 (0.8066–0.9197)
+      in-class    error    0.0051 (0.0040–0.0090)
+      reject_leak          0.2330 (0.2088–0.2418), 22/22/22/19/21 of 91 by fold
+      all pages   coverage 0.7063 (0.6575–0.7507)
+      all pages   error    0.0869 (0.0839–0.0895)
+    tau_cp 0.940517
+      in-class    coverage 0.8358 (0.7810–0.8869)
+      in-class    error    0.0053 (0.0041–0.0093)
+      reject_leak          0.1978 (0.1758–0.2198), 18/19/20/17/16 of 91 by fold
+      all pages   coverage 0.6767 (0.6329–0.7205)
+      all pages   error    0.0777 (0.0702–0.0823)
 
 model     layoutlmv3-real, layoutlmv3-real-fold0-test.jsonl
-pool results/confidence/dumps/layoutlmv3-real-pool.jsonl (457 pages, 46 reject; accuracy 0.8600)
+pool results/confidence/dumps/layoutlmv3-real-pool.jsonl (549 pages, 138 reject; accuracy 0.7122)
 score     top probability over CLASSES; a REJECT_LABEL page is always wrong
-pool AUROC of score against correctness, all pages  0.8611
+pool AUROC of score against correctness, all pages  0.8972
 routing: accept a page when its score is at least the cut-off, chosen on the pool pages above
   tau     lowest pool score whose accepted pool error is at most alpha
   tau_cp  the same with the pool error's one-sided 90% Clopper-Pearson upper bound
   reject_leak  share of reject pages scoring at least the cut-off
   alpha 0.02
-    tau    0.966747  pool coverage 0.2538 error 0.0172 reject_leak 0.0435
+    tau    0.962542  pool coverage 0.3188 error 0.0171 reject_leak 0.0217
     tau_cp -         pool coverage 0.0000 error - reject_leak 0.0000
   alpha 0.05
-    tau    0.927622  pool coverage 0.8206 error 0.0480 reject_leak 0.3478
-    tau_cp 0.966747  pool coverage 0.2538 error 0.0172 reject_leak 0.0435
+    tau    0.956716  pool coverage 0.4372 error 0.0500 reject_leak 0.0870
+    tau_cp 0.961473  pool coverage 0.3534 error 0.0258 reject_leak 0.0362
   alpha 0.10
-    tau    0.744989  pool coverage 0.9453 error 0.0995 reject_leak 0.7391
-    tau_cp 0.844919  pool coverage 0.9125 error 0.0791 reject_leak 0.5652
+    tau    0.933159  pool coverage 0.6976 error 0.0992 reject_leak 0.2536
+    tau_cp 0.940517  pool coverage 0.6594 error 0.0773 reject_leak 0.1884
 
-test: results/confidence/dumps/layoutlmv3-real-fold0-test.jsonl (304 pages, 30 reject)
-  in-class pages 274, accuracy 0.9781
-  AUROC of score against correctness, in-class  0.8595
-  mean score, right predictions       0.9605 (268)
-  mean score, wrong predictions       0.8068 (6)
-  ECE, 10 equal-count bins, isotonic fitted on pool  before 0.0293  after 0.0493
+test: results/confidence/dumps/layoutlmv3-real-fold0-test.jsonl (365 pages, 91 reject)
+  in-class pages 274, accuracy 0.9672
+  AUROC of score against correctness, in-class  0.9027
+  mean score, right predictions       0.9505 (265)
+  mean score, wrong predictions       0.7144 (9)
+  ECE, 10 equal-count bins, isotonic fitted on pool  before 0.0391  after 0.1169
   stream_10: 10% reject pages, 90% in-class
   alpha 0.02
-    tau    0.966747
-      in-class             coverage 0.5584 error 0.0065
-      reject_leak          0.0000 (0 of 30)
-      stream_10            coverage 0.5026 error 0.0065
-      all pages, 30 of 304 reject  coverage 0.5033 error 0.0065
+    tau    0.962542
+      in-class             coverage 0.4818 error 0.0076
+      reject_leak          0.0220 (2 of 91)
+      stream_10            coverage 0.4358 error 0.0126
+      all pages, 91 of 365 reject  coverage 0.3671 error 0.0224
     tau_cp -
       in-class             coverage 0.0000 error -
-      reject_leak          0.0000 (0 of 30)
+      reject_leak          0.0000 (0 of 91)
       stream_10            coverage 0.0000 error -
-      all pages, 30 of 304 reject  coverage 0.0000 error -
+      all pages, 91 of 365 reject  coverage 0.0000 error -
     recall among accepted at tau, in-class, per true class (accepted of total)
-      letter                 1.0000 (1 of 49)
+      letter                 - (0 of 49)
       memo                   - (0 of 17)
-      form                   1.0000 (20 of 26)
+      form                   1.0000 (12 of 26)
       questionnaire          0.0000 (1 of 15)
       budget                 1.0000 (17 of 20)
-      invoice                1.0000 (12 of 18)
+      invoice                1.0000 (11 of 18)
+      email                  - (0 of 12)
+      news_article           1.0000 (24 of 25)
+      scientific_publication 1.0000 (12 of 15)
+      specification          1.0000 (22 of 24)
+      resume                 1.0000 (33 of 53)
+  alpha 0.05
+    tau    0.956716
+      in-class             coverage 0.5985 error 0.0061
+      reject_leak          0.1099 (10 of 91)
+      stream_10            coverage 0.5497 error 0.0260
+      all pages, 91 of 365 reject  coverage 0.4767 error 0.0632
+    tau_cp 0.961473
+      in-class             coverage 0.5146 error 0.0071
+      reject_leak          0.0330 (3 of 91)
+      stream_10            coverage 0.4664 error 0.0141
+      all pages, 91 of 365 reject  coverage 0.3945 error 0.0278
+    recall among accepted at tau, in-class, per true class (accepted of total)
+      letter                 - (0 of 49)
+      memo                   - (0 of 17)
+      form                   1.0000 (19 of 26)
+      questionnaire          0.8889 (9 of 15)
+      budget                 1.0000 (19 of 20)
+      invoice                1.0000 (11 of 18)
       email                  - (0 of 12)
       news_article           1.0000 (24 of 25)
       scientific_publication 1.0000 (15 of 15)
       specification          1.0000 (23 of 24)
-      resume                 1.0000 (40 of 53)
-  alpha 0.05
-    tau    0.927622
-      in-class             coverage 0.9343 error 0.0039
-      reject_leak          0.2667 (8 of 30)
-      stream_10            coverage 0.8675 error 0.0345
-      all pages, 30 of 304 reject  coverage 0.8684 error 0.0341
-    tau_cp 0.966747
-      in-class             coverage 0.5584 error 0.0065
-      reject_leak          0.0000 (0 of 30)
-      stream_10            coverage 0.5026 error 0.0065
-      all pages, 30 of 304 reject  coverage 0.5033 error 0.0065
+      resume                 1.0000 (44 of 53)
+  alpha 0.10
+    tau    0.933159
+      in-class             coverage 0.8832 error 0.0041
+      reject_leak          0.2418 (22 of 91)
+      stream_10            coverage 0.8191 error 0.0335
+      all pages, 91 of 365 reject  coverage 0.7233 error 0.0871
+    tau_cp 0.940517
+      in-class             coverage 0.8467 error 0.0043
+      reject_leak          0.1978 (18 of 91)
+      stream_10            coverage 0.7818 error 0.0295
+      all pages, 91 of 365 reject  coverage 0.6849 error 0.0760
     recall among accepted at tau, in-class, per true class (accepted of total)
-      letter                 1.0000 (48 of 49)
+      letter                 1.0000 (44 of 49)
+      memo                   1.0000 (12 of 17)
+      form                   1.0000 (22 of 26)
+      questionnaire          0.9333 (15 of 15)
+      budget                 1.0000 (19 of 20)
+      invoice                1.0000 (12 of 18)
+      email                  1.0000 (11 of 12)
+      news_article           1.0000 (24 of 25)
+      scientific_publication 1.0000 (15 of 15)
+      specification          1.0000 (23 of 24)
+      resume                 1.0000 (45 of 53)
+
+model     layoutlmv3-real, layoutlmv3-real-fold1-test.jsonl
+pool results/confidence/dumps/layoutlmv3-real-pool.jsonl (549 pages, 138 reject; accuracy 0.7122)
+score     top probability over CLASSES; a REJECT_LABEL page is always wrong
+pool AUROC of score against correctness, all pages  0.8972
+routing: accept a page when its score is at least the cut-off, chosen on the pool pages above
+  tau     lowest pool score whose accepted pool error is at most alpha
+  tau_cp  the same with the pool error's one-sided 90% Clopper-Pearson upper bound
+  reject_leak  share of reject pages scoring at least the cut-off
+  alpha 0.02
+    tau    0.962542  pool coverage 0.3188 error 0.0171 reject_leak 0.0217
+    tau_cp -         pool coverage 0.0000 error - reject_leak 0.0000
+  alpha 0.05
+    tau    0.956716  pool coverage 0.4372 error 0.0500 reject_leak 0.0870
+    tau_cp 0.961473  pool coverage 0.3534 error 0.0258 reject_leak 0.0362
+  alpha 0.10
+    tau    0.933159  pool coverage 0.6976 error 0.0992 reject_leak 0.2536
+    tau_cp 0.940517  pool coverage 0.6594 error 0.0773 reject_leak 0.1884
+
+test: results/confidence/dumps/layoutlmv3-real-fold1-test.jsonl (365 pages, 91 reject)
+  in-class pages 274, accuracy 0.9672
+  AUROC of score against correctness, in-class  0.8922
+  mean score, right predictions       0.9497 (265)
+  mean score, wrong predictions       0.6704 (9)
+  ECE, 10 equal-count bins, isotonic fitted on pool  before 0.0325  after 0.1245
+  stream_10: 10% reject pages, 90% in-class
+  alpha 0.02
+    tau    0.962542
+      in-class             coverage 0.4197 error 0.0087
+      reject_leak          0.0220 (2 of 91)
+      stream_10            coverage 0.3799 error 0.0144
+      all pages, 91 of 365 reject  coverage 0.3205 error 0.0256
+    tau_cp -
+      in-class             coverage 0.0000 error -
+      reject_leak          0.0000 (0 of 91)
+      stream_10            coverage 0.0000 error -
+      all pages, 91 of 365 reject  coverage 0.0000 error -
+    recall among accepted at tau, in-class, per true class (accepted of total)
+      letter                 - (0 of 49)
+      memo                   - (0 of 17)
+      form                   1.0000 (19 of 26)
+      questionnaire          0.0000 (1 of 15)
+      budget                 1.0000 (3 of 20)
+      invoice                1.0000 (2 of 18)
+      email                  - (0 of 12)
+      news_article           1.0000 (17 of 25)
+      scientific_publication 1.0000 (13 of 15)
+      specification          1.0000 (22 of 24)
+      resume                 1.0000 (38 of 53)
+  alpha 0.05
+    tau    0.956716
+      in-class             coverage 0.5474 error 0.0067
+      reject_leak          0.1209 (11 of 91)
+      stream_10            coverage 0.5048 error 0.0305
+      all pages, 91 of 365 reject  coverage 0.4411 error 0.0745
+    tau_cp 0.961473
+      in-class             coverage 0.4818 error 0.0076
+      reject_leak          0.0659 (6 of 91)
+      stream_10            coverage 0.4402 error 0.0224
+      all pages, 91 of 365 reject  coverage 0.3781 error 0.0507
+    recall among accepted at tau, in-class, per true class (accepted of total)
+      letter                 - (0 of 49)
+      memo                   - (0 of 17)
+      form                   1.0000 (21 of 26)
+      questionnaire          0.0000 (1 of 15)
+      budget                 1.0000 (16 of 20)
+      invoice                1.0000 (11 of 18)
+      email                  - (0 of 12)
+      news_article           1.0000 (20 of 25)
+      scientific_publication 1.0000 (13 of 15)
+      specification          1.0000 (22 of 24)
+      resume                 1.0000 (46 of 53)
+  alpha 0.10
+    tau    0.933159
+      in-class             coverage 0.8577 error 0.0043
+      reject_leak          0.2418 (22 of 91)
+      stream_10            coverage 0.7961 error 0.0345
+      all pages, 91 of 365 reject  coverage 0.7041 error 0.0895
+    tau_cp 0.940517
+      in-class             coverage 0.8394 error 0.0043
+      reject_leak          0.2088 (19 of 91)
+      stream_10            coverage 0.7764 error 0.0311
+      all pages, 91 of 365 reject  coverage 0.6822 error 0.0803
+    recall among accepted at tau, in-class, per true class (accepted of total)
+      letter                 1.0000 (47 of 49)
+      memo                   - (0 of 17)
+      form                   1.0000 (23 of 26)
+      questionnaire          0.9286 (14 of 15)
+      budget                 1.0000 (18 of 20)
+      invoice                1.0000 (12 of 18)
+      email                  1.0000 (11 of 12)
+      news_article           1.0000 (23 of 25)
+      scientific_publication 1.0000 (14 of 15)
+      specification          1.0000 (23 of 24)
+      resume                 1.0000 (50 of 53)
+
+model     layoutlmv3-real, layoutlmv3-real-fold2-test.jsonl
+pool results/confidence/dumps/layoutlmv3-real-pool.jsonl (549 pages, 138 reject; accuracy 0.7122)
+score     top probability over CLASSES; a REJECT_LABEL page is always wrong
+pool AUROC of score against correctness, all pages  0.8972
+routing: accept a page when its score is at least the cut-off, chosen on the pool pages above
+  tau     lowest pool score whose accepted pool error is at most alpha
+  tau_cp  the same with the pool error's one-sided 90% Clopper-Pearson upper bound
+  reject_leak  share of reject pages scoring at least the cut-off
+  alpha 0.02
+    tau    0.962542  pool coverage 0.3188 error 0.0171 reject_leak 0.0217
+    tau_cp -         pool coverage 0.0000 error - reject_leak 0.0000
+  alpha 0.05
+    tau    0.956716  pool coverage 0.4372 error 0.0500 reject_leak 0.0870
+    tau_cp 0.961473  pool coverage 0.3534 error 0.0258 reject_leak 0.0362
+  alpha 0.10
+    tau    0.933159  pool coverage 0.6976 error 0.0992 reject_leak 0.2536
+    tau_cp 0.940517  pool coverage 0.6594 error 0.0773 reject_leak 0.1884
+
+test: results/confidence/dumps/layoutlmv3-real-fold2-test.jsonl (365 pages, 91 reject)
+  in-class pages 274, accuracy 0.9708
+  AUROC of score against correctness, in-class  0.8849
+  mean score, right predictions       0.9523 (266)
+  mean score, wrong predictions       0.6878 (8)
+  ECE, 10 equal-count bins, isotonic fitted on pool  before 0.0361  after 0.1057
+  stream_10: 10% reject pages, 90% in-class
+  alpha 0.02
+    tau    0.962542
+      in-class             coverage 0.5146 error 0.0071
+      reject_leak          0.0330 (3 of 91)
+      stream_10            coverage 0.4664 error 0.0141
+      all pages, 91 of 365 reject  coverage 0.3945 error 0.0278
+    tau_cp -
+      in-class             coverage 0.0000 error -
+      reject_leak          0.0000 (0 of 91)
+      stream_10            coverage 0.0000 error -
+      all pages, 91 of 365 reject  coverage 0.0000 error -
+    recall among accepted at tau, in-class, per true class (accepted of total)
+      letter                 - (0 of 49)
+      memo                   - (0 of 17)
+      form                   1.0000 (18 of 26)
+      questionnaire          0.0000 (1 of 15)
+      budget                 1.0000 (16 of 20)
+      invoice                1.0000 (10 of 18)
+      email                  - (0 of 12)
+      news_article           1.0000 (23 of 25)
+      scientific_publication 1.0000 (13 of 15)
+      specification          1.0000 (19 of 24)
+      resume                 1.0000 (41 of 53)
+  alpha 0.05
+    tau    0.956716
+      in-class             coverage 0.5839 error 0.0063
+      reject_leak          0.1209 (11 of 91)
+      stream_10            coverage 0.5376 error 0.0286
+      all pages, 91 of 365 reject  coverage 0.4685 error 0.0702
+    tau_cp 0.961473
+      in-class             coverage 0.5365 error 0.0068
+      reject_leak          0.0769 (7 of 91)
+      stream_10            coverage 0.4905 error 0.0224
+      all pages, 91 of 365 reject  coverage 0.4219 error 0.0519
+    recall among accepted at tau, in-class, per true class (accepted of total)
+      letter                 - (0 of 49)
+      memo                   - (0 of 17)
+      form                   1.0000 (20 of 26)
+      questionnaire          0.7500 (4 of 15)
+      budget                 1.0000 (17 of 20)
+      invoice                1.0000 (13 of 18)
+      email                  1.0000 (2 of 12)
+      news_article           1.0000 (23 of 25)
+      scientific_publication 1.0000 (13 of 15)
+      specification          1.0000 (21 of 24)
+      resume                 1.0000 (47 of 53)
+  alpha 0.10
+    tau    0.933159
+      in-class             coverage 0.9197 error 0.0040
+      reject_leak          0.2418 (22 of 91)
+      stream_10            coverage 0.8519 error 0.0322
+      all pages, 91 of 365 reject  coverage 0.7507 error 0.0839
+    tau_cp 0.940517
+      in-class             coverage 0.8869 error 0.0041
+      reject_leak          0.2198 (20 of 91)
+      stream_10            coverage 0.8202 error 0.0308
+      all pages, 91 of 365 reject  coverage 0.7205 error 0.0798
+    recall among accepted at tau, in-class, per true class (accepted of total)
+      letter                 1.0000 (46 of 49)
       memo                   1.0000 (14 of 17)
       form                   1.0000 (23 of 26)
       questionnaire          0.9333 (15 of 15)
       budget                 1.0000 (18 of 20)
-      invoice                1.0000 (14 of 18)
-      email                  1.0000 (11 of 12)
-      news_article           1.0000 (25 of 25)
-      scientific_publication 1.0000 (15 of 15)
-      specification          1.0000 (23 of 24)
-      resume                 1.0000 (50 of 53)
-  alpha 0.10
-    tau    0.744989
-      in-class             coverage 0.9891 error 0.0185
-      reject_leak          0.5667 (17 of 30)
-      stream_10            coverage 0.9468 error 0.0772
-      all pages, 30 of 304 reject  coverage 0.9474 error 0.0764
-    tau_cp 0.844919
-      in-class             coverage 0.9708 error 0.0113
-      reject_leak          0.4333 (13 of 30)
-      stream_10            coverage 0.9171 error 0.0580
-      all pages, 30 of 304 reject  coverage 0.9178 error 0.0573
-    recall among accepted at tau, in-class, per true class (accepted of total)
-      letter                 1.0000 (49 of 49)
-      memo                   1.0000 (15 of 17)
-      form                   0.9200 (25 of 26)
-      questionnaire          0.9333 (15 of 15)
-      budget                 0.9500 (20 of 20)
-      invoice                1.0000 (18 of 18)
-      email                  1.0000 (12 of 12)
-      news_article           1.0000 (25 of 25)
-      scientific_publication 1.0000 (15 of 15)
-      specification          0.9583 (24 of 24)
-      resume                 1.0000 (53 of 53)
-
-model     layoutlmv3-real, layoutlmv3-real-fold1-test.jsonl
-pool results/confidence/dumps/layoutlmv3-real-pool.jsonl (457 pages, 46 reject; accuracy 0.8600)
-score     top probability over CLASSES; a REJECT_LABEL page is always wrong
-pool AUROC of score against correctness, all pages  0.8611
-routing: accept a page when its score is at least the cut-off, chosen on the pool pages above
-  tau     lowest pool score whose accepted pool error is at most alpha
-  tau_cp  the same with the pool error's one-sided 90% Clopper-Pearson upper bound
-  reject_leak  share of reject pages scoring at least the cut-off
-  alpha 0.02
-    tau    0.966747  pool coverage 0.2538 error 0.0172 reject_leak 0.0435
-    tau_cp -         pool coverage 0.0000 error - reject_leak 0.0000
-  alpha 0.05
-    tau    0.927622  pool coverage 0.8206 error 0.0480 reject_leak 0.3478
-    tau_cp 0.966747  pool coverage 0.2538 error 0.0172 reject_leak 0.0435
-  alpha 0.10
-    tau    0.744989  pool coverage 0.9453 error 0.0995 reject_leak 0.7391
-    tau_cp 0.844919  pool coverage 0.9125 error 0.0791 reject_leak 0.5652
-
-test: results/confidence/dumps/layoutlmv3-real-fold1-test.jsonl (304 pages, 30 reject)
-  in-class pages 274, accuracy 0.9745
-  AUROC of score against correctness, in-class  0.8486
-  mean score, right predictions       0.9427 (267)
-  mean score, wrong predictions       0.7092 (7)
-  ECE, 10 equal-count bins, isotonic fitted on pool  before 0.0387  after 0.0839
-  stream_10: 10% reject pages, 90% in-class
-  alpha 0.02
-    tau    0.966747
-      in-class             coverage 0.1715 error 0.0213
-      reject_leak          0.0000 (0 of 30)
-      stream_10            coverage 0.1544 error 0.0213
-      all pages, 30 of 304 reject  coverage 0.1546 error 0.0213
-    tau_cp -
-      in-class             coverage 0.0000 error -
-      reject_leak          0.0000 (0 of 30)
-      stream_10            coverage 0.0000 error -
-      all pages, 30 of 304 reject  coverage 0.0000 error -
-    recall among accepted at tau, in-class, per true class (accepted of total)
-      letter                 - (0 of 49)
-      memo                   - (0 of 17)
-      form                   1.0000 (10 of 26)
-      questionnaire          0.0000 (1 of 15)
-      budget                 - (0 of 20)
-      invoice                - (0 of 18)
-      email                  - (0 of 12)
-      news_article           1.0000 (16 of 25)
-      scientific_publication - (0 of 15)
-      specification          1.0000 (20 of 24)
-      resume                 - (0 of 53)
-  alpha 0.05
-    tau    0.927622
-      in-class             coverage 0.8577 error 0.0043
-      reject_leak          0.1667 (5 of 30)
-      stream_10            coverage 0.7886 error 0.0253
-      all pages, 30 of 304 reject  coverage 0.7895 error 0.0250
-    tau_cp 0.966747
-      in-class             coverage 0.1715 error 0.0213
-      reject_leak          0.0000 (0 of 30)
-      stream_10            coverage 0.1544 error 0.0213
-      all pages, 30 of 304 reject  coverage 0.1546 error 0.0213
-    recall among accepted at tau, in-class, per true class (accepted of total)
-      letter                 1.0000 (47 of 49)
-      memo                   1.0000 (2 of 17)
-      form                   1.0000 (23 of 26)
-      questionnaire          0.9231 (13 of 15)
-      budget                 1.0000 (18 of 20)
-      invoice                1.0000 (12 of 18)
-      email                  1.0000 (10 of 12)
-      news_article           1.0000 (22 of 25)
-      scientific_publication 1.0000 (15 of 15)
-      specification          1.0000 (23 of 24)
-      resume                 1.0000 (50 of 53)
-  alpha 0.10
-    tau    0.744989
-      in-class             coverage 0.9599 error 0.0114
-      reject_leak          0.5667 (17 of 30)
-      stream_10            coverage 0.9205 error 0.0723
-      all pages, 30 of 304 reject  coverage 0.9211 error 0.0714
-    tau_cp 0.844919
-      in-class             coverage 0.9526 error 0.0115
-      reject_leak          0.4333 (13 of 30)
-      stream_10            coverage 0.9006 error 0.0591
-      all pages, 30 of 304 reject  coverage 0.9013 error 0.0584
-    recall among accepted at tau, in-class, per true class (accepted of total)
-      letter                 1.0000 (48 of 49)
-      memo                   1.0000 (15 of 17)
-      form                   0.9583 (24 of 26)
-      questionnaire          0.9333 (15 of 15)
-      budget                 1.0000 (19 of 20)
       invoice                1.0000 (15 of 18)
-      email                  1.0000 (12 of 12)
-      news_article           1.0000 (25 of 25)
+      email                  1.0000 (10 of 12)
+      news_article           1.0000 (24 of 25)
       scientific_publication 1.0000 (15 of 15)
       specification          1.0000 (23 of 24)
-      resume                 0.9808 (52 of 53)
-
-model     layoutlmv3-real, layoutlmv3-real-fold2-test.jsonl
-pool results/confidence/dumps/layoutlmv3-real-pool.jsonl (457 pages, 46 reject; accuracy 0.8600)
-score     top probability over CLASSES; a REJECT_LABEL page is always wrong
-pool AUROC of score against correctness, all pages  0.8611
-routing: accept a page when its score is at least the cut-off, chosen on the pool pages above
-  tau     lowest pool score whose accepted pool error is at most alpha
-  tau_cp  the same with the pool error's one-sided 90% Clopper-Pearson upper bound
-  reject_leak  share of reject pages scoring at least the cut-off
-  alpha 0.02
-    tau    0.966747  pool coverage 0.2538 error 0.0172 reject_leak 0.0435
-    tau_cp -         pool coverage 0.0000 error - reject_leak 0.0000
-  alpha 0.05
-    tau    0.927622  pool coverage 0.8206 error 0.0480 reject_leak 0.3478
-    tau_cp 0.966747  pool coverage 0.2538 error 0.0172 reject_leak 0.0435
-  alpha 0.10
-    tau    0.744989  pool coverage 0.9453 error 0.0995 reject_leak 0.7391
-    tau_cp 0.844919  pool coverage 0.9125 error 0.0791 reject_leak 0.5652
-
-test: results/confidence/dumps/layoutlmv3-real-fold2-test.jsonl (304 pages, 30 reject)
-  in-class pages 274, accuracy 0.9708
-  AUROC of score against correctness, in-class  0.8952
-  mean score, right predictions       0.9363 (266)
-  mean score, wrong predictions       0.7488 (8)
-  ECE, 10 equal-count bins, isotonic fitted on pool  before 0.0400  after 0.1001
-  stream_10: 10% reject pages, 90% in-class
-  alpha 0.02
-    tau    0.966747
-      in-class             coverage 0.1022 error 0.0000
-      reject_leak          0.0000 (0 of 30)
-      stream_10            coverage 0.0920 error 0.0000
-      all pages, 30 of 304 reject  coverage 0.0921 error 0.0000
-    tau_cp -
-      in-class             coverage 0.0000 error -
-      reject_leak          0.0000 (0 of 30)
-      stream_10            coverage 0.0000 error -
-      all pages, 30 of 304 reject  coverage 0.0000 error -
-    recall among accepted at tau, in-class, per true class (accepted of total)
-      letter                 - (0 of 49)
-      memo                   - (0 of 17)
-      form                   - (0 of 26)
-      questionnaire          - (0 of 15)
-      budget                 - (0 of 20)
-      invoice                - (0 of 18)
-      email                  - (0 of 12)
-      news_article           1.0000 (18 of 25)
-      scientific_publication - (0 of 15)
-      specification          1.0000 (10 of 24)
-      resume                 - (0 of 53)
-  alpha 0.05
-    tau    0.927622
-      in-class             coverage 0.8285 error 0.0044
-      reject_leak          0.2333 (7 of 30)
-      stream_10            coverage 0.7690 error 0.0346
-      all pages, 30 of 304 reject  coverage 0.7697 error 0.0342
-    tau_cp 0.966747
-      in-class             coverage 0.1022 error 0.0000
-      reject_leak          0.0000 (0 of 30)
-      stream_10            coverage 0.0920 error 0.0000
-      all pages, 30 of 304 reject  coverage 0.0921 error 0.0000
-    recall among accepted at tau, in-class, per true class (accepted of total)
-      letter                 1.0000 (45 of 49)
-      memo                   - (0 of 17)
-      form                   1.0000 (22 of 26)
-      questionnaire          0.9333 (15 of 15)
-      budget                 1.0000 (18 of 20)
-      invoice                1.0000 (13 of 18)
-      email                  1.0000 (5 of 12)
-      news_article           1.0000 (24 of 25)
-      scientific_publication 1.0000 (15 of 15)
-      specification          1.0000 (22 of 24)
-      resume                 1.0000 (48 of 53)
-  alpha 0.10
-    tau    0.744989
-      in-class             coverage 0.9599 error 0.0190
-      reject_leak          0.5667 (17 of 30)
-      stream_10            coverage 0.9205 error 0.0794
-      all pages, 30 of 304 reject  coverage 0.9211 error 0.0786
-    tau_cp 0.844919
-      in-class             coverage 0.9489 error 0.0154
-      reject_leak          0.3333 (10 of 30)
-      stream_10            coverage 0.8873 error 0.0524
-      all pages, 30 of 304 reject  coverage 0.8882 error 0.0519
-    recall among accepted at tau, in-class, per true class (accepted of total)
-      letter                 0.9796 (49 of 49)
-      memo                   0.9375 (16 of 17)
-      form                   1.0000 (24 of 26)
-      questionnaire          0.9333 (15 of 15)
-      budget                 1.0000 (19 of 20)
-      invoice                1.0000 (16 of 18)
-      email                  1.0000 (11 of 12)
-      news_article           1.0000 (24 of 25)
-      scientific_publication 1.0000 (15 of 15)
-      specification          0.9565 (23 of 24)
-      resume                 0.9804 (51 of 53)
+      resume                 1.0000 (49 of 53)
 
 model     layoutlmv3-real, layoutlmv3-real-fold3-test.jsonl
-pool results/confidence/dumps/layoutlmv3-real-pool.jsonl (457 pages, 46 reject; accuracy 0.8600)
+pool results/confidence/dumps/layoutlmv3-real-pool.jsonl (549 pages, 138 reject; accuracy 0.7122)
 score     top probability over CLASSES; a REJECT_LABEL page is always wrong
-pool AUROC of score against correctness, all pages  0.8611
+pool AUROC of score against correctness, all pages  0.8972
 routing: accept a page when its score is at least the cut-off, chosen on the pool pages above
   tau     lowest pool score whose accepted pool error is at most alpha
   tau_cp  the same with the pool error's one-sided 90% Clopper-Pearson upper bound
   reject_leak  share of reject pages scoring at least the cut-off
   alpha 0.02
-    tau    0.966747  pool coverage 0.2538 error 0.0172 reject_leak 0.0435
+    tau    0.962542  pool coverage 0.3188 error 0.0171 reject_leak 0.0217
     tau_cp -         pool coverage 0.0000 error - reject_leak 0.0000
   alpha 0.05
-    tau    0.927622  pool coverage 0.8206 error 0.0480 reject_leak 0.3478
-    tau_cp 0.966747  pool coverage 0.2538 error 0.0172 reject_leak 0.0435
+    tau    0.956716  pool coverage 0.4372 error 0.0500 reject_leak 0.0870
+    tau_cp 0.961473  pool coverage 0.3534 error 0.0258 reject_leak 0.0362
   alpha 0.10
-    tau    0.744989  pool coverage 0.9453 error 0.0995 reject_leak 0.7391
-    tau_cp 0.844919  pool coverage 0.9125 error 0.0791 reject_leak 0.5652
+    tau    0.933159  pool coverage 0.6976 error 0.0992 reject_leak 0.2536
+    tau_cp 0.940517  pool coverage 0.6594 error 0.0773 reject_leak 0.1884
 
-test: results/confidence/dumps/layoutlmv3-real-fold3-test.jsonl (304 pages, 30 reject)
-  in-class pages 274, accuracy 0.9672
-  AUROC of score against correctness, in-class  0.8256
-  mean score, right predictions       0.9536 (265)
-  mean score, wrong predictions       0.8466 (9)
-  ECE, 10 equal-count bins, isotonic fitted on pool  before 0.0269  after 0.0639
+test: results/confidence/dumps/layoutlmv3-real-fold3-test.jsonl (365 pages, 91 reject)
+  in-class pages 274, accuracy 0.9745
+  AUROC of score against correctness, in-class  0.7608
+  mean score, right predictions       0.9413 (267)
+  mean score, wrong predictions       0.7814 (7)
+  ECE, 10 equal-count bins, isotonic fitted on pool  before 0.0387  after 0.1776
   stream_10: 10% reject pages, 90% in-class
   alpha 0.02
-    tau    0.966747
-      in-class             coverage 0.4234 error 0.0086
-      reject_leak          0.0000 (0 of 30)
-      stream_10            coverage 0.3810 error 0.0086
-      all pages, 30 of 304 reject  coverage 0.3816 error 0.0086
+    tau    0.962542
+      in-class             coverage 0.3504 error 0.0208
+      reject_leak          0.0000 (0 of 91)
+      stream_10            coverage 0.3153 error 0.0208
+      all pages, 91 of 365 reject  coverage 0.2630 error 0.0208
     tau_cp -
       in-class             coverage 0.0000 error -
-      reject_leak          0.0000 (0 of 30)
+      reject_leak          0.0000 (0 of 91)
       stream_10            coverage 0.0000 error -
-      all pages, 30 of 304 reject  coverage 0.0000 error -
+      all pages, 91 of 365 reject  coverage 0.0000 error -
     recall among accepted at tau, in-class, per true class (accepted of total)
       letter                 - (0 of 49)
-      memo                   - (0 of 17)
-      form                   1.0000 (19 of 26)
+      memo                   0.0000 (1 of 17)
+      form                   1.0000 (20 of 26)
       questionnaire          0.0000 (1 of 15)
       budget                 - (0 of 20)
       invoice                - (0 of 18)
       email                  - (0 of 12)
       news_article           1.0000 (22 of 25)
-      scientific_publication 1.0000 (11 of 15)
-      specification          1.0000 (18 of 24)
-      resume                 1.0000 (45 of 53)
+      scientific_publication 1.0000 (13 of 15)
+      specification          1.0000 (17 of 24)
+      resume                 1.0000 (22 of 53)
   alpha 0.05
-    tau    0.927622
-      in-class             coverage 0.8686 error 0.0210
-      reject_leak          0.1667 (5 of 30)
-      stream_10            coverage 0.7984 error 0.0414
-      all pages, 30 of 304 reject  coverage 0.7993 error 0.0412
-    tau_cp 0.966747
-      in-class             coverage 0.4234 error 0.0086
-      reject_leak          0.0000 (0 of 30)
-      stream_10            coverage 0.3810 error 0.0086
-      all pages, 30 of 304 reject  coverage 0.3816 error 0.0086
+    tau    0.956716
+      in-class             coverage 0.5182 error 0.0141
+      reject_leak          0.0440 (4 of 91)
+      stream_10            coverage 0.4708 error 0.0233
+      all pages, 91 of 365 reject  coverage 0.4000 error 0.0411
+    tau_cp 0.961473
+      in-class             coverage 0.3905 error 0.0187
+      reject_leak          0.0000 (0 of 91)
+      stream_10            coverage 0.3515 error 0.0187
+      all pages, 91 of 365 reject  coverage 0.2932 error 0.0187
+    recall among accepted at tau, in-class, per true class (accepted of total)
+      letter                 - (0 of 49)
+      memo                   0.0000 (1 of 17)
+      form                   1.0000 (22 of 26)
+      questionnaire          0.6667 (3 of 15)
+      budget                 1.0000 (11 of 20)
+      invoice                1.0000 (10 of 18)
+      email                  - (0 of 12)
+      news_article           1.0000 (22 of 25)
+      scientific_publication 1.0000 (14 of 15)
+      specification          1.0000 (18 of 24)
+      resume                 1.0000 (41 of 53)
+  alpha 0.10
+    tau    0.933159
+      in-class             coverage 0.8066 error 0.0090
+      reject_leak          0.2088 (19 of 91)
+      stream_10            coverage 0.7468 error 0.0368
+      all pages, 91 of 365 reject  coverage 0.6575 error 0.0875
+    tau_cp 0.940517
+      in-class             coverage 0.7810 error 0.0093
+      reject_leak          0.1868 (17 of 91)
+      stream_10            coverage 0.7216 error 0.0350
+      all pages, 91 of 365 reject  coverage 0.6329 error 0.0823
     recall among accepted at tau, in-class, per true class (accepted of total)
       letter                 1.0000 (45 of 49)
       memo                   0.0000 (1 of 17)
-      form                   0.9200 (25 of 26)
+      form                   1.0000 (22 of 26)
       questionnaire          0.9333 (15 of 15)
       budget                 1.0000 (19 of 20)
-      invoice                1.0000 (14 of 18)
-      email                  1.0000 (7 of 12)
-      news_article           1.0000 (23 of 25)
-      scientific_publication 1.0000 (15 of 15)
-      specification          0.9524 (21 of 24)
-      resume                 1.0000 (53 of 53)
-  alpha 0.10
-    tau    0.744989
-      in-class             coverage 0.9781 error 0.0261
-      reject_leak          0.8333 (25 of 30)
-      stream_10            coverage 0.9636 error 0.1103
-      all pages, 30 of 304 reject  coverage 0.9638 error 0.1092
-    tau_cp 0.844919
-      in-class             coverage 0.9745 error 0.0262
-      reject_leak          0.5333 (16 of 30)
-      stream_10            coverage 0.9303 error 0.0820
-      all pages, 30 of 304 reject  coverage 0.9309 error 0.0813
-    recall among accepted at tau, in-class, per true class (accepted of total)
-      letter                 1.0000 (48 of 49)
-      memo                   0.9375 (16 of 17)
-      form                   0.8846 (26 of 26)
-      questionnaire          0.9333 (15 of 15)
-      budget                 1.0000 (19 of 20)
-      invoice                1.0000 (17 of 18)
-      email                  1.0000 (12 of 12)
-      news_article           1.0000 (25 of 25)
-      scientific_publication 1.0000 (15 of 15)
-      specification          0.9091 (22 of 24)
-      resume                 1.0000 (53 of 53)
+      invoice                1.0000 (15 of 18)
+      email                  - (0 of 12)
+      news_article           1.0000 (22 of 25)
+      scientific_publication 1.0000 (14 of 15)
+      specification          1.0000 (20 of 24)
+      resume                 1.0000 (48 of 53)
 
 model     layoutlmv3-real, layoutlmv3-real-fold4-test.jsonl
-pool results/confidence/dumps/layoutlmv3-real-pool.jsonl (457 pages, 46 reject; accuracy 0.8600)
+pool results/confidence/dumps/layoutlmv3-real-pool.jsonl (549 pages, 138 reject; accuracy 0.7122)
 score     top probability over CLASSES; a REJECT_LABEL page is always wrong
-pool AUROC of score against correctness, all pages  0.8611
+pool AUROC of score against correctness, all pages  0.8972
 routing: accept a page when its score is at least the cut-off, chosen on the pool pages above
   tau     lowest pool score whose accepted pool error is at most alpha
   tau_cp  the same with the pool error's one-sided 90% Clopper-Pearson upper bound
   reject_leak  share of reject pages scoring at least the cut-off
   alpha 0.02
-    tau    0.966747  pool coverage 0.2538 error 0.0172 reject_leak 0.0435
+    tau    0.962542  pool coverage 0.3188 error 0.0171 reject_leak 0.0217
     tau_cp -         pool coverage 0.0000 error - reject_leak 0.0000
   alpha 0.05
-    tau    0.927622  pool coverage 0.8206 error 0.0480 reject_leak 0.3478
-    tau_cp 0.966747  pool coverage 0.2538 error 0.0172 reject_leak 0.0435
+    tau    0.956716  pool coverage 0.4372 error 0.0500 reject_leak 0.0870
+    tau_cp 0.961473  pool coverage 0.3534 error 0.0258 reject_leak 0.0362
   alpha 0.10
-    tau    0.744989  pool coverage 0.9453 error 0.0995 reject_leak 0.7391
-    tau_cp 0.844919  pool coverage 0.9125 error 0.0791 reject_leak 0.5652
+    tau    0.933159  pool coverage 0.6976 error 0.0992 reject_leak 0.2536
+    tau_cp 0.940517  pool coverage 0.6594 error 0.0773 reject_leak 0.1884
 
-test: results/confidence/dumps/layoutlmv3-real-fold4-test.jsonl (304 pages, 30 reject)
-  in-class pages 274, accuracy 0.9708
-  AUROC of score against correctness, in-class  0.9070
-  mean score, right predictions       0.9373 (266)
-  mean score, wrong predictions       0.6545 (8)
-  ECE, 10 equal-count bins, isotonic fitted on pool  before 0.0418  after 0.1094
+test: results/confidence/dumps/layoutlmv3-real-fold4-test.jsonl (365 pages, 91 reject)
+  in-class pages 274, accuracy 0.9635
+  AUROC of score against correctness, in-class  0.8939
+  mean score, right predictions       0.9468 (264)
+  mean score, wrong predictions       0.6901 (10)
+  ECE, 10 equal-count bins, isotonic fitted on pool  before 0.0329  after 0.1357
   stream_10: 10% reject pages, 90% in-class
   alpha 0.02
-    tau    0.966747
-      in-class             coverage 0.1241 error 0.0000
-      reject_leak          0.0000 (0 of 30)
-      stream_10            coverage 0.1117 error 0.0000
-      all pages, 30 of 304 reject  coverage 0.1118 error 0.0000
+    tau    0.962542
+      in-class             coverage 0.4599 error 0.0079
+      reject_leak          0.0000 (0 of 91)
+      stream_10            coverage 0.4139 error 0.0079
+      all pages, 91 of 365 reject  coverage 0.3452 error 0.0079
     tau_cp -
       in-class             coverage 0.0000 error -
-      reject_leak          0.0000 (0 of 30)
+      reject_leak          0.0000 (0 of 91)
       stream_10            coverage 0.0000 error -
-      all pages, 30 of 304 reject  coverage 0.0000 error -
+      all pages, 91 of 365 reject  coverage 0.0000 error -
     recall among accepted at tau, in-class, per true class (accepted of total)
       letter                 - (0 of 49)
       memo                   - (0 of 17)
-      form                   - (0 of 26)
-      questionnaire          - (0 of 15)
-      budget                 - (0 of 20)
-      invoice                - (0 of 18)
+      form                   1.0000 (16 of 26)
+      questionnaire          0.8333 (6 of 15)
+      budget                 1.0000 (13 of 20)
+      invoice                1.0000 (9 of 18)
       email                  - (0 of 12)
-      news_article           1.0000 (20 of 25)
-      scientific_publication - (0 of 15)
-      specification          1.0000 (14 of 24)
-      resume                 - (0 of 53)
+      news_article           1.0000 (22 of 25)
+      scientific_publication 1.0000 (6 of 15)
+      specification          1.0000 (21 of 24)
+      resume                 1.0000 (33 of 53)
   alpha 0.05
-    tau    0.927622
+    tau    0.956716
+      in-class             coverage 0.6533 error 0.0056
+      reject_leak          0.0989 (9 of 91)
+      stream_10            coverage 0.5978 error 0.0220
+      all pages, 91 of 365 reject  coverage 0.5151 error 0.0532
+    tau_cp 0.961473
+      in-class             coverage 0.5036 error 0.0072
+      reject_leak          0.0220 (2 of 91)
+      stream_10            coverage 0.4555 error 0.0120
+      all pages, 91 of 365 reject  coverage 0.3836 error 0.0214
+    recall among accepted at tau, in-class, per true class (accepted of total)
+      letter                 1.0000 (20 of 49)
+      memo                   - (0 of 17)
+      form                   1.0000 (18 of 26)
+      questionnaire          0.9333 (15 of 15)
+      budget                 1.0000 (16 of 20)
+      invoice                1.0000 (12 of 18)
+      email                  - (0 of 12)
+      news_article           1.0000 (23 of 25)
+      scientific_publication 1.0000 (10 of 15)
+      specification          1.0000 (21 of 24)
+      resume                 1.0000 (44 of 53)
+  alpha 0.10
+    tau    0.933159
+      in-class             coverage 0.8504 error 0.0043
+      reject_leak          0.2308 (21 of 91)
+      stream_10            coverage 0.7884 error 0.0334
+      all pages, 91 of 365 reject  coverage 0.6959 error 0.0866
+    tau_cp 0.940517
       in-class             coverage 0.8248 error 0.0044
-      reject_leak          0.1000 (3 of 30)
-      stream_10            coverage 0.7523 error 0.0177
-      all pages, 30 of 304 reject  coverage 0.7533 error 0.0175
-    tau_cp 0.966747
-      in-class             coverage 0.1241 error 0.0000
-      reject_leak          0.0000 (0 of 30)
-      stream_10            coverage 0.1117 error 0.0000
-      all pages, 30 of 304 reject  coverage 0.1118 error 0.0000
+      reject_leak          0.1758 (16 of 91)
+      stream_10            coverage 0.7599 error 0.0275
+      all pages, 91 of 365 reject  coverage 0.6630 error 0.0702
     recall among accepted at tau, in-class, per true class (accepted of total)
       letter                 1.0000 (43 of 49)
-      memo                   1.0000 (10 of 17)
-      form                   1.0000 (19 of 26)
+      memo                   1.0000 (13 of 17)
+      form                   1.0000 (20 of 26)
       questionnaire          0.9333 (15 of 15)
       budget                 1.0000 (17 of 20)
-      invoice                1.0000 (14 of 18)
-      email                  1.0000 (4 of 12)
+      invoice                1.0000 (13 of 18)
+      email                  1.0000 (9 of 12)
       news_article           1.0000 (23 of 25)
-      scientific_publication 1.0000 (14 of 15)
-      specification          1.0000 (22 of 24)
-      resume                 1.0000 (45 of 53)
-  alpha 0.10
-    tau    0.744989
-      in-class             coverage 0.9599 error 0.0114
-      reject_leak          0.5667 (17 of 30)
-      stream_10            coverage 0.9205 error 0.0723
-      all pages, 30 of 304 reject  coverage 0.9211 error 0.0714
-    tau_cp 0.844919
-      in-class             coverage 0.9234 error 0.0079
-      reject_leak          0.3667 (11 of 30)
-      stream_10            coverage 0.8677 error 0.0498
-      all pages, 30 of 304 reject  coverage 0.8684 error 0.0492
-    recall among accepted at tau, in-class, per true class (accepted of total)
-      letter                 1.0000 (48 of 49)
-      memo                   1.0000 (16 of 17)
-      form                   0.9600 (25 of 26)
-      questionnaire          0.9333 (15 of 15)
-      budget                 1.0000 (18 of 20)
-      invoice                1.0000 (16 of 18)
-      email                  1.0000 (11 of 12)
-      news_article           1.0000 (24 of 25)
-      scientific_publication 1.0000 (15 of 15)
-      specification          0.9583 (24 of 24)
-      resume                 1.0000 (51 of 53)
+      scientific_publication 1.0000 (11 of 15)
+      specification          1.0000 (21 of 24)
+      resume                 1.0000 (48 of 53)
