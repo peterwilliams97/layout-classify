@@ -40,10 +40,10 @@ from render import render
 MODEL = "vllm-sr/d3-flash"
 PROMPT = "definitions"
 STATE_WORDS = 150
-# CUTOFFS are the tau_cp lines of results/confidence/d3-flash-definitions-s150-reject-pool.txt at
-# 43b454c, by alpha: on test, 0.05 filed 0.7205 of all pages with 0.0380 wrong, 0.02 filed 0.6110
-# with none wrong.
-CUTOFFS = {"0.05": 0.692011, "0.02": 0.903935}
+# CUTOFFS are the tau_cp lines of results/confidence/d3-flash-definitions-s150-reject-pool.txt, by
+# alpha, fitted with classes.py's definitions and d3.py's `REJECT_CRITERION` as they stand: on test,
+# 0.05 filed 0.7452 of all pages with 0.0294 wrong, 0.02 filed 0.6110 with 0.0045 wrong.
+CUTOFFS = {"0.05": 0.579197, "0.02": 0.915282}
 EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}
 CACHE_DIR = ".layout-classify"
 

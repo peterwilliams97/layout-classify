@@ -26,7 +26,7 @@ Four questions, measured on one laptop:
 
 ## Answer
 
-**1.** With no labelled page, d3-flash `definitions` + `none` passes 0.7205 of all test pages at 5%
+**1.** With no labelled page, d3-flash `definitions` + `none` passes 0.7452 of all test pages at 5%
 error and 0.6110 at 2%; TF-IDF + LR real, with 411 labelled pages, passes 0.4975 and 0.3342. No
 classifier can pass more than 0.7507, the in-class share of test. Cut-offs are `tau_cp` fitted on
 the 549 pool pages (Results, coverage table).
@@ -37,13 +37,13 @@ LR real's 0.4718 (coverage table). gemma4:e4b on the image is the most accurate 
 0.9781 on in-class test pages, but gives no score, so none of its pages pass (accuracy and seconds
 table).
 
-**3.** With `none` allowed, d3-flash `definitions` labels 65 of the 91 test reject pages `none`,
-and at 5% 10 of 91 pass its cut-off (coverage table, reject leak). Keeping the 138 pool reject
+**3.** With `none` allowed, d3-flash `definitions` labels 73 of the 91 test reject pages `none`,
+and at 5% 8 of 91 pass its cut-off (coverage table, reject leak). Keeping the 138 pool reject
 pages out raises the cut-off: UltraBERT-Embed-150M + LR real's in-class coverage at 5% is 0.6197,
 against 0.8343 with 46 pool reject pages at `eb3f793` (Results, answer 3).
 
 **4.** Median seconds per page: TF-IDF + LR under 0.0004 plus Tesseract's 0.673; d3-flash
-`definitions` 1.68 plus Tesseract's; gemma4:e4b 2.65, with no OCR (accuracy and seconds table;
+`definitions` 1.71 plus Tesseract's; gemma4:e4b 2.65, with no OCR (accuracy and seconds table;
 Tesseract from `results/ocr-time.txt`, Results, Details).
 
 ## Data
@@ -159,9 +159,16 @@ On the OCR text, the page image, or both. A page is accepted when its score is a
 most 5%, or 2% (`confidence.py`). Coverage is the share of all 365 test pages accepted, the 91
 reject pages included, so it is at most 274 / 365, 0.7507; error is the share of accepted pages
 whose type is wrong, a reject page always wrong; reject leak is the share of the 91 reject pages
-accepted. The results with 76 reject pages, 30 of them in test, are at `eb3f793`.
+accepted. The results with 76 reject pages, 30 of them in test, are at `eb3f793`. d3.py's `REJECT_CRITERION`
+and the `specification` and `news_article` definitions in `classes.py` were rewritten on 2026-10-23
+from d3-flash `definitions` + `none`'s pool confusion matrix, with test unread, and the d3-flash
+`definitions` rows' results with the earlier three sentences are in `results/definitions-v1/`
+([docs/history/2026-10-23-definitions-v1.md](docs/history/2026-10-23-definitions-v1.md)).
 
 **Coverage certified under 5% and under 2% error, all test pages**
+
+The d3-flash `fewshot` row was scored with the definitions and `REJECT_CRITERION` of
+[docs/history/2026-10-23-definitions-v1.md](docs/history/2026-10-23-definitions-v1.md), not rerun.
 
 | Classifier                                  | Labels                     | Coverage at 5%         | Error at 5%            | Reject leak at 5%      | Coverage at 2%         | Error at 2%            | Reject leak at 2%      |
 |---------------------------------------------|----------------------------|------------------------|------------------------|------------------------|------------------------|------------------------|------------------------|
@@ -169,8 +176,8 @@ accepted. The results with 76 reject pages, 30 of them in test, are at `eb3f793`
 | TF-IDF + LR, small                          | 254 of 411 (110 per model) | 0.3518 (0.3370–0.3781) | 0.0311 (0.0236–0.0407) | 0.0308 (0.0220–0.0330) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
 | UltraBERT-Embed-150M + LR, real             | 411 (328–329 per model)    | 0.4718 (0.4548–0.4849) | 0.0174 (0.0113–0.0229) | 0.0264 (0.0220–0.0330) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
 | UltraBERT-Embed-150M + LR, small            | 254 of 411 (110 per model) | 0.3047 (0.2685–0.3589) | 0.0358 (0.0204–0.0619) | 0.0242 (0.0110–0.0330) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
-| d3-flash, `definitions`, 150 words          | 0                          | 0.6438                 | 0.0298                 | 0.0769 (7 of 91)       | 0.5397                 | 0.0102                 | 0.0220 (2 of 91)       |
-| d3-flash, `definitions` + `none`, 150 words | 0                          | 0.7205                 | 0.0380                 | 0.1099 (10 of 91)      | 0.6110                 | 0.0000                 | 0.0000 (0 of 91)       |
+| d3-flash, `definitions`, 150 words          | 0                          | 0.6411                 | 0.0256                 | 0.0659 (6 of 91)       | 0.5534                 | 0.0149                 | 0.0330 (3 of 91)       |
+| d3-flash, `definitions` + `none`, 150 words | 0                          | 0.7452                 | 0.0294                 | 0.0879 (8 of 91)       | 0.6110                 | 0.0045                 | 0.0110 (1 of 91)       |
 | d3-flash, `fewshot`, 150 / 50 words         | 33                         | 0.5753                 | 0.0429                 | 0.0879 (8 of 91)       | 0.4575                 | 0.0000                 | 0.0000 (0 of 91)       |
 | DiT + LR, real, image                       | 411 (328–329 per model)    | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
 | DiT + LR, small, image                      | 254 of 411 (110 per model) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
@@ -181,14 +188,17 @@ accepted. The results with 76 reject pages, 30 of them in test, are at `eb3f793`
 
 **Accuracy and seconds per page, test**
 
+The d3-flash `fewshot` row was scored with the definitions of
+[docs/history/2026-10-23-definitions-v1.md](docs/history/2026-10-23-definitions-v1.md), not rerun.
+
 | Classifier                       | Accuracy, 274 in-class test pages | Seconds per page, median | Seconds per page, mean |
 |----------------------------------|-----------------------------------|--------------------------|------------------------|
 | TF-IDF + LR, real                | 0.8693 (0.8613–0.8759)            | 0.000329                 | 0.000363               |
 | TF-IDF + LR, small               | 0.8869 (0.8686–0.8978)            | 0.00028                  | 0.000302               |
 | UltraBERT-Embed-150M + LR, real  | 0.9358 (0.9270–0.9453)            | 0.0355                   | 0.0336                 |
 | UltraBERT-Embed-150M + LR, small | 0.8869 (0.8650–0.9088)            | 0.0353                   | 0.0334                 |
-| d3-flash, `definitions`          | 0.9818                            | 1.68                     | 1.72                   |
-| d3-flash, `definitions` + `none` | 0.9708                            | 1.72                     | 1.82                   |
+| d3-flash, `definitions`          | 0.9927                            | 1.71                     | 1.78                   |
+| d3-flash, `definitions` + `none` | 0.9854                            | 1.86                     | 1.93                   |
 | d3-flash, `fewshot`              | 0.9197                            | 11.5                     | 11.5                   |
 | DiT + LR, real                   | 0.6117 (0.5876–0.6350)            | 0.0189                   | 0.0192                 |
 | DiT + LR, small                  | 0.4781 (0.4416–0.4964)            | 0.0192                   | 0.0195                 |
@@ -213,14 +223,12 @@ the predicted one, numbered as the rows are (`results/test/d3-flash-definitions-
 | 6 email                  |  0 |     0 |     0 |  0 |     0 |  0 | 12 |      0 |     0 |  0 |  0 |     0 |
 | 7 news_article           |  0 |     0 |     0 |  0 |     0 |  0 |  0 |     24 |     0 |  0 |  0 | **1** |
 | 8 scientific_publication |  0 |     0 |     0 |  0 |     0 |  0 |  0 |      0 |    15 |  0 |  0 |     0 |
-| 9 specification          |  0 |     0 |     0 |  0 |     0 |  0 |  0 |      0 |     0 | 18 |  0 | **6** |
+| 9 specification          |  0 |     0 |     0 |  0 |     0 |  0 |  0 |      0 |     0 | 22 |  0 | **2** |
 | 10 resume                |  0 |     0 |     0 |  0 |     0 |  0 |  0 |      0 |     0 |  0 | 53 |     0 |
-| 11 none                  |  0 | **5** | **6** |  0 | **1** |  0 |  0 | **13** | **1** |  0 |  0 |    65 |
+| 11 none                  |  0 | **1** | **6** |  0 |     0 |  0 |  0 | **10** | **1** |  0 |  0 |    73 |
 
-- 6 specification labelled none
-- 5 none labelled memo
 - 6 none labelled form
-- 13 none labelled news_article
+- 10 none labelled news_article
 
 UltraBERT-Embed-150M + LR, real, summed over its 5 fold models, each scoring the 365 test pages, so
 1825 scorings and each row 5 times its type's test pages
@@ -280,12 +288,12 @@ up, not evidence that labels here are wrong.
 
 | Classifier                         | Coverage at 5%, 141 (3 draws) | 276    | 549    | Coverage at 2%, 141 (3 draws) | 276    | 549    | Reject leak at 5%, 141 (3 draws) | 276    | 549    |
 |------------------------------------|-------------------------------|--------|--------|-------------------------------|--------|--------|----------------------------------|--------|--------|
-| d3-flash, `definitions`, 150 words | 0.6712–0.8164                 | 0.6274 | 0.6438 | 0.0000–0.0000                 | 0.5589 | 0.5397 | 0.1319–0.4615                    | 0.0769 | 0.0769 |
-| d3-flash, `definitions` + `none`   | 0.7014–0.7616                 | 0.7014 | 0.7205 | 0.0000–0.7397                 | 0.5973 | 0.6110 | 0.0989–0.1758                    | 0.0989 | 0.1099 |
+| d3-flash, `definitions`, 150 words | 0.6712–0.8164                 | 0.6274 | 0.6411 | 0.0000–0.0000                 | 0.5589 | 0.5534 | 0.1319–0.4615                    | 0.0769 | 0.0659 |
+| d3-flash, `definitions` + `none`   | 0.7014–0.7616                 | 0.7014 | 0.7452 | 0.0000–0.7397                 | 0.5973 | 0.6110 | 0.0989–0.1758                    | 0.0989 | 0.0879 |
 | UltraBERT-Embed-150M + LR, real    | 0.0000–0.6027                 | 0.2685 | 0.4718 | 0.0000–0.0000                 | 0.0000 | 0.0000 | 0.0000–0.0989                    | 0.0000 | 0.0264 |
 
 **1. How much work can it do without a person checking?** With no labelled page, d3-flash
-`definitions` + `none` passes the most, 0.7205 of all test pages at 5% and 0.6110 at 2%, of at most
+`definitions` + `none` passes the most, 0.7452 of all test pages at 5% and 0.6110 at 2%, of at most
 0.7507. With every in-class train and validation page, TF-IDF + LR real passes 0.4975 and 0.3342,
 though at 2% its test error is 0.0213, and UltraBERT-Embed-150M + LR real 0.4718 and nothing. With
 10 labelled pages per type, TF-IDF + LR small passes 0.3518 at 5% and nothing at 2%, and
@@ -297,14 +305,14 @@ score.
 does on accuracy, on 328 or 329 training pages, but not on coverage. DiT + LR on the image alone
 reaches 0.6117 accuracy and certifies no coverage. LayoutLMv3, which reads the image and the OCR
 words and boxes together, reaches 0.9686, above UltraBERT-Embed-150M + LR's 0.9358 on the text and
-under d3-flash `definitions`' 0.9818, and certifies 0.3742 at 5%, from 0.2932 to 0.4219 by fold
-model, against 0.4718 for UltraBERT-Embed-150M + LR and 0.6438 for d3-flash, and nothing at 2%. Its
+under d3-flash `definitions`' 0.9927, and certifies 0.3742 at 5%, from 0.2932 to 0.4219 by fold
+model, against 0.4718 for UltraBERT-Embed-150M + LR and 0.6411 for d3-flash, and nothing at 2%. Its
 5% cut-off, 0.961473, is above every fold model's mean score on its right in-class test
 predictions, 0.9413 to 0.9523, so small differences between the fold models move many pages across
 it. gemma4:e4b on the image is 0.9781 accurate and needs no OCR, but it has no score, so none of its
 pages can be passed without a person; 5 of its 6 errors on in-class pages are specifications
 (`results/test/gemma4-image.txt`). On seconds, gemma4:e4b's 2.65 s median is above Tesseract's
-0.673 s plus UltraBERT's 0.0355 s, and above d3-flash `definitions`' 1.68 s plus OCR. Trained on
+0.673 s plus UltraBERT's 0.0355 s, and above d3-flash `definitions`' 1.71 s plus OCR. Trained on
 small, both image models fall further behind the text ones: 0.4781 and 0.3839 accuracy, no
 coverage, against 0.8869 and 0.3047 for UltraBERT small.
 
@@ -312,30 +320,30 @@ coverage, against 0.8869 and 0.3047 for UltraBERT small.
 reject pages `none` (0.4286) and 4 of the 274 in-class pages (0.0146), all 4 specifications
 (`results/test/gemma4-image-reject.txt`). The other 52 reject pages get a type, as all 91 do without
 `none`. Over all 365 test pages, where a `none` on a reject page is right, its accuracy is 0.8356
-against 0.7342 without `none`. d3-flash `definitions` with `none` labels 65 of the 91 reject pages
-`none` (0.7143) and 8 of the 274 in-class pages (0.0292), 6 of them specifications
+against 0.7342 without `none`. d3-flash `definitions` with `none` labels 73 of the 91 reject pages
+`none` (0.8022) and 4 of the 274 in-class pages (0.0146), 2 of them specifications
 (`results/test/d3-flash-definitions-s150-reject.txt`). Its accepted in-class pages have no error
-with or without `none`, so every accepted error is a reject page. Without `none`, 7 of 91 reject
-pages pass at 5% and 2 at 2%, taking in-class coverage of 0.8321 and 0.7117 to 0.6438 and 0.5397 of
-all pages, at error 0.0298 and 0.0102 (`results/confidence/d3-flash-definitions-s150-pool.txt`).
-With `none`, 10 and 0 pass, taking 0.9234 and 0.8139 to 0.7205 and 0.6110, at error 0.0380 and
-0.0000 (`results/confidence/d3-flash-definitions-s150-reject-pool.txt`): `none` raises coverage,
-lets 3 more reject pages through at 5% and stops the last 2 at 2%. Reject pages in the pool also
+with or without `none`, so every accepted error is a reject page. Without `none`, 6 of 91 reject
+pages pass at 5% and 3 at 2%, taking in-class coverage of 0.8321 and 0.7263 to 0.6411 and 0.5534 of
+all pages, at error 0.0256 and 0.0149 (`results/confidence/d3-flash-definitions-s150-pool.txt`).
+With `none`, 8 and 1 pass, taking 0.9635 and 0.8102 to 0.7452 and 0.6110, at error 0.0294 and
+0.0045 (`results/confidence/d3-flash-definitions-s150-reject-pool.txt`): `none` raises coverage,
+lets 2 more reject pages through at 5% and 2 fewer at 2%. Reject pages in the pool also
 cost coverage of the pages that fit a type, because a cut-off that keeps 138 pool reject pages out
 sits higher than one that keeps 46 out. On the same 274 in-class test pages and the same in-class
 training, in-class coverage at 5% is 0.6540 for TF-IDF + LR real against 0.7431 at `eb3f793`,
 0.6197 against 0.8343 for UltraBERT-Embed-150M + LR real, and 0.8321 against 0.9015 for d3-flash
-`definitions`; UltraBERT-Embed-150M + LR real's 2% cut-off, which covered 0.7073 of in-class pages
+`definitions`, asked with the v1 definitions at `eb3f793`; UltraBERT-Embed-150M + LR real's 2% cut-off, which covered 0.7073 of in-class pages
 there, now covers none. Reject leak falls with it: at 5%, 0.0264 of 91 for TF-IDF + LR real and
-UltraBERT-Embed-150M + LR real against 0.0600 and 0.0733 of 30, and 0.0769 against 0.3000 for
+UltraBERT-Embed-150M + LR real against 0.0600 and 0.0733 of 30, and 0.0659 against 0.3000 for
 d3-flash `definitions`.
 
 **4. How many seconds per page?** On the classifier alone, the median is under 0.0004 s for TF-IDF +
 LR, 0.0189 for DiT + LR, 0.0355 for UltraBERT-Embed-150M + LR and 0.0507 for LayoutLMv3, against
-2.65 for gemma4:e4b on the image and, for d3-flash, 1.68 with `definitions`, 1.72 with `none` and
+2.65 for gemma4:e4b on the image and, for d3-flash, 1.71 with `definitions`, 1.86 with `none` and
 11.5 with `fewshot`. Every classifier that reads the OCR text adds Tesseract's 0.673 s median
 (`results/ocr-time.txt`), so on medians a page through UltraBERT-Embed-150M + LR takes 0.709 s,
-through d3-flash `definitions` + `none` 2.39 s, and through gemma4:e4b, with no OCR, 2.65 s.
+through d3-flash `definitions` + `none` 2.53 s, and through gemma4:e4b, with no OCR, 2.65 s.
 
 ### Details
 
@@ -403,9 +411,9 @@ run. At `eb3f793` it ran on an earlier Ollama, its version not recorded, with th
 (`dc35e8d9c606`), and on the same 274 in-class pages it scored 0.9489, at 0.985 s median. Its
 change in accuracy and seconds is the runtime's, not the split's.
 
-d3-flash's 5 in-class test errors with `definitions` are a budget and a news article taken for
-memos and three specifications, one taken for a letter and two for news articles
-(`results/test/d3-flash-definitions-s150.txt`). With `fewshot`, 14 of its 22 errors are
+d3-flash's 2 in-class test errors with `definitions` are a news article taken for a memo and a
+budget taken for a news article (`results/test/d3-flash-definitions-s150.txt`). With `fewshot`,
+asked with the v1 definitions, 14 of its 22 errors are
 scientific publications, 6 put under news_article and 8 under specification, so only 1 of 15 is
 right (`results/test/d3-flash-fewshot-s150-e50.txt`).
 
@@ -414,16 +422,18 @@ right (`results/test/d3-flash-fewshot-s150-e50.txt`).
 pages, 141 because email has 9, from `results/confidence/<name>-dev144-seed<S>.txt`. 276: every
 validation page, `results/confidence/<name>.txt`. 549: the pool,
 `results/confidence/<name>-pool.txt`. Names are `d3-flash-definitions-s150`,
-`d3-flash-definitions-s150-reject` and `ultrabert-embed-real`. The 141 and 276 columns of the
+`d3-flash-definitions-s150-reject` and `ultrabert-embed-real`. The d3-flash rows' 141 and 276
+columns are the v1 definitions on v1 test scores (`results/definitions-v1/`); their 549 column is
+the definitions of 2026-10-23. The 141 and 276 columns of the
 UltraBERT row are the model trained on the 204 train pages
 (`results/train/ultrabert-embed-real.txt`, `results/test/ultrabert-embed-real.txt`); its 549 column
 is the mean over the 5 fold models, so that column moves with the model as well as the cut-off.
 
 At 141 pages the cut-off swings with the draw: d3-flash `definitions` covers 0.6712 to 0.8164 at
 5%, and the draw that covers most lets 42 of 91 reject pages through. At 276 and 549 it settles,
-0.6274 and 0.6438, with 7 of 91 through. At 2% 141 pages certify nothing for `definitions` on any
-draw, 276 certify 0.5589 and 549 certify 0.5397, with 2 of 91 reject pages through and an error of
-0.0102 on test. With `none` as a 12th option, 549 pages certify 0.6110 at 2% with no reject page
+0.6274 with 7 of 91 through and 0.6411 with 6. At 2% 141 pages certify nothing for `definitions` on
+any draw, 276 certify 0.5589 and 549 certify 0.5534, with 3 of 91 reject pages through and an error
+of 0.0149 on test. With `none` as a 12th option, 549 pages certify 0.6110 at 2% with 1 reject page
 through (`results/confidence/d3-flash-definitions-s150-reject-pool.txt`); one 141-page draw
 certifies 0.7397 at 2% and on test lets 12 of 91 reject pages through, for an error of 0.0444.
 UltraBERT-Embed-150M + LR certifies nothing at 2% at any size; at 5% it covers 0.2685 on 276
@@ -565,9 +575,9 @@ revision `d3.py` pins, in `.venv-d3` on MPS; it sets `HF_HOME` to `data/hf` and 
 unless they are set. A PDF's page 1 is rendered at 200 dpi by `render.py`; an image is read as it
 is. The OCR is `ocr.py`'s Tesseract, cached in `<folder>/.layout-classify/ocr/<sha256>.json`, so a
 second run OCRs nothing. The cut-off for each level is d3-flash's `tau_cp` from
-`results/confidence/d3-flash-definitions-s150-reject-pool.txt`: 0.692011 at 0.05, 0.903935 at 0.02.
-At the 0.05 level this cut-off filed 0.7205 of test pages with 0.0380 of them wrong (coverage
-table).
+`results/confidence/d3-flash-definitions-s150-reject-pool.txt`: 0.579197 at 0.05, 0.915282 at 0.02.
+At the 0.05 level this cut-off filed 0.7452 of test pages with 0.0294 of them wrong, and at 0.02
+0.6110 with 0.0045 wrong (coverage table).
 
 The CSV has one row per file:
 

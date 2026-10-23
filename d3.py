@@ -36,7 +36,7 @@ STATE_WORDS = 1500
 EXAMPLE_WORDS = 300
 # REJECT_CRITERION is REJECT_LABEL's criterion when score.py's --reject-option makes it a 12th
 # option.
-REJECT_CRITERION = "A page that fits none of the 11 types."
+REJECT_CRITERION = "A page of any other kind: a report or committee paper, court filing, press release or media statement, policy or timeline, data table or list, slide, web page, or a page too garbled to read."
 # CLASS_SETS are the options score.py's --classes picks, in CLASSES order: every type, or the 6 with
 # the most test pages.
 CLASS_SETS = {

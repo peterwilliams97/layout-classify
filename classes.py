@@ -20,9 +20,9 @@ CLASSES = {
     "budget":                 "A table of planned or actual amounts of money by category or period for an organisation or project, billing no one, where an invoice asks a customer to pay.",
     "invoice":                "A bill from a supplier to a named customer, with an invoice number and date, the goods or services, their prices and a total due, where a budget plans or reports spending.",
     "email":                  "A printed email message with From, To, Sent or Date and Subject header lines and email addresses, where a memo's header names people and departments without addresses or a send time.",
-    "news_article":           "An article from a newspaper or magazine under a headline, typeset in columns, often with a byline and dateline, where a scientific publication has authors' affiliations, an abstract and references.",
+    "news_article":           "An article from a newspaper or magazine under a headline, typeset in columns, often with a byline and dateline, where a scientific publication has authors' affiliations, an abstract and references, not a press release, newsletter or an organisation's own report.",
     "scientific_publication": "A journal or conference article with a title, authors and their affiliations, an abstract and references, where a news article has a headline and byline for a general reader.",
-    "specification":          "A technical specification setting out the required properties, dimensions or tests of a product, material or process, in numbered clauses or tables, where a form has fields left blank to fill in.",
+    "specification":          "A technical specification setting out the required properties, dimensions or tests of a product, material or process, in numbered clauses or tables, where a form has fields left blank to fill in, or a product data sheet listing a product's properties, performance figures or contents.",
     "resume":                 "A person's curriculum vitae listing their contact details, education, work history and skills, where a letter is addressed to a recipient.",
 }
 
