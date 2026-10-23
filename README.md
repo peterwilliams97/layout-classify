@@ -520,8 +520,10 @@ validation pages and 0.4718 on the pool.
   by the OCR text of that type's 3 `data/fewshot.txt` pages, each cut to its first 300 words. The
   state is the page's OCR text cut to its first 1,500 words. `--state-words N` and, with
   `fewshot`, `--example-words N` change those cuts and add `-s<N>` and `-e<N>` to the name.
-  `--reject-option` adds `none` as a 12th option, with the criterion "A page that fits none of the
-  11 types.", and `-reject` to the name; a `none` answer is right on a reject page and wrong on an
+  `--reject-option` adds `none` as a 12th option, with `REJECT_CRITERION` as its criterion — "A
+  page of any other kind: a report or committee paper, court filing, press release or media
+  statement, policy or timeline, data table or list, slide, web page, or a page too garbled to
+  read." — and `-reject` to the name; a `none` answer is right on a reject page and wrong on an
   in-class one, as for `gemma4-image-reject`, and the report adds the same two shares. Every answer
   is cached in
   `results/d3/cache.jsonl`, so a rerun of `score.py --d3` rebuilds its report without the model.
