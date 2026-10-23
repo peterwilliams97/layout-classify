@@ -549,6 +549,47 @@ validation pages and 0.4718 on the pool.
   `results/train/<name>.txt` and `results/train/<name>-pool.txt` for training time,
   `results/confidence/<name>.txt` and `<name>-pool.txt` for routing, with their inputs in
   `results/confidence/dumps/`, and `results/ocr-time.txt` for OCR time.
+- `classify.py` — the d3-flash `definitions` + `none` row on a folder of documents; see Use it.
+
+## Use it
+
+`classify.py` gives a type and a decision to page 1 of every `.pdf`, `.png`, `.jpg` and `.tif` in
+a folder:
+
+```sh
+.venv-d3/bin/python classify.py <folder> [--out results.csv] [--level 0.05|0.02]
+```
+
+It runs d3-flash with the `definitions` prompt, 150 state words and `none` as an option, at the
+revision `d3.py` pins, in `.venv-d3` on MPS; it sets `HF_HOME` to `data/hf` and `HF_HUB_OFFLINE`
+unless they are set. A PDF's page 1 is rendered at 200 dpi by `render.py`; an image is read as it
+is. The OCR is `ocr.py`'s Tesseract, cached in `<folder>/.layout-classify/ocr/<sha256>.json`, so a
+second run OCRs nothing. The cut-off for each level is d3-flash's `tau_cp` from
+`results/confidence/d3-flash-definitions-s150-reject-pool.txt`: 0.692011 at 0.05, 0.903935 at 0.02.
+At the 0.05 level this cut-off filed 0.7205 of test pages with 0.0380 of them wrong (coverage
+table).
+
+The CSV has one row per file:
+
+- `file` — the file name in the folder.
+- `page` — the page classified, always 1.
+- `type` — one of the 11 `CLASSES` or `none`; empty if the file could not be read or OCR'd.
+- `score` — d3-flash's probability for `type`.
+- `decision` — `file` when `type` is not `none` and `score` is at least the level's cut-off, so the
+  type can be used without a person reading the page; `review` otherwise, `none` always.
+- `seconds` — that file's wall time: render, OCR unless cached, and the model's answer; loading the
+  model is excluded.
+
+It ends by printing the files, how many were filed and sent to review, and the mean seconds per
+page.
+
+`.venv-d3/bin/python view.py results.csv <folder> [--labels labels.csv] [--embed] [--out results.html]`
+writes the CSV as one offline HTML page with thumbnails and decision, disagree, no-label and type
+filters. A file's label comes from `--labels` (columns `file,label`), else from
+`data/manifest.jsonl`, else it has none; a row is light blue when the label equals `type`, light
+orange when it differs, and plain with no label. The thumbnails are linked by path, so the page
+needs the folder beside it; `--embed` puts a 200-pixel JPEG of each inside the HTML instead, one
+file to send (about 5 MB for the 365 test pages).
 
 ## Run
 

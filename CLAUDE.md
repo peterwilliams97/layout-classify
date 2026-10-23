@@ -44,6 +44,7 @@ uv run python score.py --llm gemma4-image --split validation   # or gemma4-image
 uv run python llm.py --split train              # gemma4:e4b labels to data/llm-labels/; ~4 min
 uv run python train.py --tfidf --train real --labels llm   # or --embed; name gets -llm
 HF_HOME=$PWD/data/hf HF_HUB_OFFLINE=1 .venv-d3/bin/python score.py --d3 vllm-sr/d3-flash --prompt definitions --split validation --dump   # or fewshot; test
+.venv-d3/bin/python classify.py <folder> --out results.csv --level 0.05   # d3-flash definitions s150 reject on a folder; MPS
 ```
 
 Model names are `tfidf-real`, `tfidf-small`, `ultrabert-embed-real`, `ultrabert-embed-small`,

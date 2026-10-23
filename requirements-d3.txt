@@ -13,3 +13,6 @@ pillow
 scikit-learn
 scipy
 joblib
+# classify.py renders and OCRs in this venv; the versions are uv.lock's.
+pypdfium2==5.14.0
+pytesseract==0.3.13
