@@ -197,6 +197,85 @@ accepted. The results with 76 reject pages, 30 of them in test, are at `eb3f793`
 | gemma4:e4b, image                | 0.9781                            | 2.65                     | 2.63                   |
 | gemma4:e4b, image + `none`       | 0.9708                            | 2.51                     | 2.51                   |
 
+**Where the errors are**
+
+d3-flash, `definitions` + `none`, 150 words, on the 365 test pages: rows are the true type, columns
+the predicted one, numbered as the rows are (`results/test/d3-flash-definitions-s150-reject.txt`).
+
+| True \ predicted         |  0 |     1 |     2 |  3 |     4 |  5 |  6 |      7 |     8 |  9 | 10 |    11 |
+|--------------------------|---:|------:|------:|---:|------:|---:|---:|-------:|------:|---:|---:|------:|
+| 0 letter                 | 49 |     0 |     0 |  0 |     0 |  0 |  0 |      0 |     0 |  0 |  0 |     0 |
+| 1 memo                   |  0 |    17 |     0 |  0 |     0 |  0 |  0 |      0 |     0 |  0 |  0 |     0 |
+| 2 form                   |  0 |     0 |    26 |  0 |     0 |  0 |  0 |      0 |     0 |  0 |  0 |     0 |
+| 3 questionnaire          |  0 |     0 |     0 | 15 |     0 |  0 |  0 |      0 |     0 |  0 |  0 |     0 |
+| 4 budget                 |  0 |     0 |     0 |  0 |    19 |  0 |  0 |      0 |     0 |  0 |  0 | **1** |
+| 5 invoice                |  0 |     0 |     0 |  0 |     0 | 18 |  0 |      0 |     0 |  0 |  0 |     0 |
+| 6 email                  |  0 |     0 |     0 |  0 |     0 |  0 | 12 |      0 |     0 |  0 |  0 |     0 |
+| 7 news_article           |  0 |     0 |     0 |  0 |     0 |  0 |  0 |     24 |     0 |  0 |  0 | **1** |
+| 8 scientific_publication |  0 |     0 |     0 |  0 |     0 |  0 |  0 |      0 |    15 |  0 |  0 |     0 |
+| 9 specification          |  0 |     0 |     0 |  0 |     0 |  0 |  0 |      0 |     0 | 18 |  0 | **6** |
+| 10 resume                |  0 |     0 |     0 |  0 |     0 |  0 |  0 |      0 |     0 |  0 | 53 |     0 |
+| 11 none                  |  0 | **5** | **6** |  0 | **1** |  0 |  0 | **13** | **1** |  0 |  0 |    65 |
+
+- 6 specification labelled none
+- 5 none labelled memo
+- 6 none labelled form
+- 13 none labelled news_article
+
+UltraBERT-Embed-150M + LR, real, summed over its 5 fold models, each scoring the 365 test pages, so
+1825 scorings and each row 5 times its type's test pages
+(`results/test/ultrabert-embed-real-fold<f>.txt`, f = 0 to 4). It predicts only the 11 types, so
+column 11 is empty.
+
+| True \ predicted         |      0 |      1 |      2 |     3 |      4 |     5 |      6 |      7 |     8 |     9 |     10 | 11 |
+|--------------------------|-------:|-------:|-------:|------:|-------:|------:|-------:|-------:|------:|------:|-------:|---:|
+| 0 letter                 |    222 |  **1** |  **5** |     0 |      0 | **5** |  **2** |  **2** |     0 |     0 |  **8** |  0 |
+| 1 memo                   | **22** |     57 |      0 |     0 |      0 |     0 |  **4** |  **2** |     0 |     0 |      0 |  0 |
+| 2 form                   | **10** |      0 |    113 |     0 |      0 | **6** |      0 |      0 |     0 | **1** |      0 |  0 |
+| 3 questionnaire          |      0 |      0 |  **5** |    70 |      0 |     0 |      0 |      0 |     0 |     0 |      0 |  0 |
+| 4 budget                 |      0 |      0 |      0 |     0 |    100 |     0 |      0 |      0 |     0 |     0 |      0 |  0 |
+| 5 invoice                |      0 |      0 |      0 |     0 |      0 |    90 |      0 |      0 |     0 |     0 |      0 |  0 |
+| 6 email                  |  **7** |      0 |      0 |     0 |      0 |     0 |     53 |      0 |     0 |     0 |      0 |  0 |
+| 7 news_article           |  **6** |  **1** |      0 |     0 |      0 |     0 |  **1** |    117 |     0 |     0 |      0 |  0 |
+| 8 scientific_publication |      0 |      0 |      0 |     0 |      0 |     0 |      0 |      0 |    75 |     0 |      0 |  0 |
+| 9 specification          |      0 |      0 |      0 |     0 |      0 |     0 |      0 |      0 |     0 |   120 |      0 |  0 |
+| 10 resume                |      0 |      0 |      0 |     0 |      0 |     0 |      0 |      0 |     0 |     0 |    265 |  0 |
+| 11 none                  | **88** | **51** | **95** | **4** | **56** | **2** | **13** | **93** | **1** | **9** | **43** |  0 |
+
+- 5 letter labelled form
+- 5 letter labelled invoice
+- 8 letter labelled resume
+- 22 memo labelled letter
+- 4 memo labelled email
+- 10 form labelled letter
+- 6 form labelled invoice
+- 5 questionnaire labelled form
+- 7 email labelled letter
+- 6 news_article labelled letter
+- 88 none labelled letter
+- 51 none labelled memo
+- 95 none labelled form
+- 4 none labelled questionnaire
+- 56 none labelled budget
+- 13 none labelled email
+- 93 none labelled news_article
+- 9 none labelled specification
+- 43 none labelled resume
+
+Larson, Lim and Leach re-annotated a sample of RVL-CDIP's test set and estimate its human labels
+mis-labelled or of unknown type for 16.9% of letters, 11.0% of invoices, 12.9% of questionnaires
+and 1.6% of resumes (Table 4); about 59% of the wrong letters are memos and 74% of the wrong
+invoices budgets (§4; see Sources). Letter/memo is the same pair for UltraBERT-Embed-150M + LR, in
+the paper's direction: 22 of its 85 memo scorings are labelled letter, against 1 of 245 letter
+scorings labelled memo. It is not for d3-flash, which labels all 17 memos memo and all 49 letters
+letter. Invoice/budget is the same pair for neither: neither labels a budget invoice or an invoice
+budget, and d3-flash's one budget error is a `none`. On questionnaires UltraBERT labels 5 of 75
+scorings form and d3-flash gets all 15 right; the paper names no pair for them. Resume, the paper's
+lowest rate, has no error from either, 265 and 53 right. The paper's rates are errors in
+RVL-CDIP's human labels; these cells are classifier errors against RVL-CDIP-N's labels on pages
+rendered from the source PDFs, so a shared pair is one that both people and the classifier mix
+up, not evidence that labels here are wrong.
+
 **How much the cut-off moves with validation size**
 
 | Classifier                         | Coverage at 5%, 141 (3 draws) | 276    | 549    | Coverage at 2%, 141 (3 draws) | 276    | 549    | Reject leak at 5%, 141 (3 draws) | 276    | 549    |
@@ -514,3 +593,10 @@ its model card. `microsoft/layoutlmv3-base` is under Creative Commons
 Attribution-NonCommercial-ShareAlike 4.0 (CC BY-NC-SA 4.0), per its model card, so the
 `layoutlmv3-` models are for non-commercial use only. `gemma4:e4b` is under the Apache License 2.0,
 per the licence Ollama ships with it (`ollama show gemma4:e4b --license`).
+
+## Sources
+
+- Stefan Larson, Gordon Lim and Kevin Leach, *On Evaluation of Document Classification using
+  RVL-CDIP*, EACL 2023, arXiv:2306.12550 (`https://arxiv.org/abs/2306.12550`): Table 4 for the
+  per-type label error rates, §4 for the memo and budget shares; read from the arXiv PDF on
+  2026-10-23.
