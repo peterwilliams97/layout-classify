@@ -1,0 +1,22 @@
+model     typesafe/jev-1.13 (TypeSafe System One via OpenRouter) prompt definitions, state 150 words, none an option; seconds include the network
+test pages 365 (91 reject pages)
+accuracy  0.9425
+wrong     21
+accuracy  0.9672 without reject pages
+seconds   0.543 median, 0.57 mean per page, one page per call, OCR excluded
+confusion (row: true class, column: predicted class, numbered as the rows are)
+                              0   1   2   3   4   5   6   7   8   9  10  11
+   0 letter                  48   0   1   0   0   0   0   0   0   0   0   0
+   1 memo                     0  16   0   0   0   0   0   0   0   0   0   1
+   2 form                     0   0  26   0   0   0   0   0   0   0   0   0
+   3 questionnaire            0   0   0  15   0   0   0   0   0   0   0   0
+   4 budget                   0   0   0   0  19   0   0   0   0   0   0   1
+   5 invoice                  0   0   0   0   0  18   0   0   0   0   0   0
+   6 email                    0   0   0   0   0   0  12   0   0   0   0   0
+   7 news_article             0   2   0   0   0   0   0  23   0   0   0   0
+   8 scientific_publication   0   0   0   0   0   0   0   0  15   0   0   0
+   9 specification            0   0   0   0   0   0   0   0   0  21   0   3
+  10 resume                   0   0   1   0   0   0   0   0   0   0  52   0
+  11 none                     0   0   6   0   3   0   0   2   1   0   0  79
+reject    0.8681 of reject pages labelled none
+reject    0.0182 of in-class pages labelled none

@@ -30,6 +30,10 @@ d3.py's CLASS_SETS["six"] as the options instead of all 11, scores only the page
 them or REJECT_LABEL, and adds -c6 to the name; `--pages six` scores the same pages with all 11
 options and adds -on6, so the two reports are on identical pages.
 
+`--jev` scores TypeSafe's System One API through jev.py on the question of `--d3 vllm-sr/d3-flash
+--state-words 150 --reject-option`, as jev-definitions-s150-reject, scored as that d3-flash run is.
+Its seconds are the API call's wall time, network round trip included.
+
 `--model NAME --split test --folds` scores the fold models of train.py's or finetune.py's
 `--folds`, models/<name>/fold<f>/, instead of models/<name>/: each fold's report goes to
 results/test/<name>-fold<f>.txt and its dump to results/confidence/dumps/<name>-fold<f>-test.jsonl,
@@ -49,6 +53,9 @@ from sklearn.metrics import confusion_matrix
 
 from classes import CLASSES, REJECT_LABEL
 from d3 import CLASS_SETS, D3_PROMPTS, EXAMPLE_WORDS, STATE_WORDS, classify_d3, fewshot_ids
+from jev import MODEL as JEV_MODEL
+from jev import STATE_WORDS as JEV_STATE_WORDS
+from jev import classify_jev
 from llm import MODEL, NAMES, classify
 from train import manifest, page_image, page_text
 
@@ -163,6 +170,7 @@ def main():
     which.add_argument("--model", help="name of a directory under models/")
     which.add_argument("--llm", choices=list(NAMES), help="gemma4:e4b on the page image")
     which.add_argument("--d3", metavar="MODEL", help="Decision 3.0 model on the OCR text, d3.py")
+    which.add_argument("--jev", action="store_true", help="TypeSafe System One API on the OCR text, jev.py")
     ap.add_argument("--prompt", choices=D3_PROMPTS, help="with --d3; default definitions")
     ap.add_argument("--state-words", type=int, help=f"with --d3; default {STATE_WORDS}")
     ap.add_argument("--example-words", type=int, help=f"with --prompt fewshot; default {EXAMPLE_WORDS}")
@@ -194,8 +202,8 @@ def main():
     state_words = args.state_words or STATE_WORDS
     example_words = args.example_words or EXAMPLE_WORDS
 
-    if args.split == "pool" and not args.d3:
-        ap.error("--split pool goes with --d3; a trained model's pool scores come from --folds")
+    if args.split == "pool" and not (args.d3 or args.jev):
+        ap.error("--split pool goes with --d3 or --jev; a trained model's pool scores come from --folds")
 
     names = list(CLASSES) + [REJECT_LABEL]
     splits = POOL if args.split == "pool" else (args.split,)
@@ -267,12 +275,23 @@ def main():
         preds = [names.index(label) for label, _, _ in answers]
         scores = [v[options.index(label)] for label, v, _ in answers]
         seconds = [s for _, _, s in answers]
+    elif args.jev:
+        name = f"jev-definitions-s{JEV_STATE_WORDS}-reject"
+        model = (
+            f"{JEV_MODEL} (TypeSafe System One via OpenRouter) prompt definitions, state"
+            f" {JEV_STATE_WORDS} words, {REJECT_LABEL} an option; seconds include the network"
+        )
+        answers = classify_jev([r["id"] for r in rows])
+        options = list(CLASSES) + [REJECT_LABEL]
+        preds = [names.index(label) for label, _, _ in answers]
+        scores = [v[options.index(label)] for label, v, _ in answers]
+        seconds = [s for _, _, s in answers]
     else:
         name = args.model
         model = os.path.join("models", args.model)
         preds, scores, seconds = predict(model, [r["id"] for r in rows])
 
-    can_reject = bool(args.llm and NAMES[args.llm]) or args.reject_option
+    can_reject = bool(args.llm and NAMES[args.llm]) or args.reject_option or args.jev
     text = report(model, args.split, gold, preds, seconds, names, can_reject)
     sys.stdout.write(text)
     out = os.path.join("results", args.split, name + ".txt")

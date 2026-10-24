@@ -44,6 +44,9 @@ uv run python score.py --llm gemma4-image --split validation   # or gemma4-image
 uv run python llm.py --split train              # gemma4:e4b labels to data/llm-labels/; ~4 min
 uv run python train.py --tfidf --train real --labels llm   # or --embed; name gets -llm
 HF_HOME=$PWD/data/hf HF_HUB_OFFLINE=1 .venv-d3/bin/python score.py --d3 vllm-sr/d3-flash --prompt definitions --split validation --dump   # or fewshot; test
+uv run python score.py --jev --split pool --dump    # or test; TYPESAFE_API_KEY set, network
+uv run python confidence.py --model jev-definitions-s150-reject --calibration pool
+uv run python jev_grid.py                       # results/jev/score-grid.txt from Jev's dumps; no call
 .venv-d3/bin/python classify.py <folder> --out results.csv --level 0.05   # d3-flash definitions s150 reject on a folder; MPS
 ```
 
@@ -55,7 +58,10 @@ no score and so no `--dump`. `score.py --d3 vllm-sr/d3-flash --prompt definition
 `fewshot` writes `d3-flash-definitions` or `d3-flash-fewshot`: d3.py, on the OCR text, in
 `.venv-d3` (transformers 5.17.0, from `requirements-d3.txt`). `data/hf` is a symlink to
 synth-classify's Hugging Face cache, which holds d3-flash; run with `HF_HOME=$PWD/data/hf` and
-`HF_HUB_OFFLINE=1` so nothing is fetched into it. d3 needs MPS, which the sandbox hides. `dit-` models read `data/<split>/<id>.png`, not `ocr/`.
+`HF_HUB_OFFLINE=1` so nothing is fetched into it. d3 needs MPS, which the sandbox hides. `score.py --jev` writes `jev-definitions-s150-reject`:
+jev.py, TypeSafe's System One through OpenRouter on d3-flash's `definitions` + `none` question,
+cached in `results/jev/cache.jsonl`.
+Jev needs the network and `TYPESAFE_API_KEY`, so it runs outside the sandbox. `dit-` models read `data/<split>/<id>.png`, not `ocr/`.
 
 Tesseract comes from Homebrew (`brew install tesseract`). Anything that reaches Hugging Face fails
 inside the Claude Code sandbox with `OSStatus -26276`. That is macOS TLS trust lookup through

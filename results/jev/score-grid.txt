@@ -1,0 +1,43 @@
+model     jev-definitions-s150-reject
+pool      results/confidence/dumps/jev-definitions-s150-reject-pool.jsonl (549 pages)
+test      results/confidence/dumps/jev-definitions-s150-reject-test.jsonl
+pool tau_cp at 2% 1.00, at 5% 0.67; CP level 90%, one-sided
+pool, accepted at score >= step; a page predicted none is never accepted
+  step  accepted  errors  error   cp_upper
+  1.00       318       1  0.0031  0.0122
+  0.99       344       4  0.0116  0.0231
+  0.98       363       6  0.0165  0.0288
+  0.97       372       8  0.0215  0.0347
+  0.96       378       8  0.0212  0.0342
+  0.95       380       8  0.0211  0.0340
+  0.94       382       8  0.0209  0.0338
+  0.93       383       8  0.0209  0.0337
+  0.92       384       9  0.0234  0.0367
+  0.91       385       9  0.0234  0.0366
+  0.90       387       9  0.0233  0.0365
+  0.89       389       9  0.0231  0.0363
+  0.88       390       9  0.0231  0.0362
+  0.87       392       9  0.0230  0.0360
+  0.86       392       9  0.0230  0.0360
+  0.85       394       9  0.0228  0.0358
+  0.84       397      11  0.0277  0.0415
+  0.83       399      11  0.0276  0.0413
+  0.82       400      11  0.0275  0.0412
+  0.81       401      11  0.0274  0.0411
+  0.80       401      11  0.0274  0.0411
+  0.79       402      11  0.0274  0.0410
+  0.78       404      12  0.0297  0.0437
+  0.77       406      14  0.0345  0.0492
+  0.76       407      14  0.0344  0.0491
+  0.75       407      14  0.0344  0.0491
+  0.74       408      14  0.0343  0.0490
+  0.73       408      14  0.0343  0.0490
+  0.72       409      14  0.0342  0.0488
+  0.71       409      14  0.0342  0.0488
+  0.70       410      14  0.0341  0.0487
+  0.69       411      14  0.0341  0.0486
+  0.68       411      14  0.0341  0.0486
+  0.67       412      14  0.0340  0.0485
+test reject pages given a type with score >= the 2% tau_cp 1.00: 2
+  test-pdfs_2-documentcloud_00243_ood  predicted scientific_publication  score 1.00
+  test-pdfs_2-documentcloud_00467_ood  predicted form  score 1.00

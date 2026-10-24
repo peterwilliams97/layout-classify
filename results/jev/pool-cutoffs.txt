@@ -1,0 +1,15 @@
+date      2026-10-24, before any jev test call
+model     jev-definitions-s150-reject
+pool      results/confidence/dumps/jev-definitions-s150-reject-pool.jsonl (549 pages, 138 reject)
+from      confidence.py cut_offs on read_dump of the pool dump; CP level 90%
+  alpha 0.02
+    tau    0.98  pool coverage 0.6612 error 0.01652892561983471 reject_leak 0.0435
+    tau_cp 1.0  pool coverage 0.5792 error 0.0031446540880503146 reject_leak 0.0072
+  alpha 0.05
+    tau    0.44  pool coverage 0.7668 error 0.0498812351543943 reject_leak 0.1377
+    tau_cp 0.67  pool coverage 0.7505 error 0.03398058252427184 reject_leak 0.0870
+  alpha 0.10
+    tau    0.4  pool coverage 0.7687 error 0.052132701421800945 reject_leak 0.1449
+    tau_cp 0.4  pool coverage 0.7687 error 0.052132701421800945 reject_leak 0.1449
+score 1.00, not predicted none: 318 of 549 pool pages; 0 in-class given a wrong type, 1 reject pages given a type
+score 1.00, any prediction: 357 of 549

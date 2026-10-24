@@ -3,14 +3,15 @@
 [synth-classify](../synth-classify/README.md) measured local text classifiers on short messages.
 This repo asks the same questions of document pages: native digital documents, or good scans of
 them, rendered here at 200 dpi, plus pages that fit none of the types. It holds two classifiers
-trained on the OCR text, a local decision model asked about the OCR text with no training, one
+trained on the OCR text, a local decision model asked about the OCR text with no training, a hosted
+decision model, Jev, asked the same question, one
 classifier on the page image, one fine-tuned on both, and a local vision LLM given the page image
 and no hand labels. It holds the corpus manifest, the page split, the OCR cache and the results of
 every one of those classifiers.
 
 ## Aim
 
-Four questions, measured on one laptop:
+Four questions, measured on one laptop; Jev alone runs off it, as a hosted API:
 
 1. **How much work can it do without a person checking?** The classifier gives each page a type and
    a score. Above a cut-off, the type is used and nobody reads the page.
@@ -27,7 +28,8 @@ Four questions, measured on one laptop:
 ## Answer
 
 **1.** With no labelled page, d3-flash `definitions` + `none` passes 0.7452 of all test pages at 5%
-error and 0.6110 at 2%; TF-IDF + LR real, with 411 labelled pages, passes 0.4975 and 0.3342. No
+error and 0.6110 at 2%, and Jev, asked the same question, 0.7397 and 0.5781; TF-IDF + LR real,
+with 411 labelled pages, passes 0.4975 and 0.3342. No
 classifier can pass more than 0.7507, the in-class share of test. Cut-offs are `tau_cp` fitted on
 the 549 pool pages (Results, coverage table).
 
@@ -43,7 +45,8 @@ pages out raises the cut-off: UltraBERT-Embed-150M + LR real's in-class coverage
 against 0.8343 with 46 pool reject pages at `eb3f793` (Results, answer 3).
 
 **4.** Median seconds per page: TF-IDF + LR under 0.0004 plus Tesseract's 0.673; d3-flash
-`definitions` 1.71 plus Tesseract's; gemma4:e4b 2.65, with no OCR (accuracy and seconds table;
+`definitions` 1.71 plus Tesseract's; Jev 0.543, network included, 1.216 with Tesseract's;
+gemma4:e4b 2.65, with no OCR (accuracy and seconds table;
 Tesseract from `results/ocr-time.txt`, Results, Details).
 
 ## Data
@@ -178,6 +181,7 @@ The d3-flash `fewshot` row was scored with the definitions and `REJECT_CRITERION
 | UltraBERT-Embed-150M + LR, small            | 254 of 411 (110 per model) | 0.3047 (0.2685–0.3589) | 0.0358 (0.0204–0.0619) | 0.0242 (0.0110–0.0330) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
 | d3-flash, `definitions`, 150 words          | 0                          | 0.6411                 | 0.0256                 | 0.0659 (6 of 91)       | 0.5534                 | 0.0149                 | 0.0330 (3 of 91)       |
 | d3-flash, `definitions` + `none`, 150 words | 0                          | 0.7452                 | 0.0294                 | 0.0879 (8 of 91)       | 0.6110                 | 0.0045                 | 0.0110 (1 of 91)       |
+| Jev, `definitions` + `none`, 150 words      | 0                          | 0.7397                 | 0.0259                 | 0.0769 (7 of 91)       | 0.5781                 | 0.0095                 | 0.0220 (2 of 91)       |
 | d3-flash, `fewshot`, 150 / 50 words         | 33                         | 0.5753                 | 0.0429                 | 0.0879 (8 of 91)       | 0.4575                 | 0.0000                 | 0.0000 (0 of 91)       |
 | DiT + LR, real, image                       | 411 (328–329 per model)    | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
 | DiT + LR, small, image                      | 254 of 411 (110 per model) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) | 0.0000 (0.0000–0.0000) | —                      | 0.0000 (0.0000–0.0000) |
@@ -199,6 +203,7 @@ The d3-flash `fewshot` row was scored with the definitions of
 | UltraBERT-Embed-150M + LR, small | 0.8869 (0.8650–0.9088)            | 0.0353                   | 0.0334                 |
 | d3-flash, `definitions`          | 0.9927                            | 1.71                     | 1.78                   |
 | d3-flash, `definitions` + `none` | 0.9854                            | 1.86                     | 1.93                   |
+| Jev, `definitions` + `none`      | 0.9672                            | 0.543                    | 0.57                   |
 | d3-flash, `fewshot`              | 0.9197                            | 11.5                     | 11.5                   |
 | DiT + LR, real                   | 0.6117 (0.5876–0.6350)            | 0.0189                   | 0.0192                 |
 | DiT + LR, small                  | 0.4781 (0.4416–0.4964)            | 0.0192                   | 0.0195                 |
@@ -294,7 +299,8 @@ up, not evidence that labels here are wrong.
 
 **1. How much work can it do without a person checking?** With no labelled page, d3-flash
 `definitions` + `none` passes the most, 0.7452 of all test pages at 5% and 0.6110 at 2%, of at most
-0.7507. With every in-class train and validation page, TF-IDF + LR real passes 0.4975 and 0.3342,
+0.7507. Jev, asked the same question through a hosted API, passes 0.7397 at 5% and 0.5781 at 2%.
+With every in-class train and validation page, TF-IDF + LR real passes 0.4975 and 0.3342,
 though at 2% its test error is 0.0213, and UltraBERT-Embed-150M + LR real 0.4718 and nothing. With
 10 labelled pages per type, TF-IDF + LR small passes 0.3518 at 5% and nothing at 2%, and
 UltraBERT-Embed-150M + LR small 0.3047 and nothing. The image rows pass little: DiT and LayoutLMv3
@@ -343,7 +349,9 @@ LR, 0.0189 for DiT + LR, 0.0355 for UltraBERT-Embed-150M + LR and 0.0507 for Lay
 2.65 for gemma4:e4b on the image and, for d3-flash, 1.71 with `definitions`, 1.86 with `none` and
 11.5 with `fewshot`. Every classifier that reads the OCR text adds Tesseract's 0.673 s median
 (`results/ocr-time.txt`), so on medians a page through UltraBERT-Embed-150M + LR takes 0.709 s,
-through d3-flash `definitions` + `none` 2.53 s, and through gemma4:e4b, with no OCR, 2.65 s.
+through d3-flash `definitions` + `none` 2.53 s, and through gemma4:e4b, with no OCR, 2.65 s. Jev
+takes 0.543 s median, the API call's wall time with the network included, and 1.216 s a page with
+Tesseract's.
 
 ### Details
 
@@ -370,6 +378,9 @@ cut-offs fitted on the 230 validation pages alone, and models trained on train a
 18 CPU cores, 48 GB unified memory, no discrete GPU.
 UltraBERT, DiT, LayoutLMv3 and d3-flash run on the M5 Pro’s GPU through PyTorch MPS in bfloat16;
 gemma4:e4b runs through Ollama; TF-IDF and Tesseract run on the CPU. Nothing else was running.
+Jev, TypeSafe's System One `typesafe/jev-1.13`, which answered as `typesafe/jev-1.13-20260917` on
+all 914 pages (`results/jev/cache.jsonl`; `jev.py`), is a hosted API, so its pages leave the laptop and its seconds
+include the network round trip.
 
 **Coverage table.** From `results/confidence/<name>-pool.txt`, `tau_cp` lines, "all pages"; a
 trained row is the mean over its 5 fold models (min–max), from the summary at the head of that file.
@@ -384,7 +395,11 @@ of 91 reject pages each fold model accepts. Single fold models land above too: U
 nothing at 2%. LayoutLMv3 real's fold models were retrained here, and on MPS the run is not
 bit-for-bit repeatable: its pooled out-of-fold accuracy peaks at epoch 10 here, against epoch 9 at
 `eb3f793` on the same in-class training pages. DiT and LayoutLMv3 small certify nothing at either
-level. gemma4:e4b's rows are "—" because it answers with a type name and no probability (`llm.py`,
+level. Jev's scores come rounded to 0.01: 357 of the 549 pool pages score 1.00, and of the 318 of
+those that predict a type, 1 is a reject page and none an in-class page given a wrong type
+(`results/jev/pool-cutoffs.txt`). At 0.99 the bound exceeds 2%, 0.0231 on 4 errors in 344 pages, so
+its 2% `tau_cp` is 1.00, the top of the grid, and its 2% coverage is the 1.00 group and no more;
+both test reject pages that leak at 2% score 1.00 (`results/jev/score-grid.txt`, `jev_grid.py`). gemma4:e4b's rows are "—" because it answers with a type name and no probability (`llm.py`,
 Ollama's structured output), so there is no score to set a cut-off on and `confidence.py` has
 nothing to route.
 
@@ -394,9 +409,10 @@ and the seconds median and mean over all 5 × 365 page scorings. Names are `tfid
 `tfidf-small`, `ultrabert-embed-real`, `ultrabert-embed-small`, `dit-real`, `dit-small`,
 `layoutlmv3-real` and `layoutlmv3-small`. The other rows are from `results/test/<name>.txt`, names
 `gemma4-image`, `gemma4-image-reject`, `d3-flash-definitions-s150`,
-`d3-flash-definitions-s150-reject` and `d3-flash-fewshot-s150-e50`. d3-flash's answers are cached by
-page id (`results/d3/cache.jsonl`), so its seconds are those of the run that first asked about each
-page. Seconds are the classifier alone, one page per call, on MPS for UltraBERT, DiT, LayoutLMv3 and
+`d3-flash-definitions-s150-reject`, `d3-flash-fewshot-s150-e50` and `jev-definitions-s150-reject`
+(`results/test/jev-definitions-s150-reject.txt`). d3-flash's answers are cached by page id
+(`results/d3/cache.jsonl`), and Jev's in `results/jev/cache.jsonl`, so their seconds are those of
+the run that first asked about each page; Jev's include the network. Seconds are the classifier alone, one page per call, on MPS for UltraBERT, DiT, LayoutLMv3 and
 d3-flash and through Ollama for gemma4:e4b; OCR and the image read are not in them. Tesseract takes
 0.673 s a page median and 0.795 mean (`results/ocr-time.txt`), to be added for every classifier that
 reads the OCR text, LayoutLMv3 included; DiT and gemma4:e4b read only the image. Fine-tuning
@@ -498,7 +514,7 @@ validation pages and 0.4718 on the pool.
   `data/<split>/<id>.png`; its seconds leave out the image read. A `layoutlmv3-` model reads the OCR
   words and boxes and the image; its seconds are the forward pass, the page read and the processor
   excluded. `--dump` writes each page's prediction and top probability for `confidence.py`.
-  `--split pool`, for `--d3` only, scores every train and validation page. `--model <name> --split
+  `--split pool`, for `--d3` and `--jev`, scores every train and validation page. `--model <name> --split
   test --folds` scores each fold model of `--folds` in `models/<name>/fold<f>/`, writing
   `results/test/<name>-fold<f>.txt` and `results/confidence/dumps/<name>-fold<f>-test.jsonl`, and
   `results/test/<name>-folds.txt`: the mean accuracy over the folds with its range, and seconds
@@ -537,6 +553,21 @@ validation pages and 0.4718 on the pool.
   specification and budget, `CLASS_SETS` in `d3.py` — scores only pages labelled one of them
   or `none`, and adds `-c6`; `--pages six` scores the same pages with all 11 options and adds
   `-on6`. The option set is part of the cache key.
+- `jev.py` — Jev, TypeSafe's System One `typesafe/jev-1.13`, which answered as
+  `typesafe/jev-1.13-20260917` on all 914 pages (`results/jev/cache.jsonl`), through OpenRouter's
+  `/api/v1/systemone`, asked d3.py's question for `definitions` + `none` with 150 state words,
+  imported from `d3_question`. Each page is one request: its OCR text cut to the first 150 words as
+  the state, and the 12 options with their criteria; the pages leave the machine. The key is read
+  from `TYPESAFE_API_KEY` in the environment and never stored. Every response is cached in
+  `results/jev/cache.jsonl` under the page id and the option names, and reused only when the model,
+  question and state's SHA-256 match, so a rerun of `score.py --jev` rebuilds its report with no
+  call. A failed request exits, with no retry. `score.py --jev` scores it, as
+  `jev-definitions-s150-reject`, scored as d3-flash's `-reject` run is; its seconds are the
+  request's wall time, network included.
+- `jev_grid.py` — from Jev's pool and test dumps, writes `results/jev/score-grid.txt`: for each 0.01
+  score step from 1.00 down to the 5% `tau_cp`, the pool pages accepted, their errors and the
+  one-sided 90% Clopper-Pearson bound (`confidence.py`'s `cp_upper`), then the test reject pages
+  that pass the 2% `tau_cp`, with id and predicted type. It makes no call.
 - `confidence.py` — adapted from synth-classify's. For α 0.02, 0.05 and 0.10 it picks two cut-offs
   on every validation page: `tau`, the lowest score whose accepted validation error is at most α,
   and `tau_cp`, the same with that error's one-sided 90% Clopper-Pearson upper bound. A reject page
@@ -634,6 +665,13 @@ for split in pool test; do      # also --prompt fewshot --example-words 50; --re
   .venv-d3/bin/python score.py --d3 vllm-sr/d3-flash --prompt definitions --state-words 150 --split $split --dump
 done
 .venv-d3/bin/python confidence.py --model d3-flash-definitions-s150 --calibration pool
+
+# Jev: a hosted API, so the network and a key
+export TYPESAFE_API_KEY=...
+uv run python score.py --jev --split pool --dump
+uv run python score.py --jev --split test --dump
+uv run python confidence.py --model jev-definitions-s150-reject --calibration pool
+uv run python jev_grid.py   # results/jev/score-grid.txt from the dumps; no call
 ```
 
 `--embed`, `--dit` and `finetune.py` training and scoring fetch the model from Hugging Face on
